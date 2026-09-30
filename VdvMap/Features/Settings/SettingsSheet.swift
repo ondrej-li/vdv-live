@@ -6,6 +6,10 @@ struct SettingsSheet: View {
     let onSetAutoRefreshEnabled: (Bool) -> Void
     let onSetAutoRefreshInterval: (TimeInterval) -> Void
     let onSetLanguage: (AppLanguage) -> Void
+    /// Whether the map opens on the current location when it starts.
+    let onSetStartsAtCurrentLocation: (Bool) -> Void
+    /// Forgets the viewport the lock button saved.
+    let onClearSavedMapView: () -> Void
 
     /// State of the official timetable index, owned by the map screen.
     let isTimetableReady: Bool
@@ -53,6 +57,18 @@ struct SettingsSheet: View {
                     Text("Language")
                 } footer: {
                     Text("Czech is the default. A language change takes effect the next time the app starts.")
+                }
+
+                Section {
+                    Toggle("Open at my location", isOn: startsAtCurrentLocationBinding)
+
+                    if settings.savedMapView != nil {
+                        Button("Clear saved view", role: .destructive, action: onClearSavedMapView)
+                    }
+                } header: {
+                    Text("Opening the map")
+                } footer: {
+                    Text("The map starts about 10 km around your position, read once when the app starts and never sent anywhere. The lock button on the map remembers the view you are looking at instead; press it again to forget that view.")
                 }
 
                 Section {
@@ -120,6 +136,10 @@ struct SettingsSheet: View {
         Binding(get: { settings.language }, set: onSetLanguage)
     }
 
+    private var startsAtCurrentLocationBinding: Binding<Bool> {
+        Binding(get: { settings.startsAtCurrentLocation }, set: onSetStartsAtCurrentLocation)
+    }
+
     /// "30 s" for the short intervals, "2 min" for the long ones.
     static func intervalLabel(_ interval: TimeInterval) -> String {
         if interval < 60 {
@@ -135,6 +155,8 @@ struct SettingsSheet: View {
         onSetAutoRefreshEnabled: { _ in },
         onSetAutoRefreshInterval: { _ in },
         onSetLanguage: { _ in },
+        onSetStartsAtCurrentLocation: { _ in },
+        onClearSavedMapView: {},
         isTimetableReady: false,
         isDownloadingTimetables: false,
         downloadedAt: nil,

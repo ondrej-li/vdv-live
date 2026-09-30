@@ -16,6 +16,15 @@ draws them on a map that is framed - and locked - to the region.
 
 - **Live map of the region.** Apple Maps, standard style, camera restricted to
   the Vysočina Region so the map cannot be panned into the sea.
+- **Opens on the current location.** The map starts about 10 km around where you
+  are, so the first thing on screen is your neighbourhood rather than a region
+  seen from far out. The position is read once per launch, never leaves the
+  device, and is only used when it falls inside the region the feed covers: a map
+  of somewhere with no vehicles on it would be worse than the region view. The
+  lock button in the header does the opposite - it remembers the viewport you are
+  looking at, zoom included, and opens there from then on, which suits a commute
+  you check every morning. Both are in the settings, and pressing the lock again
+  forgets the viewport it saved.
 - **Distance legend.** A small scale bar under the header says what a stretch of
   the map is worth ("10 km"), so a marker a couple of centimetres away can be
   read as a real distance. It follows the zoom level and rounds to numbers worth
@@ -71,10 +80,10 @@ draws them on a map that is framed - and locked - to the region.
   interval is chosen in the settings and remembered: anything from 5 seconds up,
   15 by default.
 - **Settings.** One screen for the refresh interval (automatic refresh can also
-  be turned off there) and the language. Czech is the default; English and
-  "follow the device" are one tap away. A language change is written to
-  `AppleLanguages` and shows up the next time the app is launched, which is what
-  the screen says.
+  be turned off there), where the map opens, and the language. Czech is the
+  default; English and "follow the device" are one tap away. A language change is
+  written to `AppleLanguages` and shows up the next time the app is launched,
+  which is what the screen says.
 - **Official timetables, on demand.** The settings screen downloads the index of
 the Ministry of Transport's timetable archive (a couple of megabytes, once).
 After that, the card of a selected bus lists **all the stops of its run** with the

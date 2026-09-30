@@ -7,6 +7,14 @@ struct AppSettings: Equatable, Sendable {
     /// Whether the map refreshes itself at all.
     var autoRefreshEnabled: Bool
     var language: AppLanguage
+    /// Whether the map opens on the current location when it starts, unless a
+    /// viewport has been locked.
+    var startsAtCurrentLocation: Bool = true
+    /// Viewport the user locked with the lock button, if any.
+    ///
+    /// It outranks the current location: locking one is a deliberate choice, and
+    /// the location is only ever a guess.
+    var savedMapView: SavedMapView?
 
     /// The feed updates continuously, but not that fast: asking more often than
     /// every five seconds only costs battery.

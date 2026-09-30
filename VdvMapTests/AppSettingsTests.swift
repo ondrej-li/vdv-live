@@ -1,3 +1,5 @@
+import CoreLocation
+import MapKit
 import XCTest
 @testable import VdvMap
 
@@ -98,6 +100,78 @@ final class AppSettingsTests: XCTestCase {
 
         XCTAssertEqual(store.load(), .default)
         XCTAssertEqual(store.saveCount, 1)
+    }
+
+    // MARK: - Where the map opens
+
+    func testTheMapStartsAtTheCurrentLocationByDefault() {
+        XCTAssertTrue(AppSettings.default.startsAtCurrentLocation)
+        XCTAssertNil(AppSettings.default.savedMapView)
+    }
+
+    func testStoreRoundTripsTheLockedViewport() throws {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+        var settings = AppSettings.default
+        settings.savedMapView = try XCTUnwrap(
+            SavedMapView(
+                region: MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: 49.3960, longitude: 15.5910),
+                    span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.138)
+                )
+            )
+        )
+        settings.startsAtCurrentLocation = false
+
+        store.save(settings)
+
+        let loaded = store.load()
+        XCTAssertEqual(loaded.savedMapView, settings.savedMapView)
+        XCTAssertFalse(loaded.startsAtCurrentLocation)
+    }
+
+    func testStoreForgetsTheViewportWhenItIsCleared() throws {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+        var settings = AppSettings.default
+        settings.savedMapView = try XCTUnwrap(
+            SavedMapView(
+                region: MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: 49.3960, longitude: 15.5910),
+                    span: MKCoordinateSpan(latitudeDelta: 0.09, longitudeDelta: 0.138)
+                )
+            )
+        )
+        store.save(settings)
+        XCTAssertNotNil(store.load().savedMapView)
+
+        settings.savedMapView = nil
+        store.save(settings)
+
+        XCTAssertNil(store.load().savedMapView)
+    }
+
+    func testStoreIgnoresAHalfWrittenViewport() {
+        let defaults = TestDefaults.make()
+        defaults.set(
+            ["latitude": 49.3960, "longitude": 15.5910],
+            forKey: UserDefaultsAppSettingsStore.savedMapViewKey
+        )
+
+        XCTAssertNil(UserDefaultsAppSettingsStore(defaults: defaults).load().savedMapView)
+    }
+
+    func testStoreIgnoresAViewportThatIsNotMadeOfNumbers() {
+        let defaults = TestDefaults.make()
+        defaults.set(
+            [
+                "latitude": "somewhere",
+                "longitude": 15.5910,
+                "latitudeDelta": 0.09,
+                "longitudeDelta": 0.138
+            ],
+            forKey: UserDefaultsAppSettingsStore.savedMapViewKey
+        )
+
+        XCTAssertNil(UserDefaultsAppSettingsStore(defaults: defaults).load().savedMapView)
     }
 
     // MARK: - Language

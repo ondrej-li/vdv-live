@@ -1,4 +1,5 @@
 #if DEBUG
+import CoreLocation
 import Foundation
 
 /// Stand-in for the network, used by SwiftUI previews and by nothing else.
@@ -111,6 +112,24 @@ struct SampleVehicleDetailFetcher: VehicleDetailFetching {
                 RunStop(name: "Bystřice n.Pern.,aut.nádr.", arrival: "14:52", departure: "14:52")
             ]
         )
+    }
+}
+
+/// Position used by previews: Jihlava, where most of the sample vehicles are.
+@MainActor
+struct SampleLocationProvider: LocationProviding {
+    var coordinate: CLLocationCoordinate2D? = CLLocationCoordinate2D(
+        latitude: 49.3960,
+        longitude: 15.5910
+    )
+
+    /// `nonisolated` for the same reason as the real provider: the preview
+    /// dependency stack is built away from the main actor.
+    nonisolated init() {}
+
+    func requestCurrentCoordinate() async -> CLLocationCoordinate2D? {
+        try? await Task.sleep(for: .milliseconds(200))
+        return coordinate
     }
 }
 #endif
