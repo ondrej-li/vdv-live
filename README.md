@@ -99,6 +99,7 @@ make build                     # build for the simulator
 make test                      # run the unit tests
 make run                       # build, install and launch on a simulator
 make deploy                    # build, install and launch on a plugged-in iPhone
+make launch                    # relaunch the app that is already installed
 make screenshot                # save one frame of the running app
 make live                      # mirror the running app into a browser tab, 1 fps
 make devices                   # list simulators, then: make run SIMULATOR="iPhone 16"
@@ -112,22 +113,31 @@ so the app is there but there is no window to look at; open the device in Xcode'
 DeviceHub, or use `make screenshot` / `make live`. `make live` is a read-only
 mirror, so interactions have to go through DeviceHub, Xcode or a device build.
 
-`make deploy` does the same on a real iPhone. Two things have to be in place
-first, and both of them need the Xcode application rather than the command line:
+`make deploy` does the same on a real iPhone. Four things have to be in place
+first, and the first two need the Xcode application rather than the command line:
 
-- **An Apple ID in Xcode > Settings > Accounts.** A free Apple ID is enough;
-  Xcode creates the signing certificate and the provisioning profile on the first
-  build. A free account signs the app for seven days at a time, so a device build
-  has to be repeated weekly - a paid membership extends that to a year.
+- **An Apple ID under Xcode > Settings > Accounts.** A free Apple ID is enough.
+- **A team chosen for the VdvMap target**, under Signing & Capabilities, with
+  "Automatically manage signing" ticked. Adding the account alone creates neither
+  a certificate nor a profile - selecting the team is what does, and without it
+  the build stops at `Signing for "VdvMap" requires a development team`. The
+  project records the team as `DEVELOPMENT_TEAM`, so this is a one-off; use
+  `make deploy TEAM=<team id>` to override it.
 - **Developer Mode on the iPhone**, under Settings > Privacy & Security >
-  Developer Mode, followed by a restart. Without it the build fails with "The
-  operation failed because Developer Mode is turned off", which is also the state
-  `xcrun devicectl list devices` (or `make iphones`) reports.
+  Developer Mode, followed by a restart. Without it every device operation fails
+  with "The operation failed because Developer Mode is turned off", which is also
+  the state `make iphones` reports.
+- **Trusting the developer on the phone** after the first install. A certificate
+  from an Apple ID is not one iOS knows in advance, so the first launch is refused
+  with "has not been explicitly trusted by the user" until the Apple ID is trusted
+  under Settings > General > VPN & Device Management > Developer App. Also a
+  one-off; `make launch` relaunches the installed app afterwards.
 
-The signing team is picked up from Xcode once an account exists; pass
-`TEAM=<team id>` when it is not. With several iPhones plugged in, `make iphones`
-lists them and `make deploy DEVICE=<udid>` picks one. The app id is
-`cz.ondralinek.VdvMap`, so with a free account that id has to be free too.
+A free Apple ID signs for seven days at a time, so a free account means repeating
+`make deploy` weekly; a paid membership extends that to a year. With several
+iPhones plugged in, `make iphones` lists them and `make deploy DEVICE=<udid>` picks
+one. The app id is `cz.ondralinek.VdvMap`, so with a free account that id has to be
+free too.
 
 The Xcode project uses file system synchronised groups, so new files inside
 `VdvMap/` or `VdvMapTests/` are picked up automatically - there is no `.pbxproj`

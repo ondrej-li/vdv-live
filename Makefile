@@ -26,6 +26,21 @@ TEAM ?=
 # character UUID, which does not match this pattern.
 DEVICE_PATTERN := [0-9A-F]{8}-[0-9A-F]{16}
 
+# Shell snippet that resolves the target iPhone into $$udid: DEVICE= when it is
+# given, otherwise the only physical device plugged into this Mac.
+RESOLVE_DEVICE = udid='$(DEVICE)'; \
+	if [ -z "$$udid" ]; then \
+		udid=$$(xcrun devicectl list devices 2>/dev/null | grep -v simulated | grep -oE '$(DEVICE_PATTERN)' | head -1); \
+	fi;
+
+# A free Apple ID signs with a certificate iOS does not know, so the very first
+# launch is refused until the developer is trusted on the device by hand.
+TRUST_NOTE = echo ""; \
+	echo "note: iOS refused to launch the app. A development build has to be trusted"; \
+	echo "      on the device once: Settings > General > VPN & Device Management >"; \
+	echo "      Developer App > the Apple ID > Trust. Then run 'make launch'."; \
+	echo "      Nothing needs rebuilding.";
+
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME) -derivedDataPath $(DERIVED_DATA)
 
 # Fast type check without xcodebuild: the compiler is called directly, which
@@ -41,7 +56,7 @@ LIVE_WIDTH ?= 720
 APP_SOURCES := $(shell find VdvMap -name '*.swift' | sort)
 TEST_SOURCES := $(shell find VdvMapTests -name '*.swift' | sort)
 
-.PHONY: all build test typecheck run deploy iphones screenshot live icon devices open clean help
+.PHONY: all build test typecheck run deploy launch iphones screenshot live icon devices open clean help
 
 all: build
 
@@ -73,13 +88,11 @@ run: build
 ##
 ## The device defaults to the only iPhone plugged into this Mac; pass
 ## DEVICE=<udid> when several are (see 'make iphones'). Signing needs an Apple ID
-## in Xcode > Settings > Accounts, and the iPhone needs Developer Mode switched
-## on under Settings > Privacy & Security. See the README for the details.
+## with a team chosen for this target in Xcode, plus Developer Mode on the phone.
+## An Apple ID the phone has not been told to trust needs one confirmation on the
+## device, which this prints when it happens. See the README for the details.
 deploy:
-	@udid='$(DEVICE)'; \
-	if [ -z "$$udid" ]; then \
-		udid=$$(xcrun devicectl list devices 2>/dev/null | grep -v simulated | grep -oE '$(DEVICE_PATTERN)' | head -1); \
-	fi; \
+	@$(RESOLVE_DEVICE) \
 	if [ -z "$$udid" ]; then \
 		echo "error: no iPhone is plugged in - connect one over USB, or pass DEVICE=<udid>"; \
 		exit 1; \
@@ -88,8 +101,12 @@ deploy:
 	$(XCODEBUILD) -configuration $(CONFIGURATION) -destination "platform=iOS,id=$$udid" \
 		-allowProvisioningUpdates -allowProvisioningDeviceRegistration \
 		$(if $(TEAM),DEVELOPMENT_TEAM=$(TEAM)) build && \
-	xcrun devicectl device install app --device "$$udid" '$(DEVICE_APP)' && \
-	xcrun devicectl device process launch --device "$$udid" $(APP_ID)
+	xcrun devicectl device install app --device "$$udid" '$(DEVICE_APP)'
+	@$(MAKE) --no-print-directory launch
+
+## Launch the app on the iPhone without rebuilding or reinstalling it.
+launch:
+	@$(RESOLVE_DEVICE) xcrun devicectl device process launch --device "$$udid" $(APP_ID) || { $(TRUST_NOTE) exit 1; }
 
 ## List the iPhones plugged into this Mac. Simulators are listed by 'make devices'.
 iphones:
