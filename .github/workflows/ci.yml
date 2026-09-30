@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Type check and tools
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      # The fast loop: the compiler is called directly, so this needs no
+      # simulator and no signing.
+      - name: Type check the app and the test bundle
+        run: make typecheck
+
+      - name: Check the investigation tools parse
+        run: |
+          for tool in tools/*.py; do python3 -m py_compile "$tool"; done
+          echo "tools compile"
+
+  tests:
+    name: Unit tests
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      # The device names differ between runner images, and the suite needs a
+      # real simulator, so one is picked from what the runner actually has.
+      - name: Choose an available iPhone simulator
+        id: device
+        run: |
+          set -euo pipefail
+          name="$(xcrun simctl list devices available \
+            | awk -F'[()]' '/iPhone/ {gsub(/^ +| +$/, "", $1); print $1; exit}')"
+          test -n "$name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "Running the suite on: $name"
+
+      - name: Run the unit tests
+        run: make test SIMULATOR="${{ steps.device.outputs.name }}"
