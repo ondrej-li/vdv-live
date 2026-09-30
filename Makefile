@@ -15,7 +15,16 @@ DERIVED_DATA := build
 SIMULATOR ?= iPhone 17
 APP_ID := cz.ondralinek.VdvMap
 APP_BUNDLE := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphonesimulator/VdvMap.app
+DEVICE_APP := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/VdvMap.app
 SIMULATOR_APP := $(DEVELOPER_DIR)/Applications/Simulator.app
+
+# Which iPhone to install on, as a UDID. Empty means "the only one plugged in".
+DEVICE ?=
+# Signing team. Empty means "whatever Xcode has configured".
+TEAM ?=
+# A physical iPhone reports a 25 character UDID; a simulator reports a 36
+# character UUID, which does not match this pattern.
+DEVICE_PATTERN := [0-9A-F]{8}-[0-9A-F]{16}
 
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME) -derivedDataPath $(DERIVED_DATA)
 
@@ -32,7 +41,7 @@ LIVE_WIDTH ?= 720
 APP_SOURCES := $(shell find VdvMap -name '*.swift' | sort)
 TEST_SOURCES := $(shell find VdvMapTests -name '*.swift' | sort)
 
-.PHONY: all build test typecheck run screenshot live icon devices open clean help
+.PHONY: all build test typecheck run deploy iphones screenshot live icon devices open clean help
 
 all: build
 
@@ -59,6 +68,32 @@ run: build
 	xcrun simctl bootstatus '$(SIMULATOR)' -b
 	xcrun simctl install '$(SIMULATOR)' '$(APP_BUNDLE)'
 	xcrun simctl launch '$(SIMULATOR)' $(APP_ID)
+
+## Build for a physical iPhone, install the app there and launch it.
+##
+## The device defaults to the only iPhone plugged into this Mac; pass
+## DEVICE=<udid> when several are (see 'make iphones'). Signing needs an Apple ID
+## in Xcode > Settings > Accounts, and the iPhone needs Developer Mode switched
+## on under Settings > Privacy & Security. See the README for the details.
+deploy:
+	@udid='$(DEVICE)'; \
+	if [ -z "$$udid" ]; then \
+		udid=$$(xcrun devicectl list devices 2>/dev/null | grep -v simulated | grep -oE '$(DEVICE_PATTERN)' | head -1); \
+	fi; \
+	if [ -z "$$udid" ]; then \
+		echo "error: no iPhone is plugged in - connect one over USB, or pass DEVICE=<udid>"; \
+		exit 1; \
+	fi; \
+	echo "deploying to $$udid"; \
+	$(XCODEBUILD) -configuration $(CONFIGURATION) -destination "platform=iOS,id=$$udid" \
+		-allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+		$(if $(TEAM),DEVELOPMENT_TEAM=$(TEAM)) build && \
+	xcrun devicectl device install app --device "$$udid" '$(DEVICE_APP)' && \
+	xcrun devicectl device process launch --device "$$udid" $(APP_ID)
+
+## List the iPhones plugged into this Mac. Simulators are listed by 'make devices'.
+iphones:
+	@xcrun devicectl list devices 2>/dev/null | grep -v simulated
 
 ## Save a screenshot of the running app from the booted simulator.
 screenshot:
