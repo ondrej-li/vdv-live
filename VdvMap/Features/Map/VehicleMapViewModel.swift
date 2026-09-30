@@ -51,6 +51,7 @@ final class VehicleMapViewModel {
     private let fetcher: VehicleFetching
     private let favouriteLinesStore: FavouriteLinesPersisting
     private let settingsStore: AppSettingsStoring
+    private let locationProvider: LocationProviding
     /// Defaults the language override is written to; injected so that tests do
     /// not change the language of the app they run inside.
     private let languageDefaults: UserDefaults
@@ -64,6 +65,9 @@ final class VehicleMapViewModel {
     private let markerMotionFrameRate: Double
     private var vehicles: [Vehicle] = []
     private var grid: VehicleGrid?
+    /// Viewport the map is showing, so that the lock button can remember exactly
+    /// what is on screen rather than guessing from the zoom level alone.
+    private var visibleRegion: MKCoordinateRegion = RegionOfInterest.vysocina.region
     private var autoRefreshTask: Task<Void, Never>?
     private var markerMotionTask: Task<Void, Never>?
     private let now: () -> Date
@@ -75,6 +79,7 @@ final class VehicleMapViewModel {
         fetcher: VehicleFetching,
         favouriteLinesStore: FavouriteLinesPersisting = UserDefaultsFavouriteLinesStore(),
         settingsStore: AppSettingsStoring = UserDefaultsAppSettingsStore(),
+        locationProvider: LocationProviding = SystemLocationProvider(),
         languageDefaults: UserDefaults = .standard,
         detailFetcher: VehicleDetailFetching = VehicleDetailClient(),
         clusterer: VehicleGridClusterer = VehicleGridClusterer(),
@@ -86,6 +91,7 @@ final class VehicleMapViewModel {
         self.fetcher = fetcher
         self.favouriteLinesStore = favouriteLinesStore
         self.settingsStore = settingsStore
+        self.locationProvider = locationProvider
         self.languageDefaults = languageDefaults
         self.detailFetcher = detailFetcher
         self.clusterer = clusterer
@@ -187,6 +193,9 @@ final class VehicleMapViewModel {
 
     /// Called when the map settles after a pan or a zoom.
     func updateVisibleRegion(_ region: MKCoordinateRegion) {
+        // Kept whole, not just as a span: the lock button saves the viewport the
+        // user is looking at, which is a centre as well as a zoom level.
+        visibleRegion = region
         // Kept before the grid check: the legend needs the new zoom level even
         // when the markers end up grouped exactly as they were.
         visibleLatitudeDelta = region.span.latitudeDelta
@@ -357,6 +366,54 @@ final class VehicleMapViewModel {
         favouriteLines = lines
         favouriteLinesStore.save(lines)
         rebuildClusters()
+    }
+
+    // MARK: - Where the map opens
+
+    /// Region the map opens on before any position is known: the viewport the
+    /// user locked, otherwise the whole region.
+    var launchRegion: MKCoordinateRegion {
+        settings.savedMapView?.region ?? RegionOfInterest.vysocina.region
+    }
+
+    var savedMapView: SavedMapView? { settings.savedMapView }
+
+    var startsAtCurrentLocation: Bool { settings.startsAtCurrentLocation }
+
+    /// Region around the user, for a map that should open there.
+    ///
+    /// Returns `nil` when the question is already answered or cannot be: a locked
+    /// viewport outranks the current location, the option can be switched off,
+    /// the position may be unavailable, and a position outside the region the
+    /// feed covers would only produce an empty map.
+    func currentLocationRegion() async -> MKCoordinateRegion? {
+        guard settings.savedMapView == nil, settings.startsAtCurrentLocation else { return nil }
+        guard let coordinate = await locationProvider.requestCurrentCoordinate() else { return nil }
+        guard RegionOfInterest.vysocina.contains(coordinate) else { return nil }
+
+        return MapRegion.region(
+            around: coordinate,
+            widthMetres: MapRegion.currentLocationMetres,
+            heightMetres: MapRegion.currentLocationMetres
+        )
+    }
+
+    /// Remembers the viewport on screen, or forgets it when the map already
+    /// opens there.
+    func toggleSavedMapView() {
+        setSavedMapView(settings.savedMapView == nil ? SavedMapView(region: visibleRegion) : nil)
+    }
+
+    func setSavedMapView(_ savedMapView: SavedMapView?) {
+        guard settings.savedMapView != savedMapView else { return }
+        settings.savedMapView = savedMapView
+        settingsStore.save(settings)
+    }
+
+    func setStartsAtCurrentLocation(_ startsAtCurrentLocation: Bool) {
+        guard settings.startsAtCurrentLocation != startsAtCurrentLocation else { return }
+        settings.startsAtCurrentLocation = startsAtCurrentLocation
+        settingsStore.save(settings)
     }
 
     func setAutoRefresh(enabled: Bool) {

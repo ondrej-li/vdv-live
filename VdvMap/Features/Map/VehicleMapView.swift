@@ -13,16 +13,20 @@ struct VehicleMapView: View {
     init(
         fetcher: VehicleFetching = AppDependencies.live.vehicleFetcher,
         favouriteLinesStore: FavouriteLinesPersisting = AppDependencies.live.favouriteLinesStore,
-        settingsStore: AppSettingsStoring = AppDependencies.live.settingsStore
+        settingsStore: AppSettingsStoring = AppDependencies.live.settingsStore,
+        locationProvider: LocationProviding = AppDependencies.live.locationProvider
     ) {
-        _viewModel = State(
-            initialValue: VehicleMapViewModel(
-                fetcher: fetcher,
-                favouriteLinesStore: favouriteLinesStore,
-                settingsStore: settingsStore
-            )
+        let viewModel = VehicleMapViewModel(
+            fetcher: fetcher,
+            favouriteLinesStore: favouriteLinesStore,
+            settingsStore: settingsStore,
+            locationProvider: locationProvider
         )
-        _camera = State(initialValue: .region(RegionOfInterest.vysocina.region))
+        _viewModel = State(initialValue: viewModel)
+        // A viewport the user locked is known before the first frame, so the map
+        // opens straight at it. Opening on the current location needs a position,
+        // which only arrives later - see the second `task` in `body`.
+        _camera = State(initialValue: .region(viewModel.launchRegion))
     }
 
     var body: some View {
@@ -38,6 +42,15 @@ struct VehicleMapView: View {
             Task { await viewModel.selectionDidChange() }
         }
         .task { await viewModel.loadIfNeeded() }
+        .task {
+            // Opening on the current location needs a position, which is only
+            // there after the first frame. Nothing happens unless the user asked
+            // for it and a locked viewport is not already in the way.
+            guard let region = await viewModel.currentLocationRegion() else { return }
+            withAnimation(.easeInOut(duration: 0.6)) {
+                camera = .region(region)
+            }
+        }
         .onDisappear { viewModel.stopAutoRefresh() }
     }
 
@@ -102,6 +115,7 @@ struct VehicleMapView: View {
                 isAutoRefreshEnabled: viewModel.isAutoRefreshEnabled,
                 refreshInterval: viewModel.isAutoRefreshEnabled ? viewModel.autoRefreshInterval : nil,
                 favouriteLineCount: viewModel.favouriteLines.count,
+                isMapViewSaved: viewModel.savedMapView != nil,
                 onSelectFilter: { viewModel.select(filter: $0) },
                 onRefresh: { Task { await viewModel.load() } },
                 onRecenter: recenter,
@@ -109,6 +123,7 @@ struct VehicleMapView: View {
                     viewModel.setAutoRefresh(enabled: !viewModel.isAutoRefreshEnabled)
                 },
                 onShowFavourites: { isShowingFavourites = true },
+                onToggleSavedMapView: { viewModel.toggleSavedMapView() },
                 onShowSettings: { isShowingSettings = true }
             )
 
@@ -183,6 +198,8 @@ struct VehicleMapView: View {
             onSetAutoRefreshEnabled: { viewModel.setAutoRefresh(enabled: $0) },
             onSetAutoRefreshInterval: { viewModel.setAutoRefreshInterval($0) },
             onSetLanguage: { viewModel.setLanguage($0) },
+            onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
+            onClearSavedMapView: { viewModel.setSavedMapView(nil) },
             isTimetableReady: viewModel.timetables.isReady,
             isDownloadingTimetables: viewModel.timetables.isDownloading,
             downloadedAt: viewModel.timetables.downloadedAt,
@@ -282,6 +299,7 @@ struct VehicleMapView: View {
     VehicleMapView(
         fetcher: AppDependencies.preview.vehicleFetcher,
         favouriteLinesStore: AppDependencies.preview.favouriteLinesStore,
-        settingsStore: AppDependencies.preview.settingsStore
+        settingsStore: AppDependencies.preview.settingsStore,
+        locationProvider: AppDependencies.preview.locationProvider
     )
 }

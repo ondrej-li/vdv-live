@@ -1,0 +1,17 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSLocationWhenInUseUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa se otevře okolo vaší polohy. Poloha se použije jen v tomto zařízení."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

@@ -10,6 +10,8 @@ struct AppDependencies: Sendable {
     let favouriteLinesStore: FavouriteLinesPersisting
     let settingsStore: AppSettingsStoring
     let detailFetcher: VehicleDetailFetching
+    /// Where the map gets the user's position from when it opens on it.
+    let locationProvider: LocationProviding
 
     /// Live stack, reading the regional feed over the network and keeping the
     /// pinned lines in the app's user defaults.
@@ -17,7 +19,8 @@ struct AppDependencies: Sendable {
         vehicleFetcher: VehicleAPIClient(),
         favouriteLinesStore: UserDefaultsFavouriteLinesStore(),
         settingsStore: UserDefaultsAppSettingsStore(),
-        detailFetcher: VehicleDetailClient()
+        detailFetcher: VehicleDetailClient(),
+        locationProvider: SystemLocationProvider()
     )
 }
 
@@ -32,7 +35,8 @@ extension AppDependencies {
             showsOnlyFavourites: true
         ),
         settingsStore: InMemoryAppSettingsStore(),
-        detailFetcher: SampleVehicleDetailFetcher()
+        detailFetcher: SampleVehicleDetailFetcher(),
+        locationProvider: SampleLocationProvider()
     )
 }
 #endif
