@@ -28,12 +28,22 @@ final class MissingVehicleTests: XCTestCase {
         )
     }
 
-    private func makeViewModel(payloads: [VehiclePayload]) -> VehicleMapViewModel {
+    private func makeViewModel(
+        payloads: [VehiclePayload],
+        clusterRadiusMetres: Double = 0
+    ) -> VehicleMapViewModel {
         let referenceDate = self.referenceDate
         return VehicleMapViewModel(
             fetcher: StubVehicleFetcher(payloads: payloads),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
-            settingsStore: InMemoryAppSettingsStore(),
+            settingsStore: InMemoryAppSettingsStore(
+                settings: AppSettings(
+                    autoRefreshInterval: AppSettings.defaultAutoRefreshInterval,
+                    autoRefreshEnabled: false,
+                    language: .czech,
+                    clusterRadiusMetres: clusterRadiusMetres
+                )
+            ),
             languageDefaults: TestDefaults.make(),
             detailFetcher: StubVehicleDetailFetcher(),
             markerMotionDuration: 0,
@@ -158,7 +168,7 @@ final class MissingVehicleTests: XCTestCase {
             skippedRecordCount: 0,
             unlocatableRecordCount: 0
         )
-        let viewModel = makeViewModel(payloads: [together, secondOnly])
+        let viewModel = makeViewModel(payloads: [together, secondOnly], clusterRadiusMetres: 100)
         await viewModel.load()
 
         await viewModel.load()

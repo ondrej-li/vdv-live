@@ -20,10 +20,13 @@ final class VehicleMapViewModelTests: XCTestCase {
     /// View model wired to in-memory stores and a detail fetcher that never
     /// touches the network. Automatic refresh starts off so that a test only
     /// sees the fetches it asked for.
+    /// `clusterRadiusMetres` is zero unless a test asks for grouping, which is
+    /// what the app does too: the tests that are about grouped markers say so.
     private func makeViewModel(
         vehicles: [Vehicle],
         error: Error? = nil,
-        detailFetcher: VehicleDetailFetching = StubVehicleDetailFetcher()
+        detailFetcher: VehicleDetailFetching = StubVehicleDetailFetcher(),
+        clusterRadiusMetres: Double = 0
     ) -> (viewModel: VehicleMapViewModel, fetcher: StubVehicleFetcher) {
         let fetcher = StubVehicleFetcher(vehicles: vehicles, error: error)
         let referenceDate = self.referenceDate
@@ -34,7 +37,8 @@ final class VehicleMapViewModelTests: XCTestCase {
                 settings: AppSettings(
                     autoRefreshInterval: AppSettings.defaultAutoRefreshInterval,
                     autoRefreshEnabled: false,
-                    language: .czech
+                    language: .czech,
+                    clusterRadiusMetres: clusterRadiusMetres
                 )
             ),
             languageDefaults: TestDefaults.make(),
@@ -111,7 +115,7 @@ final class VehicleMapViewModelTests: XCTestCase {
     }
 
     func testLoadGroupsVehiclesIntoMarkers() async {
-        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles, clusterRadiusMetres: 100)
 
         await viewModel.load()
 
@@ -155,7 +159,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         fetcher.error = VehicleAPIError.httpStatus(503)
         await viewModel.load()
 
-        XCTAssertEqual(viewModel.clusters.count, 2)
+        XCTAssertEqual(viewModel.clusters.count, 3, "a marker per vehicle, none of them dropped")
         XCTAssertEqual(viewModel.vehicleCount, 3)
         XCTAssertEqual(
             viewModel.errorMessage,
@@ -175,7 +179,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         await viewModel.load()
 
         XCTAssertNil(viewModel.errorMessage)
-        XCTAssertEqual(viewModel.clusters.count, 2)
+        XCTAssertEqual(viewModel.clusters.count, 3)
     }
 
     // MARK: - Filtering
@@ -202,7 +206,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         viewModel.select(filter: .all)
 
         XCTAssertEqual(viewModel.vehicleCount, 3)
-        XCTAssertEqual(viewModel.clusters.count, 2)
+        XCTAssertEqual(viewModel.clusters.count, 3)
     }
 
     func testKeepsTheFilterWhileAGreyedVehicleIsStillOnTheMap() async {
@@ -566,7 +570,11 @@ final class VehicleMapViewModelTests: XCTestCase {
             Fixture.vehicle(id: 2, line: "764338", latitude: 49.3961, longitude: 15.5911)
         ]
         let detailFetcher = StubVehicleDetailFetcher()
-        let (viewModel, _) = makeViewModel(vehicles: vehicles, detailFetcher: detailFetcher)
+        let (viewModel, _) = makeViewModel(
+            vehicles: vehicles,
+            detailFetcher: detailFetcher,
+            clusterRadiusMetres: 100
+        )
         await viewModel.load()
 
         viewModel.selectedClusterID = viewModel.clusters.first?.id
@@ -648,14 +656,13 @@ final class VehicleMapViewModelTests: XCTestCase {
     // MARK: - Visible region
 
     func testZoomingInDropsVehiclesThatAreOffScreen() async {
-        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles, clusterRadiusMetres: 100)
         await viewModel.load()
         XCTAssertEqual(viewModel.clusters.count, 2)
         XCTAssertEqual(viewModel.visibleVehicleCount, 3)
 
-        // Deliberately not centred on the vehicles: a cell boundary running
-        // through them would split the pair and make the marker count
-        // depend on floating point rounding.
+        // Deliberately not centred on the vehicles: the two that stay on screen
+        // have to be inside whatever box the view model derives.
         viewModel.updateVisibleRegion(
             MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 49.3950, longitude: 15.5900),

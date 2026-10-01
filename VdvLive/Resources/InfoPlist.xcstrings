@@ -9,6 +9,12 @@
             "state" : "translated",
             "value" : "Mapa se otevře okolo vaší polohy. Poloha se použije jen v tomto zařízení."
           }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The map opens around your position when the app starts. The position is used on the device only."
+          }
         }
       }
     }

@@ -16,6 +16,7 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
     static let languageKey = "appLanguage"
     static let startsAtCurrentLocationKey = "startsAtCurrentLocation"
     static let savedMapViewKey = "savedMapView"
+    static let clusterRadiusMetresKey = "clusterRadiusMetres"
 
     private let defaults: UserDefaults
 
@@ -37,7 +38,9 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
                 language: storedLanguage ?? AppSettings.default.language,
                 startsAtCurrentLocation: defaults.object(forKey: Self.startsAtCurrentLocationKey) as? Bool
                     ?? AppSettings.default.startsAtCurrentLocation,
-                savedMapView: Self.savedMapView(from: defaults)
+                savedMapView: Self.savedMapView(from: defaults),
+                clusterRadiusMetres: defaults.object(forKey: Self.clusterRadiusMetresKey) as? Double
+                    ?? AppSettings.default.clusterRadiusMetres
             )
         )
     }
@@ -47,6 +50,7 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
         defaults.set(settings.autoRefreshEnabled, forKey: Self.autoRefreshEnabledKey)
         defaults.set(settings.language.rawValue, forKey: Self.languageKey)
         defaults.set(settings.startsAtCurrentLocation, forKey: Self.startsAtCurrentLocationKey)
+        defaults.set(settings.clusterRadiusMetres, forKey: Self.clusterRadiusMetresKey)
         if let savedMapView = settings.savedMapView {
             defaults.set(savedMapView.storedValues, forKey: Self.savedMapViewKey)
         } else {

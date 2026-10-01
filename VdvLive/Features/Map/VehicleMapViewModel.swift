@@ -56,7 +56,6 @@ final class VehicleMapViewModel {
     /// not change the language of the app they run inside.
     private let languageDefaults: UserDefaults
     private let detailFetcher: VehicleDetailFetching
-    private let clusterer: VehicleGridClusterer
     /// Official timetables, shared with the settings screen that downloads them.
     let timetables: LineTimetableStore
     /// How long a marker takes to travel to its new position.
@@ -64,7 +63,10 @@ final class VehicleMapViewModel {
     /// Frames per second used while markers travel.
     private let markerMotionFrameRate: Double
     private var vehicles: [Vehicle] = []
-    private var grid: VehicleGrid?
+    /// The visible region as a box, which is what decides whether a vehicle is on
+    /// the map at all. Kept next to the region rather than recomputed so that a
+    /// pan which does not change the box does not rebuild every marker.
+    private var visibleBounds = RegionOfInterest.BoundingBox(region: RegionOfInterest.vysocina.region)
     /// Viewport the map is showing, so that the lock button can remember exactly
     /// what is on screen rather than guessing from the zoom level alone.
     private var visibleRegion: MKCoordinateRegion = RegionOfInterest.vysocina.region
@@ -82,7 +84,6 @@ final class VehicleMapViewModel {
         locationProvider: LocationProviding = SystemLocationProvider(),
         languageDefaults: UserDefaults = .standard,
         detailFetcher: VehicleDetailFetching = VehicleDetailClient(),
-        clusterer: VehicleGridClusterer = VehicleGridClusterer(),
         timetables: LineTimetableStore? = nil,
         markerMotionDuration: TimeInterval = 2,
         markerMotionFrameRate: Double = 30,
@@ -94,7 +95,6 @@ final class VehicleMapViewModel {
         self.locationProvider = locationProvider
         self.languageDefaults = languageDefaults
         self.detailFetcher = detailFetcher
-        self.clusterer = clusterer
         self.timetables = timetables ?? LineTimetableStore()
         self.markerMotionDuration = markerMotionDuration
         self.markerMotionFrameRate = markerMotionFrameRate
@@ -200,9 +200,9 @@ final class VehicleMapViewModel {
         // when the markers end up grouped exactly as they were.
         visibleLatitudeDelta = region.span.latitudeDelta
 
-        let newGrid = clusterer.grid(for: region)
-        guard newGrid != grid else { return }
-        grid = newGrid
+        let bounds = RegionOfInterest.BoundingBox(region: region)
+        guard bounds != visibleBounds else { return }
+        visibleBounds = bounds
         rebuildClusters()
     }
 
@@ -416,6 +416,21 @@ final class VehicleMapViewModel {
         settingsStore.save(settings)
     }
 
+    /// Distance within which buses are drawn as one marker, zero for none.
+    var clusterRadiusMetres: Double { settings.clusterRadiusMetres }
+
+    /// Changes the radius that grouping starts at.
+    ///
+    /// The markers on screen are wrong from this moment on, so they are rebuilt
+    /// straight away rather than waiting for the next payload.
+    func setClusterRadius(_ radiusMetres: Double) {
+        let radiusMetres = AppSettings.clampedClusterRadius(radiusMetres)
+        guard settings.clusterRadiusMetres != radiusMetres else { return }
+        settings.clusterRadiusMetres = radiusMetres
+        settingsStore.save(settings)
+        rebuildClusters()
+    }
+
     func setAutoRefresh(enabled: Bool) {
         guard settings.autoRefreshEnabled != enabled else { return }
         settings.autoRefreshEnabled = enabled
@@ -501,27 +516,37 @@ final class VehicleMapViewModel {
     }
 
     private func rebuildClusters() {
-        let grid = self.grid ?? clusterer.grid(for: RegionOfInterest.vysocina.region)
         let view = currentView()
 
-        // Clustering starts every marker at its new position, so the position a
-        // marker was drawn at has to be carried over by identity. Without this a
-        // refresh would place every marker exactly where it already is going.
-        let drawn = Dictionary(clusters.map { ($0.id, $0.drawnCoordinate) }) { first, _ in first }
+        // A marker holds the position it was drawn at for as long as it stands for
+        // the same vehicles. A group is a place on the map rather than a vehicle,
+        // so it must not drift about as its members move around inside it; it is
+        // placed afresh only when a bus joins or leaves. A marker for one vehicle
+        // keeps its identity by definition, so it is carried over as well, and
+        // travels to its new position below.
+        let previous = clusters.reduce(into: [String: VehicleCluster]()) { drawn, cluster in
+            drawn[cluster.id] = cluster
+        }
         let stale = Set(missingVehicles.keys)
 
         // The header counts what the feed is reporting, not what is still on
         // screen from earlier.
         vehicleCount = view.live.count
-        clusters = clusterer.cluster(view.tracked, grid: grid).map { cluster in
-            var cluster = cluster
-            if let position = drawn[cluster.id] {
-                cluster.drawnCoordinate = position
+        let markers = VehicleClusterer.markers(
+            view.tracked,
+            in: visibleBounds,
+            radiusMetres: settings.clusterRadiusMetres
+        )
+        clusters = markers.map { marker in
+            var marker = marker
+            if let before = previous[marker.id],
+               before.vehicles.map(\.id) == marker.vehicles.map(\.id) {
+                marker.drawnCoordinate = before.drawnCoordinate
             }
             // A marker is stale only when nothing in it is being reported: a
             // grey marker carrying a live bus would be a lie.
-            cluster.isStale = cluster.vehicles.allSatisfy { stale.contains($0.id) }
-            return cluster
+            marker.isStale = marker.vehicles.allSatisfy { stale.contains($0.id) }
+            return marker
         }
         visibleVehicleCount = clusters.reduce(0) { $0 + $1.count }
         favouriteClusterIDs = Set(
@@ -540,14 +565,16 @@ final class VehicleMapViewModel {
         moveMarkers()
     }
 
-    /// Sends every marker on its way to the position the new payload gives it.
+    /// Sends every marker that stands for a single vehicle on its way to the
+    /// position the new payload gives it.
     ///
     /// Markers that are new appear where they are, and markers that disappeared
-    /// are dropped: only the ones that were already on screen travel. Zooming
-    /// re-cuts the grid, so the markers are new and land immediately, which is
-    /// what you want when the map itself just moved.
+    /// are dropped: only the ones that were already on screen travel. A marker
+    /// standing for a group is not sent anywhere - it is a place on the map, and
+    /// it has already been placed where its members are.
     private func moveMarkers() {
         let travelling = clusters.reduce(into: [String: CLLocationCoordinate2D]()) { starts, cluster in
+            guard cluster.singleVehicle != nil else { return }
             guard MarkerMotion.hasMoved(from: cluster.drawnCoordinate, to: cluster.coordinate) else {
                 return
             }
@@ -589,9 +616,10 @@ final class VehicleMapViewModel {
         }
     }
 
-    /// Puts every marker where the payload says it is, with no travelling left.
+    /// Puts every single vehicle marker where the payload says it is, with no
+    /// travelling left. Grouped markers are left where they were placed.
     private func placeMarkers() {
-        for index in clusters.indices {
+        for index in clusters.indices where clusters[index].singleVehicle != nil {
             clusters[index].drawnCoordinate = clusters[index].coordinate
         }
     }

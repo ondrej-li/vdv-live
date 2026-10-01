@@ -5,7 +5,7 @@ Region (Czechia) on Apple Maps.
 
 The data comes from the public map at
 `https://mapavdv.kr-vysocina.cz/`, which publishes every tracked vehicle as a
-JSON array. The app polls that endpoint, groups nearby vehicles into markers and
+JSON array. The app polls that endpoint, draws every vehicle as a marker and
 draws them on a map that is framed - and locked - to the region.
 
 <p align="center">
@@ -38,12 +38,12 @@ draws them on a map that is framed - and locked - to the region.
   clear of the rounded corners, and it is not drawn at all when automatic refresh
   is off, because then there is no next refresh to count down to.
 - **Vehicles move instead of jumping.** Each payload puts a bus somewhere new, so
-  the markers travel there over two seconds - a straight line at a constant speed
-  from the position they were drawn at to the position the feed reports. Markers
-  that appear or disappear are placed immediately: only the ones already on
-  screen travel, and zooming re-cuts the grid, which lands every marker at once.
-  The movement is sampled 30 times a second, so judge it in DeviceHub: the
-  browser mirror in `make live` shows about one frame per second by construction.
+  the marker for a single vehicle travels there over two seconds - a straight line
+  at a constant speed from the position it was drawn at to the position the feed
+  reports. Markers that appear or disappear are placed immediately, so only the
+  ones already on screen travel. The movement is sampled 30 times a second, so
+  judge it in DeviceHub: the browser mirror in `make live` shows about one frame
+  per second by construction.
 - **A vehicle that goes quiet is held on to.** The feed drops a vehicle for a
   payload or two before reporting it again, so a marker that stops being reported
   stays where it was last seen, drawn grey, and leaves the map only after five
@@ -51,10 +51,21 @@ draws them on a map that is framed - and locked - to the region.
   drawn grey: a cluster is stale only when nothing in it is being reported. A
   failed load is not news either, so it never ages anything, and the header count
   keeps counting what the feed actually reports.
-- **Markers grouped by zoom level.** The visible region is split into a grid, so
-  a few hundred vehicles collapse into at most a hundred markers while zoomed
-  out and split apart as you zoom in. A marker shows a line number for a single
-  vehicle and a count for several.
+- **Grouping nearby vehicles, within a radius you choose.** Every vehicle is
+  drawn on its own by default, which is what you want when you are looking for a
+  particular bus. Pick a radius in the settings and buses within that distance of
+  each other are drawn as one marker carrying their count instead, which is what
+  makes a town centre readable. A marker shows a line number while it stands for
+  one vehicle and a count while it stands for several.
+
+  A grouped marker is a place on the map rather than a vehicle, so it holds the
+  position it was drawn at and does not drift about as its members move inside
+  it. It is placed afresh only when a bus joins or leaves the group, and a group
+  is named after its anchor - the lowest numbered bus in it - so it keeps both its
+  identity and its position for as long as it stands for the same vehicles.
+
+  The radius is a distance on the ground, not a size on screen: raising it groups
+  more, while zooming out does not group anything that a closer look would not.
 - **Detail card.** Tap a marker for the line, destination, traction and delay.
   The line is shown the way a passenger knows it - `815` rather than `795815`,
   with `795` named as the operator - and for a single vehicle the app also looks
@@ -168,7 +179,7 @@ sudo xcodebuild -license accept
 VdvLive/
   App/            entry point and the one place that builds the live stack
   Domain/         value types: Vehicle, Traction, VehicleDelay, FavouriteLines,
-                  the region, the grid clusterer that turns vehicles into markers,
+                  the region, and the clusterer that turns vehicles into markers,
                   and the app settings and language
   Data/           the feed client, its request configuration, the decoder, and the
                   pinned-lines and settings stores
@@ -201,7 +212,8 @@ a network.
   grouping the running lines by the passenger facing number
 - the detail card's HTML: entity decoding, the misspelled accessibility label,
   the stop list, and deriving the next stop from the run
-- grid clustering: merging, splitting, ordering, dominance, bounds
+- grouping: the radius, the anchor a group is named after, ordering, dominance,
+  and every vehicle ending up in exactly one marker
 - pinned lines: normalising what a user types, ordering, persistence through
   user defaults, the pinned filter on the map, and the remembered pinned-only mode
 - request construction, including the session cookie being optional

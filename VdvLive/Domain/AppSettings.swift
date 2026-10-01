@@ -15,6 +15,11 @@ struct AppSettings: Equatable, Sendable {
     /// It outranks the current location: locking one is a deliberate choice, and
     /// the location is only ever a guess.
     var savedMapView: SavedMapView?
+    /// Distance within which buses are drawn as one marker.
+    ///
+    /// Zero, the default, leaves every vehicle on its own. Above that, vehicles
+    /// within this distance of a group's anchor are drawn together.
+    var clusterRadiusMetres: Double = 0
 
     /// The feed updates continuously, but not that fast: asking more often than
     /// every five seconds only costs battery.
@@ -23,6 +28,10 @@ struct AppSettings: Equatable, Sendable {
 
     /// Intervals offered on the settings screen.
     static let selectableAutoRefreshIntervals: [TimeInterval] = [5, 10, 15, 30, 60, 120]
+
+    /// Grouping radii offered on the settings screen. The first means "do not
+    /// group anything", which is the default.
+    static let selectableClusterRadii: [Double] = [0, 100, 250, 500, 1_000]
 
     static let `default` = AppSettings(
         autoRefreshInterval: defaultAutoRefreshInterval,
@@ -40,6 +49,14 @@ struct AppSettings: Equatable, Sendable {
     static func validated(_ settings: AppSettings) -> AppSettings {
         var settings = settings
         settings.autoRefreshInterval = clampedAutoRefreshInterval(settings.autoRefreshInterval)
+        settings.clusterRadiusMetres = clampedClusterRadius(settings.clusterRadiusMetres)
         return settings
+    }
+
+    /// A radius that is missing, negative or not a number means "do not group
+    /// anything", which is the only safe reading of a value like that.
+    static func clampedClusterRadius(_ radius: Double) -> Double {
+        guard radius.isFinite, radius > 0 else { return 0 }
+        return radius
     }
 }

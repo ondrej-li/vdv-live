@@ -200,6 +200,7 @@ struct VehicleMapView: View {
             onSetLanguage: { viewModel.setLanguage($0) },
             onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
             onClearSavedMapView: { viewModel.setSavedMapView(nil) },
+            onSetClusterRadius: { viewModel.setClusterRadius($0) },
             isTimetableReady: viewModel.timetables.isReady,
             isDownloadingTimetables: viewModel.timetables.isDownloading,
             downloadedAt: viewModel.timetables.downloadedAt,
