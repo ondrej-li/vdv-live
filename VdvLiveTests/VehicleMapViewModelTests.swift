@@ -531,8 +531,8 @@ final class VehicleMapViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.runningLines.map(\.line), ["337", "420"])
         XCTAssertEqual(viewModel.runningLines.first?.vehicleCount, 2)
-        XCTAssertEqual(viewModel.runningLines.first?.operatorCode, "764")
-        XCTAssertEqual(viewModel.runningLines.last?.operatorCode, "764")
+        XCTAssertEqual(viewModel.runningLines.first?.licenceAreaCode, "764")
+        XCTAssertEqual(viewModel.runningLines.last?.licenceAreaCode, "764")
         XCTAssertEqual(
             viewModel.runningLines.last?.descriptionText,
             String(localized: "Bus")

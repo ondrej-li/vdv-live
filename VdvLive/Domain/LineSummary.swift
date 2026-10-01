@@ -5,10 +5,10 @@ import Foundation
 /// The favourites screen needs this for lines that are pinned but idle: they
 /// get a summary with a count of zero rather than disappearing from the list.
 struct LineSummary: Hashable, Identifiable, Sendable {
-    /// Line number as passengers know it, operator prefix removed.
+    /// Line number as passengers know it, licence area prefix removed.
     let line: String
-    /// Operator running the line, when the feed's code carries one.
-    let operatorCode: String?
+    /// Licence area the line is registered in, when the feed's code carries one.
+    let licenceAreaCode: String?
     let vehicleCount: Int
     let traction: Traction
 
@@ -33,7 +33,7 @@ struct LineSummary: Hashable, Identifiable, Sendable {
 
     /// Summary for a line that is not reporting anything, e.g. a pinned line
     /// outside its hours of operation.
-    static func idle(_ line: String, operatorCode: String? = nil) -> LineSummary {
-        LineSummary(line: line, operatorCode: operatorCode, vehicleCount: 0, traction: .unknown)
+    static func idle(_ line: String, licenceAreaCode: String? = nil) -> LineSummary {
+        LineSummary(line: line, licenceAreaCode: licenceAreaCode, vehicleCount: 0, traction: .unknown)
     }
 }

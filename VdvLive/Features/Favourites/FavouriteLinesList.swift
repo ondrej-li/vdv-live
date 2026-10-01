@@ -199,7 +199,7 @@ private struct LineSummaryRow: View {
     /// way it is printed next to the line number on a bus.
     private var lineLabel: Text {
         let number = Text(summary.line).font(.subheadline.weight(.bold))
-        guard let licenceArea = summary.operatorCode else { return number }
+        guard let licenceArea = summary.licenceAreaCode else { return number }
         return Text(licenceArea).font(.caption2.weight(.semibold)) + Text(" ") + number
     }
 }

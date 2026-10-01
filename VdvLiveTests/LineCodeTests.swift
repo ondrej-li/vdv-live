@@ -5,20 +5,20 @@ final class LineCodeTests: XCTestCase {
     func testSplitsTheOperatorPrefixFromTheLine() {
         let code = LineCode(raw: "764337")
 
-        XCTAssertEqual(code.operatorCode, "764")
+        XCTAssertEqual(code.licenceAreaCode, "764")
         XCTAssertEqual(code.number, "337")
         XCTAssertEqual(code.displayText, "337")
         XCTAssertEqual(code.fullText, "764337")
     }
 
     func testTreatsShortCodesAsTheLineItself() {
-        XCTAssertNil(LineCode(raw: "301").operatorCode)
+        XCTAssertNil(LineCode(raw: "301").licenceAreaCode)
         XCTAssertEqual(LineCode(raw: "301").number, "301")
 
-        // Train numbers are four to seven digits and carry no operator prefix.
-        XCTAssertNil(LineCode(raw: "5907").operatorCode)
+        // Train numbers are four to seven digits and carry no licence area prefix.
+        XCTAssertNil(LineCode(raw: "5907").licenceAreaCode)
         XCTAssertEqual(LineCode(raw: "5907").number, "5907")
-        XCTAssertNil(LineCode(raw: "5435405").operatorCode)
+        XCTAssertNil(LineCode(raw: "5435405").licenceAreaCode)
         XCTAssertEqual(LineCode(raw: "5435405").number, "5435405")
     }
 
@@ -29,7 +29,7 @@ final class LineCodeTests: XCTestCase {
 
     func testStripsLeadingZerosFromTheLineNumber() {
         XCTAssertEqual(LineCode(raw: "680036").number, "36")
-        XCTAssertEqual(LineCode(raw: "680036").operatorCode, "680")
+        XCTAssertEqual(LineCode(raw: "680036").licenceAreaCode, "680")
         XCTAssertEqual(LineCode(raw: "680000").number, "0")
     }
 
@@ -42,7 +42,7 @@ final class LineCodeTests: XCTestCase {
     func testLeavesAlphanumericCodesAlone() {
         let code = LineCode(raw: "X1")
 
-        XCTAssertNil(code.operatorCode)
+        XCTAssertNil(code.licenceAreaCode)
         XCTAssertEqual(code.number, "X1")
     }
 }

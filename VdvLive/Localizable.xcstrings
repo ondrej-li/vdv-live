@@ -391,12 +391,12 @@
         }
       }
     },
-    "operator %@": {
+    "licence area %@": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "dopravce %@"
+            "value": "licenční oblast %@"
           }
         }
       }
@@ -637,16 +637,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "momentálně žádná vozidla"
-          }
-        }
-      }
-    },
-    "%@ · operator %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ · dopravce %@"
           }
         }
       }

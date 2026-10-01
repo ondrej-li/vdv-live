@@ -86,10 +86,10 @@ draws them on a map that is framed - and locked - to the region.
   more, while zooming out does not group anything that a closer look would not.
 - **Detail card.** Tap a marker for the line, destination, traction and delay.
   The line is shown the way a passenger knows it - `815` rather than `795815`,
-  with `795` named as the operator - and for a single vehicle the app also looks
-  up the run: the service number (`Spoj`), the last reported stop (`Zastávka`,
-  the last known position of the vehicle), the next stop with their timetable
-  times, and whether the vehicle is accessible. Tap one vehicle of a merged
+  with `795` named as the licence area - and for a single vehicle the app also
+  looks up the run: the service number (`Spoj`), the last reported stop
+  (`Zastávka`, the last known position of the vehicle), the next stop with their
+  timetable times, and whether the vehicle is accessible. Tap one vehicle of a merged
   marker to fly to it. The timetable endpoint is cross-checked against the run
   the info window names, so a page for a different run is ignored rather than
   producing a wrong next stop; when the timetable is unavailable the card says so.
@@ -244,7 +244,7 @@ a network.
 
 - decoding the feed, including every quirk listed in `docs/api.md`
 - the delay sentinel and the `N/a` destination placeholder
-- line codes: operator prefixes, matching a pinned line against `764337`, and
+- line codes: licence area prefixes, matching a pinned line against `764337`, and
   grouping the running lines by the passenger facing number
 - the detail card's HTML: entity decoding, the misspelled accessibility label,
   the stop list, and deriving the next stop from the run

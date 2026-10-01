@@ -48,19 +48,19 @@ requiring it.
 |---|---|---|
 | `id` | integer | Unique within one response. Trains and vehicles outside the public timetable use **negative** ids (for example `-2435`). |
 | `lat`, `lng` | number | WGS 84 degrees. Also sent as integers when they are whole numbers. |
-| `text` | string | Line code. For buses this is usually six digits: **three for the operator and three for the line**, so `764337` is line `337` run by operator `764`. Train numbers (four to seven digits) and the short codes on some regional lines carry no prefix. |
+| `text` | string | Line code. For buses this is usually six digits: **three for the licence area and three for the line**, so `764337` is line `337` registered in licence area `764`. Train numbers (four to seven digits) and the short codes on some regional lines carry no prefix. |
 | `delay` | integer | Minutes. See the caveats below. |
 | `finalStopName` | string | Final stop, never empty. Placeholders such as `-1 N/a` or `5437035 N/a` mean "not known". |
 | `traction` | string | `BUS`, `TRAIN` and `UNKNOWN` were observed. The app keeps `TROLLEYBUS`, `TRAM` and `FERRY` ready and maps anything else onto `UNKNOWN`. |
 
-### Line codes and operators
+### Line codes and licence areas
 
-The operator prefix is what makes the feed's `text` look odd next to a printed
+The licence area prefix is what makes the feed's `text` look odd next to a printed
 timetable. In one capture, 520 of 605 records were six-digit codes, and their
-prefixes group the way an operator numbering scheme groups: `358`, `603`, `764`,
+prefixes group the way the licence registers group: `358`, `603`, `764`,
 `841`, `842`, `795`, `796`, `680`, `340`, `761`, `200`. `LineCode` splits them,
 the app shows the line number a passenger would recognise (`337`, `815`) and
-keeps the operator (`764`, `795`) as a label on the detail card.
+keeps the licence area (`764`, `795`) as a label on the detail card.
 
 Pinned lines are stored as line numbers, so pinning `337` catches `764337` and
 `841337` alike, while pinning `764337` is filed as `337`.
