@@ -11,6 +11,13 @@ struct VehicleDetailCard: View {
     /// Published timetable of the line, once the timetable index is downloaded.
     var timetable: LineTimetable?
     var isLoadingTimetable = false
+    /// Why the timetable is not on screen, when it is not. Nil while it is on its
+    /// way, or when there is one to show.
+    var timetableError: String?
+    /// Whether the timetable index has been downloaded, which decides whether
+    /// offering the download here makes sense.
+    var isTimetableReady = true
+    let onDownloadTimetable: () -> Void
     let onToggleFavourite: (String) -> Void
     let onSelectVehicle: (Vehicle) -> Void
     let onDismiss: () -> Void
@@ -105,10 +112,6 @@ struct VehicleDetailCard: View {
                 }
                 if let next = detail.nextStop {
                     detailRow(label: "Next stop", value: next.name, time: next.timeText)
-                } else if detail.stopName != nil, detail.runStops.isEmpty {
-                    Text("Timetable for this service is not available.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
                 if detail.isBarrierFree == true {
                     Label("Barrier-free", systemImage: "figure.roll")
@@ -119,6 +122,7 @@ struct VehicleDetailCard: View {
                     VehicleStopsView(
                         run: timetable.run(serviceNumber: detail.serviceNumber),
                         reportedStopName: detail.stopName,
+                        nextStopName: detail.nextStop?.name,
                         delayMinutes: detail.reportedDelayMinutes
                     )
                 } else if isLoadingTimetable {
@@ -129,12 +133,35 @@ struct VehicleDetailCard: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                } else if let timetableError {
+                    timetableProblem(timetableError)
                 }
             }
         } else if cluster.isStale {
             Label("No recent data for this vehicle.", systemImage: "wifi.exclamationmark")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    /// The timetable is not on screen: say why, and offer the download when that is
+    /// what is missing.
+    ///
+    /// An index that has never been downloaded can be fixed from here; a line the
+    /// published archive does not have cannot, and the message is the whole answer.
+    private func timetableProblem(_ message: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if !isTimetableReady {
+                Spacer(minLength: 6)
+                Button("Download timetables", action: onDownloadTimetable)
+                    .font(.caption.weight(.semibold))
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+            }
         }
     }
 

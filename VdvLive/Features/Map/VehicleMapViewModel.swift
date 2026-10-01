@@ -359,16 +359,27 @@ final class VehicleMapViewModel {
     /// Only worth doing once the user has downloaded the index; until then the
     /// card shows what the feed's own detail endpoint gave it.
     func loadTimetable(forLine lineNumber: String, serviceNumber: String?) async {
-        guard timetables.isReady else { return }
+        // Without the index there is nothing to look up, and the card has to say so:
+        // silently drawing nothing is what made this look like a missing feature.
+        guard timetables.isReady else {
+            lineTimetable = nil
+            timetableError = TimetableError.notDownloaded.errorDescription
+            return
+        }
         isLoadingTimetable = true
         defer { isLoadingTimetable = false }
 
         do {
-            lineTimetable = try await timetables.timetable(
+            let timetable = try await timetables.timetable(
                 forLine: lineNumber,
                 serviceNumber: serviceNumber
             )
-            timetableError = nil
+            lineTimetable = timetable
+            // A line the mapping does not know has no timetable to show, and the
+            // card has to be able to say that rather than draw nothing.
+            timetableError = timetable == nil
+                ? String(localized: "Timetable for this service is not available.")
+                : nil
         } catch {
             lineTimetable = nil
             timetableError = (error as? TimetableError)?.errorDescription ?? error.localizedDescription
