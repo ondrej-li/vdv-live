@@ -797,12 +797,11 @@ final class VehicleMapViewModel {
             )
         }
 
-        return summaries.sorted { lhs, rhs in
-            if lhs.vehicleCount != rhs.vehicleCount {
-                return lhs.vehicleCount > rhs.vehicleCount
-            }
-            return FavouriteLines.isOrderedBefore(lhs.line, rhs.line)
-        }
+        // Ordered by the number a passenger would read, the same way the pinned
+        // list is. Sorting on the count instead made the list reshuffle itself as
+        // vehicles came and went, which is hard to scan, and the count is in the
+        // row anyway.
+        return summaries.sorted { FavouriteLines.isOrderedBefore($0.line, $1.line) }
     }
 
     private static func dominantCode(in counts: [String: Int]) -> String? {

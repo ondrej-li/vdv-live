@@ -23,15 +23,12 @@ struct LineSummary: Hashable, Identifiable, Sendable {
         }
     }
 
-    /// Traction, plus the licence area when the feed identifies one.
+    /// What the row says under the count: the traction, while the line is running.
+    ///
+    /// The licence area is not repeated here - it belongs in front of the line
+    /// number, where it is read as part of the line rather than as a footnote.
     var descriptionText: String {
-        guard isRunning else { return String(localized: "not running") }
-        guard let licenceAreaCode else { return traction.displayName }
-        return String(
-            format: String(localized: "%@ · licence area %@"),
-            traction.displayName,
-            licenceAreaCode
-        )
+        isRunning ? traction.displayName : String(localized: "not running")
     }
 
     /// Summary for a line that is not reporting anything, e.g. a pinned line

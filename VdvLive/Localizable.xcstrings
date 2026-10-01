@@ -641,16 +641,6 @@
         }
       }
     },
-    "%@ · licence area %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ · licenční oblast %@"
-          }
-        }
-      }
-    },
     "Show only pinned lines on the map": {
       "localizations": {
         "cs": {
