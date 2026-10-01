@@ -36,10 +36,14 @@ RESOLVE_DEVICE = udid='$(DEVICE)'; \
 # A free Apple ID signs with a certificate iOS does not know, so the very first
 # launch is refused until the developer is trusted on the device by hand.
 TRUST_NOTE = echo ""; \
-	echo "note: iOS refused to launch the app. A development build has to be trusted"; \
-	echo "      on the device once: Settings > General > VPN & Device Management >"; \
+	echo "note: iOS has not been told to trust this developer yet. Do it once on the"; \
+	echo "      device: Settings > General > VPN & Device Management >"; \
 	echo "      Developer App > the Apple ID > Trust. Then run 'make launch'."; \
 	echo "      Nothing needs rebuilding.";
+
+# iOS refuses to open any app while the screen is locked, which is not a problem
+# with the build at all.
+LOCKED_NOTE = echo "note: the iPhone is locked. Unlock it and run 'make launch' again.";
 
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME) -derivedDataPath $(DERIVED_DATA)
 
@@ -106,7 +110,19 @@ deploy:
 
 ## Launch the app on the iPhone without rebuilding or reinstalling it.
 launch:
-	@$(RESOLVE_DEVICE) xcrun devicectl device process launch --device "$$udid" $(APP_ID) || { $(TRUST_NOTE) exit 1; }
+	@$(RESOLVE_DEVICE) \
+	output=$$(xcrun devicectl device process launch --device "$$udid" $(APP_ID) 2>&1); \
+	returned=$$?; \
+	if [ $$returned -eq 0 ]; then \
+		echo "launched $(APP_ID) on $$udid"; \
+		exit 0; \
+	fi; \
+	case "$$output" in \
+		*"not be, unlocked"*) $(LOCKED_NOTE) ;; \
+		*"trusted"*) $(TRUST_NOTE) ;; \
+		*) echo "$$output" ;; \
+	esac; \
+	exit 1
 
 ## List the iPhones plugged into this Mac. Simulators are listed by 'make devices'.
 iphones:

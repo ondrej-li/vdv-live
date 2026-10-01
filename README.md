@@ -146,7 +146,9 @@ A free Apple ID signs for seven days at a time, so a free account means repeatin
 `make deploy` weekly; a paid membership extends that to a year. With several
 iPhones plugged in, `make iphones` lists them and `make deploy DEVICE=<udid>` picks
 one. The app id is `cz.ondralinek.VdvMap`, so with a free account that id has to be
-free too.
+free too. A launch that is refused is reported by `make launch` as what it is:
+iOS will not open an app while the phone is locked, and it will not open one
+signed by a developer it has not been told to trust.
 
 The Xcode project uses file system synchronised groups, so new files inside
 `VdvMap/` or `VdvMapTests/` are picked up automatically - there is no `.pbxproj`
