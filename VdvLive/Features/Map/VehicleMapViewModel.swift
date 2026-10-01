@@ -70,6 +70,9 @@ final class VehicleMapViewModel {
     /// Viewport the map is showing, so that the lock button can remember exactly
     /// what is on screen rather than guessing from the zoom level alone.
     private var visibleRegion: MKCoordinateRegion = RegionOfInterest.vysocina.region
+    /// True while what is on the map is known to be out of date: the app has been
+    /// away, so every marker is drawn grey until a payload replaces it.
+    private var showsStalePayload = false
     private var autoRefreshTask: Task<Void, Never>?
     private var markerMotionTask: Task<Void, Never>?
     private let now: () -> Date
@@ -133,6 +136,33 @@ final class VehicleMapViewModel {
         await load()
     }
 
+    // MARK: - Coming back to the screen
+
+    /// Called when the app comes back to the screen.
+    ///
+    /// What is on the map was fetched before the app went away, so it is greyed
+    /// straight away and a payload is asked for at once. The refresh interval is
+    /// not waited for: the positions on screen are already older than that, and
+    /// iOS suspends the automatic refresh while the app is in the background, so
+    /// nothing else is going to correct them.
+    func appDidBecomeActive() async {
+        // A launch is not a return: nothing has arrived yet, so there is nothing
+        // to grey and the launch fetch is already on its way.
+        guard hasLoadedOnce else { return }
+        markPayloadStale()
+        await load()
+    }
+
+    /// Greys everything on the map: the payload behind it is from before.
+    ///
+    /// Separate from the fetch on purpose, so the grey is on screen before any
+    /// request answers rather than after it.
+    func markPayloadStale() {
+        guard !showsStalePayload else { return }
+        showsStalePayload = true
+        rebuildClusters()
+    }
+
     /// Fetches the current positions. Keeps the previous payload on failure so
     /// the map does not go blank while the network is down.
     func load() async {
@@ -146,6 +176,9 @@ final class VehicleMapViewModel {
             vehicles = payload.vehicles
             lastUpdatedAt = now()
             errorMessage = nil
+            // A payload that arrived is what makes the map current again, whatever
+            // it says: everything stops being grey at once.
+            showsStalePayload = false
             trackMissing(from: previous)
             // What is on the map, greyed vehicles included: a traction that is
             // only quiet for a payload should not make its chip vanish.
@@ -585,9 +618,11 @@ final class VehicleMapViewModel {
                before.vehicles.map(\.id) == marker.vehicles.map(\.id) {
                 marker.drawnCoordinate = before.drawnCoordinate
             }
-            // A marker is stale only when nothing in it is being reported: a
-            // grey marker carrying a live bus would be a lie.
-            marker.isStale = marker.vehicles.allSatisfy { stale.contains($0.id) }
+            // A marker is stale when nothing in it is being reported - a grey
+            // marker carrying a live bus would be a lie - or when the payload
+            // itself is known to be old.
+            marker.isStale = showsStalePayload
+                || marker.vehicles.allSatisfy { stale.contains($0.id) }
             return marker
         }
         visibleVehicleCount = clusters.reduce(0) { $0 + $1.count }
