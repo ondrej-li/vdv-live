@@ -12,11 +12,14 @@ struct MapHeaderBar: View {
     /// Seconds between automatic refreshes, `nil` while automatic refresh is off.
     let refreshInterval: TimeInterval?
     let favouriteLineCount: Int
+    /// Whether the map opens at a viewport the user locked with the lock button.
+    let isMapViewSaved: Bool
     let onSelectFilter: (VehicleFilter) -> Void
     let onRefresh: () -> Void
     let onRecenter: () -> Void
     let onToggleAutoRefresh: () -> Void
     let onShowFavourites: () -> Void
+    let onToggleSavedMapView: () -> Void
     let onShowSettings: () -> Void
 
     var body: some View {
@@ -56,6 +59,14 @@ struct MapHeaderBar: View {
                     systemName: "scope",
                     label: String(localized: "Back to Vysočina"),
                     action: onRecenter
+                )
+                iconButton(
+                    systemName: isMapViewSaved ? "lock.fill" : "lock.open",
+                    label: isMapViewSaved
+                        ? String(localized: "Stop opening the map here")
+                        : String(localized: "Open the map here from now on"),
+                    tint: isMapViewSaved ? Color.accentColor : nil,
+                    action: onToggleSavedMapView
                 )
                 iconButton(
                     systemName: "gearshape",

@@ -14,6 +14,8 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
     static let autoRefreshIntervalKey = "autoRefreshInterval"
     static let autoRefreshEnabledKey = "autoRefreshEnabled"
     static let languageKey = "appLanguage"
+    static let startsAtCurrentLocationKey = "startsAtCurrentLocation"
+    static let savedMapViewKey = "savedMapView"
 
     private let defaults: UserDefaults
 
@@ -32,7 +34,10 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
                 autoRefreshInterval: storedInterval ?? AppSettings.defaultAutoRefreshInterval,
                 autoRefreshEnabled: defaults.object(forKey: Self.autoRefreshEnabledKey) as? Bool
                     ?? AppSettings.default.autoRefreshEnabled,
-                language: storedLanguage ?? AppSettings.default.language
+                language: storedLanguage ?? AppSettings.default.language,
+                startsAtCurrentLocation: defaults.object(forKey: Self.startsAtCurrentLocationKey) as? Bool
+                    ?? AppSettings.default.startsAtCurrentLocation,
+                savedMapView: Self.savedMapView(from: defaults)
             )
         )
     }
@@ -41,6 +46,27 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
         defaults.set(settings.autoRefreshInterval, forKey: Self.autoRefreshIntervalKey)
         defaults.set(settings.autoRefreshEnabled, forKey: Self.autoRefreshEnabledKey)
         defaults.set(settings.language.rawValue, forKey: Self.languageKey)
+        defaults.set(settings.startsAtCurrentLocation, forKey: Self.startsAtCurrentLocationKey)
+        if let savedMapView = settings.savedMapView {
+            defaults.set(savedMapView.storedValues, forKey: Self.savedMapViewKey)
+        } else {
+            // Removing rather than writing zeroes: an absent key is what "no
+            // viewport has been locked" looks like on the way back in.
+            defaults.removeObject(forKey: Self.savedMapViewKey)
+        }
+    }
+
+    /// Rebuilds the locked viewport, ignoring a value that is incomplete or was
+    /// written by something else entirely.
+    private static func savedMapView(from defaults: UserDefaults) -> SavedMapView? {
+        guard let stored = defaults.dictionary(forKey: savedMapViewKey) else { return nil }
+
+        var values: [String: Double] = [:]
+        for (key, value) in stored {
+            guard let number = value as? NSNumber else { return nil }
+            values[key] = number.doubleValue
+        }
+        return SavedMapView(storedValues: values)
     }
 }
 

@@ -50,6 +50,8 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Unknown"), "Neznámé")
         XCTAssertEqual(try czechString("on time"), "včas")
         XCTAssertEqual(try czechString("no data"), "bez dat")
+        XCTAssertEqual(try czechString("Open the map here from now on"), "Otevírat mapu vždy tady")
+        XCTAssertEqual(try czechString("Stop opening the map here"), "Neotvírat mapu tady")
     }
 
     func testTranslatesTheDetailCardIntoCzech() throws {
@@ -74,6 +76,9 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Language"), "Jazyk")
         XCTAssertEqual(try czechString("System"), "Systémové")
         XCTAssertEqual(try czechString("Done"), "Hotovo")
+        XCTAssertEqual(try czechString("Open at my location"), "Otevřít na mé poloze")
+        XCTAssertEqual(try czechString("Opening the map"), "Otevírání mapy")
+        XCTAssertEqual(try czechString("Clear saved view"), "Zrušit uložený výřez")
     }
 
     func testTranslatesTheBannersIntoCzech() throws {

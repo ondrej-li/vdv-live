@@ -241,6 +241,26 @@
         }
       }
     },
+    "Open the map here from now on": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otevírat mapu vždy tady"
+          }
+        }
+      }
+    },
+    "Stop opening the map here": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neotvírat mapu tady"
+          }
+        }
+      }
+    },
     "Settings": {
       "localizations": {
         "cs": {
@@ -707,6 +727,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Výchozí je čeština. Změna jazyka se projeví při příštím spuštění aplikace."
+          }
+        }
+      }
+    },
+    "Open at my location": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otevřít na mé poloze"
+          }
+        }
+      }
+    },
+    "Opening the map": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otevírání mapy"
+          }
+        }
+      }
+    },
+    "Clear saved view": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušit uložený výřez"
+          }
+        }
+      }
+    },
+    "The map starts about 10 km around your position, read once when the app starts and never sent anywhere. The lock button on the map remembers the view you are looking at instead; press it again to forget that view.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapa se otevře zhruba 10 km okolo vaší polohy. Poloha se načte právě jednou při spuštění a nikam se neposílá. Tlačítkem se zámkem na mapě si místo toho uložíte právě zobrazený výřez; dalším stisknutím ho zrušíte."
           }
         }
       }
