@@ -20,6 +20,8 @@ struct AppSettings: Equatable, Sendable {
     /// Zero, the default, leaves every vehicle on its own. Above that, vehicles
     /// within this distance of a group's anchor are drawn together.
     var clusterRadiusMetres: Double = 0
+    /// Whether the map draws the user's own position as the usual blue dot.
+    var showsCurrentLocation: Bool = true
 
     /// The feed updates continuously, but not that fast: asking more often than
     /// every five seconds only costs battery.

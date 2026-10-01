@@ -13,6 +13,13 @@ protocol LocationProviding: Sendable {
     /// Returns `nil` when permission was refused, when the position cannot be
     /// determined, or when it takes too long to arrive.
     func requestCurrentCoordinate() async -> CLLocationCoordinate2D?
+
+    /// Asks for permission to use the position, for the case where the map draws
+    /// the position itself and nothing in the app needs a fix.
+    ///
+    /// Returns whether the app is allowed to use the position afterwards.
+    @discardableResult
+    func requestAuthorization() async -> Bool
 }
 
 /// CoreLocation backed provider.
@@ -22,6 +29,11 @@ final class SystemLocationProvider: LocationProviding {
     /// Long enough for someone to read the prompt, short enough that a map which
     /// has already opened does not jump to the user much later.
     static let timeout: Duration = .seconds(8)
+
+    /// How long to wait for someone to answer the permission prompt. Longer than
+    /// the wait for a fix, because a person reading a dialog is not a slow
+    /// satellite.
+    static let authorizationTimeout: Duration = .seconds(30)
 
     /// Made on first use rather than in `init`, so that building the app's
     /// dependency stack does not have to happen on the main actor.
@@ -66,5 +78,27 @@ final class SystemLocationProvider: LocationProviding {
         defer { deadline.cancel() }
 
         return await request.value
+    }
+
+    func requestAuthorization() async -> Bool {
+        let manager = manager ?? CLLocationManager()
+        self.manager = manager
+
+        if manager.authorizationStatus == .notDetermined {
+            manager.requestWhenInUseAuthorization()
+            // Asking is all this provider can do: the answer arrives through a
+            // delegate it does not have, and the status is a value the system
+            // keeps, so it is read until it stops saying "not determined".
+            let deadline = ContinuousClock.now + Self.authorizationTimeout
+            while manager.authorizationStatus == .notDetermined, ContinuousClock.now < deadline {
+                try? await Task.sleep(for: .milliseconds(100))
+            }
+        }
+
+        return Self.permitsLocation(manager.authorizationStatus)
+    }
+
+    private static func permitsLocation(_ status: CLAuthorizationStatus) -> Bool {
+        status == .authorizedWhenInUse || status == .authorizedAlways
     }
 }

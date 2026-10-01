@@ -46,10 +46,20 @@ struct VehicleMapView: View {
             // Opening on the current location needs a position, which is only
             // there after the first frame. Nothing happens unless the user asked
             // for it and a locked viewport is not already in the way.
-            guard let region = await viewModel.currentLocationRegion() else { return }
+            let region = await viewModel.currentLocationRegion()
+            // The map draws the position itself, so when opening there did not
+            // already ask for permission, this is what puts the prompt up.
+            await viewModel.requestLocationPermissionIfNeeded()
+            guard let region else { return }
             withAnimation(.easeInOut(duration: 0.6)) {
                 camera = .region(region)
             }
+        }
+        .onChange(of: viewModel.showsCurrentLocation) { _, showsCurrentLocation in
+            // Turning it on mid-session should ask straight away rather than
+            // waiting for the next launch.
+            guard showsCurrentLocation else { return }
+            Task { await viewModel.requestLocationPermissionIfNeeded() }
         }
         .onDisappear { viewModel.stopAutoRefresh() }
     }
@@ -64,6 +74,12 @@ struct VehicleMapView: View {
             ),
             selection: $viewModel.selectedClusterID
         ) {
+            if viewModel.showsCurrentLocation {
+                // The system's own blue dot, with its accuracy ring: MapKit keeps
+                // it up to date, so all the app has to do is hold permission.
+                UserAnnotation()
+            }
+
             ForEach(viewModel.clusters) { cluster in
                 Annotation(coordinate: cluster.drawnCoordinate) {
                     VehicleAnnotationView(
@@ -198,6 +214,7 @@ struct VehicleMapView: View {
             onSetAutoRefreshEnabled: { viewModel.setAutoRefresh(enabled: $0) },
             onSetAutoRefreshInterval: { viewModel.setAutoRefreshInterval($0) },
             onSetLanguage: { viewModel.setLanguage($0) },
+            onSetShowsCurrentLocation: { viewModel.setShowsCurrentLocation($0) },
             onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
             onClearSavedMapView: { viewModel.setSavedMapView(nil) },
             onSetClusterRadius: { viewModel.setClusterRadius($0) },

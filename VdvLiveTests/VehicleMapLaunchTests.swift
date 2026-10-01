@@ -44,14 +44,16 @@ final class VehicleMapLaunchTests: XCTestCase {
 
     private func settings(
         startsAtCurrentLocation: Bool = true,
-        savedMapView: SavedMapView? = nil
+        savedMapView: SavedMapView? = nil,
+        showsCurrentLocation: Bool = true
     ) -> AppSettings {
         AppSettings(
             autoRefreshInterval: AppSettings.defaultAutoRefreshInterval,
             autoRefreshEnabled: false,
             language: .czech,
             startsAtCurrentLocation: startsAtCurrentLocation,
-            savedMapView: savedMapView
+            savedMapView: savedMapView,
+            showsCurrentLocation: showsCurrentLocation
         )
     }
 
@@ -106,6 +108,45 @@ final class VehicleMapLaunchTests: XCTestCase {
 
         XCTAssertNil(region)
         XCTAssertEqual(location.requestCount, 0, "a switched off option should not ask for a position")
+    }
+
+    // MARK: - Showing the position
+
+    func testThePositionIsShownByDefault() {
+        let (viewModel, _, _) = makeViewModel(settings: .default)
+
+        XCTAssertTrue(AppSettings.default.showsCurrentLocation)
+        XCTAssertTrue(viewModel.showsCurrentLocation)
+    }
+
+    func testTurningThePositionOffIsPersisted() {
+        let (viewModel, store, _) = makeViewModel(settings: settings())
+
+        viewModel.setShowsCurrentLocation(false)
+
+        XCTAssertFalse(viewModel.showsCurrentLocation)
+        XCTAssertFalse(store.load().showsCurrentLocation)
+        XCTAssertEqual(store.saveCount, 1)
+
+        viewModel.setShowsCurrentLocation(false)
+
+        XCTAssertEqual(store.saveCount, 1, "the same value twice is not a change")
+    }
+
+    func testPermissionIsAskedForWhenThePositionIsShown() async {
+        let (viewModel, _, location) = makeViewModel(settings: settings(showsCurrentLocation: true))
+
+        await viewModel.requestLocationPermissionIfNeeded()
+
+        XCTAssertEqual(location.authorizationRequestCount, 1)
+    }
+
+    func testNoPermissionIsAskedForWhenThePositionIsHidden() async {
+        let (viewModel, _, location) = makeViewModel(settings: settings(showsCurrentLocation: false))
+
+        await viewModel.requestLocationPermissionIfNeeded()
+
+        XCTAssertEqual(location.authorizationRequestCount, 0)
     }
 
     // MARK: - The locked viewport

@@ -131,5 +131,7 @@ struct SampleLocationProvider: LocationProviding {
         try? await Task.sleep(for: .milliseconds(200))
         return coordinate
     }
+
+    func requestAuthorization() async -> Bool { true }
 }
 #endif
