@@ -69,7 +69,7 @@ Line `764337` (the app's pinned line 337) is entry `853.zip`:
 | `Dopravci.txt`, `LinExt.txt`, `Navaznosti.txt`, `Pevnykod.txt`, `Udaje.txt`, `VerzeJDF.txt` | operator, line extension, connections, codes, notes, version |
 
 `LinExt.txt` of that line carries the short number `631` next to `725631`, which
-is the operator-prefix rule the app already relies on (`764337` = operator 764 /
+is the licence-area rule the app already relies on (`764337` = licence area 764 /
 line 337) — confirmed from the source rather than inferred.
 
 ## Does it join to the live feed?
