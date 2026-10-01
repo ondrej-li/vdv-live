@@ -2,7 +2,9 @@ import XCTest
 @testable import VdvLive
 
 /// Fixtures are real bytes from the official archive: the tiny outer archive
-/// holds the entry for line 764337 exactly as the national archive does.
+/// holds the entry for line 764337 exactly as the national archive does. The
+/// name of that entry is the one the shipped mapping lists for the line, and it
+/// changes whenever the archive is republished - see `make mapping`.
 final class ZipArchiveTests: XCTestCase {
     private func fixture(_ name: String) throws -> Data {
         let bundle = Bundle(for: Self.self)
@@ -18,7 +20,7 @@ final class ZipArchiveTests: XCTestCase {
 
         let entries = try ZipArchive.entries(in: archive)
 
-        XCTAssertEqual(entries.map(\.name), ["853.zip"])
+        XCTAssertEqual(entries.map(\.name), ["8354.zip"])
         let entry = try XCTUnwrap(entries.first)
         // The sample was written with `zip`, which stores an already compressed
         // entry rather than deflating it again. Both methods are exercised here:
@@ -37,7 +39,7 @@ final class ZipArchiveTests: XCTestCase {
 
         let entries = try ZipArchive.entries(inTail: Data(tail), archiveSize: archive.count)
 
-        XCTAssertEqual(entries.map(\.name), ["853.zip"])
+        XCTAssertEqual(entries.map(\.name), ["8354.zip"])
     }
 
     func testRefusesATailThatMissesTheDirectory() throws {
@@ -97,7 +99,7 @@ final class ZipArchiveTests: XCTestCase {
         let entry = try XCTUnwrap(try ZipArchive.entries(in: archive).first)
 
         XCTAssertThrowsError(try ZipArchive.contents(of: entry, in: Data("nope".utf8))) { error in
-            XCTAssertEqual(error as? ZipArchive.Failure, .damagedEntry("853.zip"))
+            XCTAssertEqual(error as? ZipArchive.Failure, .damagedEntry("8354.zip"))
         }
     }
 

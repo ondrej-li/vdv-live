@@ -160,6 +160,7 @@ make screenshot                # save one frame of the running app
 make live                      # mirror the running app into a browser tab, 1 fps
 make devices                   # list simulators, then: make run SIMULATOR="iPhone 16"
 make iphones                   # list the iPhones plugged into this Mac
+make mapping                   # refresh the shipped line to entry mapping
 ```
 
 `make run` installs and launches the app whether or not a Simulator window is

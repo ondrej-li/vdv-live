@@ -37,9 +37,9 @@ final class LineTimetableStoreTests: XCTestCase {
         return try Data(contentsOf: url)
     }
 
-    /// The fixture archive holds the entry for line 764337 only. The mapping
-    /// that ships with the app also lists a second entry for it (4861.zip),
-    /// which this archive does not have - the store has to cope with that.
+    /// The fixture archive holds the entry for line 764337 only, under the last
+    /// of the names the shipped mapping lists for that line: the entries before
+    /// it are not in this archive, which the store has to cope with.
     private func makeStore(
         failures: Set<String> = [],
         version: ArchiveVersion = firstPublication,
@@ -133,7 +133,7 @@ final class LineTimetableStoreTests: XCTestCase {
         // its Linky.txt has to be noticed and the answer refused.
         let store = LineTimetableStore(
             client: StubTimetableArchive(archive: try archiveBytes()),
-            mapping: ["764931": ["853.zip"]],
+            mapping: ["764931": [try fixtureEntryName()]],
             files: TimetableFiles(directory: directory)
         )
         await store.downloadIndex()
@@ -168,13 +168,28 @@ final class LineTimetableStoreTests: XCTestCase {
         XCTAssertTrue(left.isEmpty, "\(left)")
     }
 
-    func testShipsAMappingForTheRegion() {
+    /// The name the fixture archive lists its one entry under. The mapping the
+    /// app ships with names the same entry, and the assertions below keep the
+    /// two in step: the archive reassigns these names when it is republished, so
+    /// refreshing the mapping means refreshing the fixture with it.
+    private func fixtureEntryName() throws -> String {
+        let entries = try ZipArchive.entries(in: try archiveBytes())
+        return try XCTUnwrap(entries.first).name
+    }
+
+    func testShipsAMappingForTheRegion() throws {
         // The test host is the app, so this reads the file the app is built with.
         let mapping = LineTimetableStore.bundledMapping()
 
         XCTAssertFalse(mapping.isEmpty)
-        XCTAssertEqual(mapping["764337"], ["4861.zip", "853.zip"])
         XCTAssertEqual(mapping.count, 381)
+
+        // One line of it, against the archive the other tests use: the mapping
+        // has to name the entry the archive really holds the line in, and it has
+        // to offer a candidate before that one, so the fallback is exercised.
+        let candidates = try XCTUnwrap(mapping["764337"])
+        XCTAssertTrue(candidates.contains(try fixtureEntryName()), "\(candidates)")
+        XCTAssertGreaterThan(candidates.count, 1)
     }
 
     // MARK: - Is the index still the published one?
