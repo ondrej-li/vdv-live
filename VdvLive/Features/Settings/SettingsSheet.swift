@@ -8,6 +8,8 @@ struct SettingsSheet: View {
     let onSetLanguage: (AppLanguage) -> Void
     /// Whether the map draws the user's own position.
     let onSetShowsCurrentLocation: (Bool) -> Void
+    /// Whether the map keeps the position in the middle as it moves.
+    let onSetFollowsCurrentLocation: (Bool) -> Void
     /// Whether the map opens on the current location when it starts.
     let onSetStartsAtCurrentLocation: (Bool) -> Void
     /// Forgets the viewport the lock button saved.
@@ -65,6 +67,7 @@ struct SettingsSheet: View {
 
                 Section {
                     Toggle("Show my position on the map", isOn: showsCurrentLocationBinding)
+                    Toggle("Follow my position", isOn: followsCurrentLocationBinding)
                     Toggle("Open at my location", isOn: startsAtCurrentLocationBinding)
 
                     if settings.savedMapView != nil {
@@ -73,7 +76,7 @@ struct SettingsSheet: View {
                 } header: {
                     Text("My location")
                 } footer: {
-                    Text("The position is read on the device and never sent anywhere. The blue dot is the system's own; the map opens about 10 km around the position, and the lock button remembers the view you are looking at instead.")
+                    Text("The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the lock button remembers the view you are looking at instead.")
                 }
 
                 Section {
@@ -157,6 +160,10 @@ struct SettingsSheet: View {
         Binding(get: { settings.showsCurrentLocation }, set: onSetShowsCurrentLocation)
     }
 
+    private var followsCurrentLocationBinding: Binding<Bool> {
+        Binding(get: { settings.followsCurrentLocation }, set: onSetFollowsCurrentLocation)
+    }
+
     private var startsAtCurrentLocationBinding: Binding<Bool> {
         Binding(get: { settings.startsAtCurrentLocation }, set: onSetStartsAtCurrentLocation)
     }
@@ -198,6 +205,7 @@ struct SettingsSheet: View {
         onSetAutoRefreshInterval: { _ in },
         onSetLanguage: { _ in },
         onSetShowsCurrentLocation: { _ in },
+        onSetFollowsCurrentLocation: { _ in },
         onSetStartsAtCurrentLocation: { _ in },
         onClearSavedMapView: {},
         onSetClusterRadius: { _ in },

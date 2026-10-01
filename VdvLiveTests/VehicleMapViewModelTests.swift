@@ -835,7 +835,7 @@ final class VehicleMapViewModelTests: XCTestCase {
 
         await viewModel.load()
         let secondID = try XCTUnwrap(viewModel.clusters.first).id
-        XCTAssertEqual(firstID, secondID, "both positions have to fall in the same grid cell")
+        XCTAssertEqual(firstID, secondID, "the marker stands for the same vehicle, so it keeps its identity")
 
         // Straight after the payload the marker is still where it was drawn, not
         // where the feed just put it.
@@ -843,16 +843,17 @@ final class VehicleMapViewModelTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(beforeMoving.latitude, 49.3960)
         XCTAssertLessThan(beforeMoving.latitude, 49.3980)
 
-        try await Task.sleep(for: .milliseconds(120))
-
-        let halfWay = try XCTUnwrap(viewModel.clusters.first).drawnCoordinate
-        XCTAssertGreaterThan(halfWay.latitude, 49.3960)
-        XCTAssertLessThan(halfWay.latitude, 49.3980)
-
-        try await Task.sleep(for: .milliseconds(700))
+        // The glide runs on its own task, so this is waited for rather than slept
+        // on. Sleeping and hoping is a race on a loaded machine, and this test
+        // failed exactly once in CI for that reason: "half way" is not something
+        // a test can arrange, but "arrived, eventually" is. That half way really
+        // is half way is checked arithmetically in `MarkerMotionTests`.
+        try await waitUntil("the marker to arrive") {
+            guard let latitude = viewModel.clusters.first?.drawnCoordinate.latitude else { return false }
+            return abs(latitude - 49.3980) < 0.000001
+        }
 
         let arrived = try XCTUnwrap(viewModel.clusters.first).drawnCoordinate
-        XCTAssertEqual(arrived.latitude, 49.3980, accuracy: 0.000001)
         XCTAssertEqual(arrived.longitude, 15.5930, accuracy: 0.000001)
         XCTAssertEqual(viewModel.clusters.first?.coordinate.latitude ?? 0, 49.3980, accuracy: 0.000001)
     }
@@ -887,6 +888,22 @@ final class VehicleMapViewModelTests: XCTestCase {
         let cluster = try XCTUnwrap(viewModel.clusters.first { $0.singleVehicle?.id == 2 })
         XCTAssertEqual(cluster.drawnCoordinate.latitude, 49.6070, accuracy: 0.000001)
         XCTAssertEqual(cluster.drawnCoordinate.longitude, 15.5810, accuracy: 0.000001)
+    }
+
+    /// Waits for something another task is working towards, and fails the test if
+    /// it never gets there. Used instead of a fixed sleep wherever the thing being
+    /// waited for runs on its own task.
+    private func waitUntil(
+        _ what: String,
+        timeout: Duration = .seconds(5),
+        _ condition: () -> Bool
+    ) async throws {
+        let deadline = ContinuousClock.now + timeout
+        while ContinuousClock.now < deadline {
+            if condition() { return }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTFail("Timed out waiting for \(what)")
     }
 }
 

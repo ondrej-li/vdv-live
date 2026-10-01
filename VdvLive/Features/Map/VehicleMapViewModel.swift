@@ -439,8 +439,23 @@ final class VehicleMapViewModel {
     /// nothing has asked, so the dot would never appear without this. It is a
     /// cheap no-op once the question has been answered.
     func requestLocationPermissionIfNeeded() async {
-        guard settings.showsCurrentLocation else { return }
+        guard settings.showsCurrentLocation || settings.followsCurrentLocation else { return }
         await locationProvider.requestAuthorization()
+    }
+
+    /// Whether the map keeps the position in the middle as it moves.
+    var followsCurrentLocation: Bool { settings.followsCurrentLocation }
+
+    /// Starts or stops following, and remembers the choice.
+    ///
+    /// Moving the camera is left to the view: the setting says what the map
+    /// should do, and the view is what owns the camera. Stopping deliberately
+    /// does not move anything - the map stays where it was when the user took
+    /// over.
+    func setFollowsCurrentLocation(_ followsCurrentLocation: Bool) {
+        guard settings.followsCurrentLocation != followsCurrentLocation else { return }
+        settings.followsCurrentLocation = followsCurrentLocation
+        settingsStore.save(settings)
     }
 
     /// Distance within which buses are drawn as one marker, zero for none.

@@ -18,6 +18,7 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
     static let savedMapViewKey = "savedMapView"
     static let clusterRadiusMetresKey = "clusterRadiusMetres"
     static let showsCurrentLocationKey = "showsCurrentLocation"
+    static let followsCurrentLocationKey = "followsCurrentLocation"
 
     private let defaults: UserDefaults
 
@@ -43,7 +44,9 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
                 clusterRadiusMetres: defaults.object(forKey: Self.clusterRadiusMetresKey) as? Double
                     ?? AppSettings.default.clusterRadiusMetres,
                 showsCurrentLocation: defaults.object(forKey: Self.showsCurrentLocationKey) as? Bool
-                    ?? AppSettings.default.showsCurrentLocation
+                    ?? AppSettings.default.showsCurrentLocation,
+                followsCurrentLocation: defaults.object(forKey: Self.followsCurrentLocationKey) as? Bool
+                    ?? AppSettings.default.followsCurrentLocation
             )
         )
     }
@@ -55,6 +58,7 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
         defaults.set(settings.startsAtCurrentLocation, forKey: Self.startsAtCurrentLocationKey)
         defaults.set(settings.clusterRadiusMetres, forKey: Self.clusterRadiusMetresKey)
         defaults.set(settings.showsCurrentLocation, forKey: Self.showsCurrentLocationKey)
+        defaults.set(settings.followsCurrentLocation, forKey: Self.followsCurrentLocationKey)
         if let savedMapView = settings.savedMapView {
             defaults.set(savedMapView.storedValues, forKey: Self.savedMapViewKey)
         } else {

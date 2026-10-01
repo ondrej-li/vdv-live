@@ -79,6 +79,8 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Open at my location"), "Otevřít na mé poloze")
         XCTAssertEqual(try czechString("My location"), "Moje poloha")
         XCTAssertEqual(try czechString("Show my position on the map"), "Zobrazit moji polohu na mapě")
+        XCTAssertEqual(try czechString("Follow my position"), "Sledovat moji polohu")
+        XCTAssertEqual(try czechString("Stop following my position"), "Přestat sledovat moji polohu")
         XCTAssertEqual(try czechString("Clear saved view"), "Zrušit uložený výřez")
         XCTAssertEqual(try czechString("Vehicles"), "Vozidla")
         XCTAssertEqual(try czechString("Group buses within"), "Seskupovat autobusy blíž než")
