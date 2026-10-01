@@ -25,39 +25,54 @@ struct VehicleDetailCard: View {
     /// The card is a drawer: it opens short, with the few things a passenger came
     /// for, and is pulled up when the timetable is what they want.
     @State private var isExpanded = false
-    /// Live drag distance, negative while the card is being pulled up.
+    /// Live drag distance, negative while the card is being pulled up. It moves the
+    /// card, it never resizes it: a height that changes with every frame would be
+    /// laid out and measured again on every frame, which is what hung the app.
     @State private var dragTranslation: CGFloat = 0
-    /// Where the two states end, measured rather than assumed: a longer run, or a
-    /// longer word in another language, would otherwise clip the wrong thing.
-    @State private var peekHeight: CGFloat = 150
-    @State private var fullHeight: CGFloat = 150
+    /// How tall the two states are, measured off the blocks themselves rather than
+    /// assumed: a longer run, or a longer word in another language, would otherwise
+    /// clip the wrong thing.
+    @State private var shortHeight: CGFloat = 150
+    @State private var longHeight: CGFloat = 0
 
-    private static let space = "vehicleDetailCard"
     private static let padding: CGFloat = 14
     /// How far the card has to travel before it changes state on release.
     private static let threshold: CGFloat = 44
+    /// How far the card answers the finger, in each direction.
+    private static let follow: CGFloat = 26
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            handle
-            header
-            VStack(alignment: .leading, spacing: 12) {
-                shortContent
-                marker { peekHeight = $0 + Self.padding }
-            }
+            shortState
             if canExpand {
                 longContent
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                        if abs(longHeight - height) > 1 { longHeight = height }
+                    }
             }
         }
         .padding(Self.padding)
         .fixedSize(horizontal: false, vertical: true)
-        .coordinateSpace(name: Self.space)
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }
         .frame(height: cardHeight, alignment: .top)
         .clipped()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
+        .offset(y: followOffset)
         .gesture(drag, including: canExpand && !isExpanded ? .all : .none)
+    }
+
+    /// The grabber, the header and the rows a passenger came for: the state the
+    /// card opens in, and the height it is cut to while it does.
+    private var shortState: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            handle
+            header
+            shortContent
+        }
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+            let needed = height + Self.padding * 2
+            if abs(shortHeight - needed) > 1 { shortHeight = needed }
+        }
     }
 
     /// What the card opens with: the vehicle, the stop it is heading for, and the
@@ -142,11 +157,16 @@ struct VehicleDetailCard: View {
         cluster.singleVehicle != nil && detail != nil
     }
 
-    /// The height to draw the card at: the state it is in, moved by the finger
-    /// while it is being dragged, and never outside the two.
+    /// The height to draw the card at: the state it is in, and nothing else. The
+    /// long state is the short one plus the drawer's content and the gap above it.
     private var cardHeight: CGFloat {
-        let resting = isExpanded ? fullHeight : peekHeight
-        return min(max(resting - dragTranslation, peekHeight), max(fullHeight, peekHeight))
+        isExpanded ? shortHeight + longHeight + 12 : shortHeight
+    }
+
+    /// How far the card follows the finger, capped: enough to answer back, never
+    /// enough to move what it shows out of the card.
+    private var followOffset: CGFloat {
+        min(max(dragTranslation, -Self.follow), Self.follow)
     }
 
     /// The grabber. Decorative - the summary row below it is the way in for anyone
@@ -157,18 +177,6 @@ struct VehicleDetailCard: View {
             .frame(width: 40, height: 5)
             .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
-    }
-
-    /// Reports where the short state ends: a zero height view placed after those
-    /// rows and measured in the card's own coordinates.
-    private func marker(_ update: @escaping (CGFloat) -> Void) -> some View {
-        Color.clear
-            .frame(height: 0)
-            .onGeometryChange(for: CGFloat.self) { proxy in
-                proxy.frame(in: .named(Self.space)).maxY
-            } action: { bottom in
-                update(bottom)
-            }
     }
 
     private var drag: some Gesture {

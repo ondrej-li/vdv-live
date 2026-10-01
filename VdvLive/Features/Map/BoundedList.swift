@@ -17,7 +17,9 @@ struct BoundedList<Content: View>: View {
         ScrollView {
             content()
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
-                    contentHeight = height
+                    // Only when it really moved: writing on every pass would feed
+                    // the height back into the layout it came from.
+                    if abs(contentHeight - height) > 1 { contentHeight = height }
                 }
         }
         .frame(height: min(max(contentHeight, minimumHeight), maximumHeight))

@@ -362,6 +362,9 @@ struct VehicleMapView: View {
                 onSelectVehicle: focus,
                 onDismiss: { viewModel.selectedClusterID = nil }
             )
+            // A fresh card per vehicle: the drawer opens short again, and its two
+            // heights are measured off the rows of the vehicle being shown.
+            .id(cluster.id)
             .padding(.horizontal, 16)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
