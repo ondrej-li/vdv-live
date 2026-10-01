@@ -18,6 +18,7 @@ struct VehicleMapView: View {
         locationProvider: LocationProviding = AppDependencies.live.locationProvider
     ) {
         let viewModel = VehicleMapViewModel(
+            payloadStore: VehiclePayloadFiles(),
             fetcher: fetcher,
             favouriteLinesStore: favouriteLinesStore,
             settingsStore: settingsStore,
@@ -79,10 +80,18 @@ struct VehicleMapView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
-            guard phase == .active else { return }
-            // The positions on screen are from before the app went away, so they
-            // are greyed and replaced rather than left looking current.
-            Task { await viewModel.appDidBecomeActive() }
+            switch phase {
+            case .active:
+                // The positions on screen are from before the app went away, so
+                // they are greyed and replaced rather than left looking current.
+                Task { await viewModel.appDidBecomeActive() }
+            case .background:
+                // The app is going away and may not come back, so whatever was
+                // fetched this session is the freshest the next launch can show.
+                viewModel.savePayloadForNextLaunch()
+            default:
+                break
+            }
         }
         .onDisappear { viewModel.stopAutoRefresh() }
     }
@@ -148,6 +157,20 @@ struct VehicleMapView: View {
         )
     }
 
+    /// What to say when the feed cannot be reached: whether there is anything on
+    /// screen, and how old it is.
+    private var offlineMessage: String {
+        guard let lastUpdatedAt = viewModel.lastUpdatedAt else {
+            return String(localized: "No connection to the feed.")
+        }
+        return String(
+            format: String(
+                localized: "No connection to the feed. Showing the last positions from %@."
+            ),
+            lastUpdatedAt.formatted(date: .omitted, time: .shortened)
+        )
+    }
+
     private var overlays: some View {
         VStack(spacing: 10) {
             MapHeaderBar(
@@ -161,6 +184,7 @@ struct VehicleMapView: View {
                 favouriteLineCount: viewModel.favouriteLines.count,
                 isMapViewSaved: viewModel.savedMapView != nil,
                 isFollowingCurrentLocation: viewModel.followsCurrentLocation,
+                isOffline: viewModel.isOffline,
                 onSelectFilter: { viewModel.select(filter: $0) },
                 onRefresh: { Task { await viewModel.load() } },
                 onRecenter: recenter,
@@ -175,7 +199,15 @@ struct VehicleMapView: View {
                 onShowSettings: { isShowingSettings = true }
             )
 
-            if let errorMessage = viewModel.errorMessage {
+            if viewModel.isOffline {
+                // Not being able to reach the feed is a state rather than a
+                // mistake: say what is on screen, how old it is, and offer the
+                // retry.
+                MapStatusBanner(
+                    message: offlineMessage,
+                    onAction: { Task { await viewModel.load() } }
+                )
+            } else if let errorMessage = viewModel.errorMessage {
                 MapStatusBanner(
                     message: errorMessage,
                     onAction: { Task { await viewModel.load() } }

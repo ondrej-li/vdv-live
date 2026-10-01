@@ -40,6 +40,7 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
             runStops: []
         )
         return VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: StubVehicleFetcher(vehicles: [Fixture.vehicle(id: 1, line: "764337")]),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(),
@@ -122,6 +123,7 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
             runStops: []
         )
         let other = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: StubVehicleFetcher(vehicles: [Fixture.vehicle(id: 2, line: "999999")]),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(),

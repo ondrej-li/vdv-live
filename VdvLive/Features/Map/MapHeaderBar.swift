@@ -17,6 +17,9 @@ struct MapHeaderBar: View {
     let isMapViewSaved: Bool
     /// Whether the map keeps the position in the middle as it moves.
     let isFollowingCurrentLocation: Bool
+    /// Whether the feed could not be reached: what is on screen is the last known
+    /// state rather than the current one.
+    let isOffline: Bool
     let onSelectFilter: (VehicleFilter) -> Void
     let onRefresh: () -> Void
     let onRecenter: () -> Void
@@ -136,9 +139,21 @@ struct MapHeaderBar: View {
     }
 
     private var subtitle: String {
+        let time = lastUpdatedAt?.formatted(date: .omitted, time: .standard)
+
+        // Being offline earns its own word: the count is what the feed last
+        // reported rather than what is out there now, and the age of what is on
+        // screen is the thing worth saying.
+        if isOffline {
+            var parts = [String(localized: "Offline")]
+            if let time {
+                parts.append(String(format: String(localized: "last %@"), time))
+            }
+            return parts.joined(separator: " · ")
+        }
+
         var parts = [String(format: String(localized: "%lld vehicles"), vehicleCount)]
-        if let lastUpdatedAt {
-            let time = lastUpdatedAt.formatted(date: .omitted, time: .standard)
+        if let time {
             parts.append(String(format: String(localized: "updated %@"), time))
         } else if isRefreshing {
             parts.append(String(localized: "loading"))

@@ -76,11 +76,23 @@ final class VehicleMapViewModel {
     private var autoRefreshTask: Task<Void, Never>?
     private var markerMotionTask: Task<Void, Never>?
     private let now: () -> Date
+    /// Where the last payload is kept, so that a launch with no network has
+    /// something to show.
+    private let payloadStore: VehiclePayloadStoring
+    /// The payload the last successful fetch produced, kept whole so that the
+    /// map's own counts survive a relaunch as well.
+    private var lastPayload: VehiclePayload?
+    /// Whether the last attempt to reach the feed did not make it there, which is
+    /// what the screen calls being offline.
+    private(set) var isOffline = false
+    /// Whether this session has already written the payload away.
+    private var hasSavedPayload = false
     /// Vehicle the in-flight detail request belongs to, so that a slow response
     /// for a previously selected marker cannot overwrite a newer one.
     private var detailRequestVehicleID: Int?
 
     init(
+        payloadStore: VehiclePayloadStoring,
         fetcher: VehicleFetching,
         favouriteLinesStore: FavouriteLinesPersisting = UserDefaultsFavouriteLinesStore(),
         settingsStore: AppSettingsStoring = UserDefaultsAppSettingsStore(),
@@ -92,6 +104,7 @@ final class VehicleMapViewModel {
         markerMotionFrameRate: Double = 30,
         now: @escaping () -> Date = Date.init
     ) {
+        self.payloadStore = payloadStore
         self.fetcher = fetcher
         self.favouriteLinesStore = favouriteLinesStore
         self.settingsStore = settingsStore
@@ -109,6 +122,16 @@ final class VehicleMapViewModel {
         // Restore the quiet map straight away, so that a user who only wants
         // their own lines does not have to filter again on every launch.
         self.filter = favouriteLinesStore.loadShowsOnlyFavourites() ? .favourites : .all
+        // What the last launch left behind, if anything: shown greyed until a
+        // live payload replaces it. A position from an hour ago is not the map,
+        // and the grey marker is what this app already uses to say so.
+        if let stored = payloadStore.load() {
+            lastPayload = stored.payload
+            vehicles = stored.payload.vehicles
+            lastUpdatedAt = stored.fetchedAt
+            showsStalePayload = true
+            rebuildClusters()
+        }
         restartAutoRefreshTask()
     }
 
@@ -174,11 +197,18 @@ final class VehicleMapViewModel {
             let payload = try await fetcher.fetchVehicles()
             let previous = vehicles
             vehicles = payload.vehicles
+            lastPayload = payload
             lastUpdatedAt = now()
             errorMessage = nil
+            isOffline = false
             // A payload that arrived is what makes the map current again, whatever
             // it says: everything stops being grey at once.
             showsStalePayload = false
+            // Kept for the next launch once a session - not on every refresh,
+            // which would rewrite the file every fifteen seconds.
+            if !hasSavedPayload {
+                savePayload()
+            }
             trackMissing(from: previous)
             // What is on the map, greyed vehicles included: a traction that is
             // only quiet for a payload should not make its chip vanish.
@@ -191,7 +221,37 @@ final class VehicleMapViewModel {
         } catch {
             // A failed load is not news about any vehicle, so nothing ages.
             errorMessage = Self.message(for: error)
+            // The feed being unreachable is a state rather than a mistake, and the
+            // screen says so instead of leaving the user to guess why the map
+            // stopped changing.
+            isOffline = Self.isFeedUnreachable(error)
         }
+    }
+
+    /// Whether the failure was the feed not being reachable, rather than the feed
+    /// saying something the app could not read.
+    ///
+    /// `VehicleAPIError.transport` is the request never making it to the server,
+    /// which is what a device without a network produces.
+    static func isFeedUnreachable(_ error: Error) -> Bool {
+        guard let apiError = error as? VehicleAPIError else { return false }
+        if case .transport = apiError { return true }
+        return false
+    }
+
+    /// Keeps what is on screen for the next launch.
+    ///
+    /// Called when the app goes away: whatever was fetched this session is then
+    /// the freshest thing the next launch can show.
+    func savePayloadForNextLaunch() {
+        guard hasLoadedOnce else { return }
+        savePayload()
+    }
+
+    private func savePayload() {
+        guard let lastPayload, let lastUpdatedAt else { return }
+        payloadStore.save(lastPayload, fetchedAt: lastUpdatedAt)
+        hasSavedPayload = true
     }
 
     /// Vehicles the feed is reporting, plus the ones still being held on to.

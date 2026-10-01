@@ -28,6 +28,7 @@ final class ActivationTests: XCTestCase {
         let fetcher = StubVehicleFetcher(vehicles: vehicles, error: error)
         let referenceDate = self.referenceDate
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(

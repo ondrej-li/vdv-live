@@ -34,6 +34,7 @@ final class MissingVehicleTests: XCTestCase {
     ) -> VehicleMapViewModel {
         let referenceDate = self.referenceDate
         return VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: StubVehicleFetcher(payloads: payloads),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(
@@ -125,6 +126,7 @@ final class MissingVehicleTests: XCTestCase {
         let referenceDate = self.referenceDate
         let fetcher = StubVehicleFetcher(payloads: [both, withoutSecond])
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(),

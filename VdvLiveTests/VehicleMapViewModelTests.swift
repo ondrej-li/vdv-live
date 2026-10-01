@@ -31,6 +31,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         let fetcher = StubVehicleFetcher(vehicles: vehicles, error: error)
         let referenceDate = self.referenceDate
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(
@@ -64,6 +65,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         let fetcher = StubVehicleFetcher(vehicles: vehicles)
         let referenceDate = self.referenceDate
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: store,
@@ -87,6 +89,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         )
         let referenceDate = self.referenceDate
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: StubVehicleFetcher(vehicles: vehicles),
             favouriteLinesStore: favourites,
             settingsStore: InMemoryAppSettingsStore(
@@ -816,6 +819,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         ])
         let referenceDate = self.referenceDate
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(),
@@ -871,6 +875,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         ])
         let referenceDate = self.referenceDate
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(),
