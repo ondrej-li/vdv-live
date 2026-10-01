@@ -146,7 +146,9 @@ geometry source appears.
 
 Risk: if entry names are reassigned on republication, the shipped mapping goes
 stale. The `Linky.txt` check turns that into a graceful failure (fall back to the
-map's own endpoint, offer Strategy B) rather than a wrong timetable.
+map's own endpoint, offer Strategy B) rather than a wrong timetable. The archive
+is republished a few times a week and reassigns the names when it is, so this is
+a matter of when, not if; `make mapping` re-derives it, in three seconds.
 
 **Strategy B — one regional extract, opt-in.**
 
@@ -165,7 +167,7 @@ people who want stop-level search.
 
 | Risk | Mitigation |
 |---|---|
-| Mapping stale after a republication | Verify `Linky.txt` per fetch; fall back and re-derive |
+| Mapping stale after a republication | Verify `Linky.txt` per fetch, so a stale mapping loses a timetable rather than inventing one; `make mapping` re-derives it |
 | 106 MB download on mobile data | Strategy A needs no big download; B is opt-in and Wi-Fi only |
 | Attribution obligations | Credits screen naming MD ČR / CIS JŘ and the licence, in both languages |
 | CP1250 text | `String.Encoding.windowsCP1250` is available on iOS |
@@ -224,8 +226,9 @@ Two decisions differ from the plan, both in the app's favour:
   mean reading all 13,259 entries, which means the whole 106 MB. Baking in the
   names (22 KB for the region) removes that download entirely. Every fetch still
   checks the line number in the entry's own `Linky.txt` and refuses a mismatch, so
-  a stale mapping costs a missing timetable rather than a wrong one. Refreshing a
-  stale mapping is the open problem below.
+  a stale mapping costs a missing timetable rather than a wrong one. The mapping
+  records the archive it was read from (`archive.date`), which makes a stale one
+  visible in the file, and `make mapping` refreshes it.
 - **The settings download is the central directory, about two megabytes**, not the
   archive. The directory says where every entry lives; a line is then a few
   kilobytes. The 106 MB regional extract stays available as the later, heavier
@@ -248,6 +251,10 @@ curl -O https://portal.cisjr.cz/pub/JDF/JDF.zip          # 106 MB
 ```sh
 # 13,259 entries, and line 764337 is entry 853.zip
 python3 tools/jdf_scan.py
+
+# rebuild the mapping the app ships with, from the current archive
+make mapping
+#   scanned 13180 entries of the 30092026 archive, kept 381 lines
 
 # how much of it the region needs
 python3 tools/jdf_region_size.py

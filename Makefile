@@ -60,7 +60,10 @@ LIVE_WIDTH ?= 720
 APP_SOURCES := $(shell find VdvLive -name '*.swift' | sort)
 TEST_SOURCES := $(shell find VdvLiveTests -name '*.swift' | sort)
 
-.PHONY: all build test typecheck run deploy launch iphones screenshot live icon devices open clean help
+# Where the national timetable archive comes from, for 'make mapping'.
+ARCHIVE_URL := https://portal.cisjr.cz/pub/JDF/JDF.zip
+
+.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help
 
 all: build
 
@@ -155,6 +158,15 @@ live:
 ## Regenerate the app icon PNG (only needed when the icon design changes).
 icon:
 	swift tools/generate-app-icon.swift
+
+## Refresh the shipped line to entry mapping. The archive it is read from is
+## republished a few times a week and reassigns its entry names, which leaves the
+## mapping pointing at entries that hold other lines. Commit the result.
+ARCHIVE ?= /tmp/jdf/JDF.zip
+mapping:
+	@mkdir -p $(dir $(ARCHIVE))
+	@[ -f "$(ARCHIVE)" ] || curl -sS -L -o "$(ARCHIVE)" $(ARCHIVE_URL)
+	python3 tools/jdf_lines_mapping.py "$(ARCHIVE)" VdvLive/Resources/jdf-lines.json
 
 ## List the simulators available for SIMULATOR=....
 devices:

@@ -25,6 +25,10 @@ Carthage/Build/
 # macOS
 .DS_Store
 
+# Python (the tools directory is run directly)
+__pycache__/
+*.pyc
+
 # Fastlane
 fastlane/report.xml
 fastlane/Preview.html
