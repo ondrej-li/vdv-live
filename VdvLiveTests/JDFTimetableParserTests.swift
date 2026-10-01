@@ -2,7 +2,7 @@ import XCTest
 @testable import VdvLive
 
 /// Parses the fixture taken from the official export: line 764337, the pinned
-/// line 337, whose archive entry really is `853.zip`.
+/// line 337, whose archive entry is `8354.zip` in the current publication.
 final class JDFTimetableParserTests: XCTestCase {
     private func lineFiles() throws -> [String: Data] {
         let bundle = Bundle(for: Self.self)
