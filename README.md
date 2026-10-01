@@ -122,6 +122,12 @@ the archive marks with `<`, are labelled as such instead of being given a time.
 Each line's timetable is then fetched on its own, a few kilobytes at a time, and
 kept on disk, so it works offline afterwards. `docs/timetables.md` has the whole
 investigation, including why the 106 MB archive is never downloaded.
+- **Acknowledgements, and who to complain to.** The same screen names every source
+the app depends on - the region's live feed, the Ministry of Transport's timetable
+dataset with its licence and database right, and Apple Maps - and says who wrote
+the app, with the address to send feedback, bug reports and feature requests to.
+It is all static text, so it reads offline, and the address opens a message with
+the subject already filled in.
 - **Honest failure handling.** Errors keep the last good data on screen and show
   a banner with a retry button.
 

@@ -89,6 +89,15 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Acknowledgements"), "Poděkování")
         XCTAssertEqual(try czechString("Where the data comes from"), "Odkud pocházejí data")
         XCTAssertEqual(try czechString("Live vehicle positions"), "Polohy vozidel v reálném čase")
+        XCTAssertEqual(try czechString("The app"), "Aplikace")
+        XCTAssertEqual(
+            try czechString("VDV Live is written and maintained by Ondrej Linek."),
+            "VDV Live vyvíjí a spravuje Ondrej Linek."
+        )
+        XCTAssertEqual(
+            try czechString("Feedback, bug reports and feature requests are welcome there."),
+            "Zpětná vazba, hlášení chyb a nápady na nové funkce jsou vítány právě tam."
+        )
     }
 
     func testTranslatesTheBannersIntoCzech() throws {
