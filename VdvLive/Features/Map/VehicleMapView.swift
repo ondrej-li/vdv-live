@@ -5,6 +5,7 @@ import SwiftUI
 struct VehicleMapView: View {
     @State private var viewModel: VehicleMapViewModel
     @State private var camera: MapCameraPosition
+    @Environment(\.scenePhase) private var scenePhase
     @State private var isShowingFavourites = false
     @State private var isShowingSettings = false
     /// Size of the map, needed to turn a zoom level into a distance.
@@ -76,6 +77,12 @@ struct VehicleMapView: View {
             withAnimation(.easeInOut(duration: 0.5)) {
                 camera = Self.followingCamera
             }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            // The positions on screen are from before the app went away, so they
+            // are greyed and replaced rather than left looking current.
+            Task { await viewModel.appDidBecomeActive() }
         }
         .onDisappear { viewModel.stopAutoRefresh() }
     }
