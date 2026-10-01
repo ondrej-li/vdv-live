@@ -64,7 +64,6 @@ final class LocalizationTests: XCTestCase {
         )
         XCTAssertEqual(try czechString("Barrier-free"), "Bezbariérový")
         XCTAssertEqual(try czechString("Line %@"), "Linka %@")
-        XCTAssertEqual(try czechString("operator %@"), "dopravce %@")
         XCTAssertEqual(try czechString("delay %@"), "zpoždění %@")
     }
 
@@ -190,17 +189,6 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(
             String(format: try englishString("Pinned (%lld)"), 2),
             "Pinned (2)"
-        )
-    }
-
-    func testOperatorSuffixIsTranslated() throws {
-        XCTAssertEqual(
-            String(format: try czechString("%@ · operator %@"), "Autobus", "764"),
-            "Autobus · dopravce 764"
-        )
-        XCTAssertEqual(
-            String(format: try englishString("%@ · operator %@"), "Bus", "764"),
-            "Bus · operator 764"
         )
     }
 

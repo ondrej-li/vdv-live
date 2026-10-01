@@ -153,8 +153,7 @@ private struct LineSummaryRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(summary.line)
-                .font(.subheadline.weight(.bold))
+            lineLabel
                 .monospacedDigit()
                 .foregroundStyle(summary.isRunning ? Color.primary : Color.secondary)
                 .padding(.horizontal, 8)
@@ -191,5 +190,16 @@ private struct LineSummaryRow: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onShow)
+    }
+
+    /// The line the way it reads on the vehicle: the licence area, then the number.
+    ///
+    /// The area is what tells two lines with the same number apart, so it belongs in
+    /// front of the number rather than in the caption below the count - smaller, the
+    /// way it is printed next to the line number on a bus.
+    private var lineLabel: Text {
+        let number = Text(summary.line).font(.subheadline.weight(.bold))
+        guard let licenceArea = summary.operatorCode else { return number }
+        return Text(licenceArea).font(.caption2.weight(.semibold)) + Text(" ") + number
     }
 }

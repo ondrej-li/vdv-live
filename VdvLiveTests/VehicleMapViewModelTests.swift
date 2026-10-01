@@ -365,10 +365,10 @@ final class VehicleMapViewModelTests: XCTestCase {
 
         await viewModel.load()
 
-        XCTAssertEqual(viewModel.runningLines.map(\.line), ["420", "334"])
-        XCTAssertEqual(viewModel.runningLines.map(\.vehicleCount), [2, 1])
-        XCTAssertEqual(viewModel.runningLines.first?.traction, .bus)
-        XCTAssertEqual(viewModel.runningLines.last?.traction, .train)
+        XCTAssertEqual(viewModel.runningLines.map(\.line), ["334", "420"])
+        XCTAssertEqual(viewModel.runningLines.map(\.vehicleCount), [1, 2])
+        XCTAssertEqual(viewModel.runningLines.first?.traction, .train)
+        XCTAssertEqual(viewModel.runningLines.last?.traction, .bus)
         XCTAssertEqual(
             viewModel.summary(forLine: "841334").vehicleCountText,
             String(format: String(localized: "%lld vehicles"), 1)
@@ -534,13 +534,30 @@ final class VehicleMapViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.runningLines.first?.operatorCode, "764")
         XCTAssertEqual(viewModel.runningLines.last?.operatorCode, "764")
         XCTAssertEqual(
-            viewModel.runningLines.first?.descriptionText,
-            String(
-                format: String(localized: "%@ · operator %@"),
-                String(localized: "Bus"),
-                "764"
-            )
+            viewModel.runningLines.last?.descriptionText,
+            String(localized: "Bus")
         )
+    }
+
+    func testOrdersRunningLinesByNumberNotByHowBusyTheyAre() async {
+        // 420 has the most vehicles, and comes second anyway: the list is read by
+        // line number, so it does not reshuffle as vehicles come and go.
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "420", latitude: 49.3960, longitude: 15.5910),
+            Fixture.vehicle(id: 2, line: "420", latitude: 49.3961, longitude: 15.5911),
+            Fixture.vehicle(
+                id: 3,
+                line: "334",
+                latitude: 49.6070,
+                longitude: 15.5810,
+                traction: .train
+            )
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles)
+
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.runningLines.map(\.line), ["334", "420"])
     }
 
     func testFindsAVehicleOfAPinnedLineNumber() async {
