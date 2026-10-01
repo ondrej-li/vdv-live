@@ -246,11 +246,24 @@ struct VehicleMapView: View {
             onSetAutoRefreshEnabled: { viewModel.setAutoRefresh(enabled: $0) },
             onSetAutoRefreshInterval: { viewModel.setAutoRefreshInterval($0) },
             onSetLanguage: { viewModel.setLanguage($0) },
+            onSetClusterRadius: { viewModel.setClusterRadius($0) },
             onSetShowsCurrentLocation: { viewModel.setShowsCurrentLocation($0) },
             onSetFollowsCurrentLocation: { viewModel.setFollowsCurrentLocation($0) },
             onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
             onClearSavedMapView: { viewModel.setSavedMapView(nil) },
-            onSetClusterRadius: { viewModel.setClusterRadius($0) },
+            favouriteLines: viewModel.favouriteLines,
+            runningLines: viewModel.runningLines,
+            summaryForLine: { viewModel.summary(forLine: $0) },
+            showsOnlyPinned: viewModel.showsOnlyPinnedLines,
+            onSetShowsOnlyPinned: { viewModel.setShowsOnlyPinnedLines($0) },
+            onToggleLine: { viewModel.toggleFavourite(line: $0) },
+            onPinLine: { viewModel.pin(line: $0) },
+            onShowLine: { line in
+                // The settings screen has to get out of the way first, the same
+                // way the pinned lines sheet does.
+                isShowingSettings = false
+                focus(onLine: line)
+            },
             isTimetableReady: viewModel.timetables.isReady,
             isDownloadingTimetables: viewModel.timetables.isDownloading,
             downloadedAt: viewModel.timetables.downloadedAt,
