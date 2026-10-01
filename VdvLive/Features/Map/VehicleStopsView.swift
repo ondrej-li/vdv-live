@@ -10,6 +10,8 @@ struct VehicleStopsView: View {
     let run: ScheduledRun?
     /// Stop the feed last saw the vehicle at, highlighted in the list.
     let reportedStopName: String?
+    /// Stop the vehicle is heading for, marked as well as the current one.
+    let nextStopName: String?
     /// Minutes late, or `nil` when the feed has no delay information.
     let delayMinutes: Int?
 
@@ -18,12 +20,17 @@ struct VehicleStopsView: View {
     var body: some View {
         if let run {
             DisclosureGroup(isExpanded: $isExpanded) {
-                VStack(alignment: .leading, spacing: 3) {
-                    ForEach(run.calls) { call in
-                        row(for: call, in: run)
+                // The list is as long as the run is: it scrolls within a fixed
+                // height so the map behind the card stays visible while it is open.
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 3) {
+                        ForEach(run.calls) { call in
+                            row(for: call, in: run)
+                        }
                     }
+                    .padding(.top, 4)
                 }
-                .padding(.top, 4)
+                .frame(maxHeight: 240)
             } label: {
                 label(for: run)
             }
@@ -49,6 +56,8 @@ struct VehicleStopsView: View {
 
     private func row(for call: ScheduledCall, in run: ScheduledRun) -> some View {
         let isCurrent = currentCall(in: run)?.stopID == call.stopID
+        let isNext = !isCurrent && nextCall(in: run)?.stopID == call.stopID
+        let weight: Font.Weight = isCurrent ? .semibold : (isNext ? .medium : .regular)
         return HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(timeText(for: call))
                 .font(.caption.monospacedDigit())
@@ -66,7 +75,7 @@ struct VehicleStopsView: View {
 
             Text(call.stopName)
                 .font(.caption)
-                .fontWeight(isCurrent ? .semibold : .regular)
+                .fontWeight(weight)
                 .lineLimit(1)
 
             Spacer(minLength: 6)
@@ -80,7 +89,9 @@ struct VehicleStopsView: View {
         .padding(.vertical, 2)
         .padding(.horizontal, 4)
         .background(
-            isCurrent ? Color.accentColor.opacity(0.12) : Color.clear,
+            isCurrent
+                ? Color.accentColor.opacity(0.14)
+                : (isNext ? Color.accentColor.opacity(0.07) : Color.clear),
             in: RoundedRectangle(cornerRadius: 5, style: .continuous)
         )
         .accessibilityElement(children: .combine)
@@ -106,6 +117,12 @@ struct VehicleStopsView: View {
     private func currentCall(in run: ScheduledRun) -> ScheduledCall? {
         guard let reportedStopName else { return nil }
         return run.call(matchingStopName: reportedStopName)
+    }
+
+    /// The stop after the current one, which the feed's own popup names.
+    private func nextCall(in run: ScheduledRun) -> ScheduledCall? {
+        guard let nextStopName else { return nil }
+        return run.call(matchingStopName: nextStopName)
     }
 
     private func delayText(_ minutes: Int) -> String {

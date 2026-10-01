@@ -67,7 +67,7 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
         XCTAssertFalse(viewModel.isLoadingTimetable)
     }
 
-    func testSaysNothingUntilTheIndexIsDownloaded() async throws {
+    func testSaysTheTimetableIsNotDownloadedYet() async throws {
         let store = try await makeStore(downloaded: false)
         let viewModel = makeViewModel(store: store)
         await viewModel.load()
@@ -76,7 +76,9 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
 
         XCTAssertNil(viewModel.lineTimetable)
         XCTAssertFalse(viewModel.isLoadingTimetable)
-        XCTAssertNil(viewModel.timetableError)
+        // The card cannot draw a timetable, so it has to say why. Being silent here
+        // is what made the feature look as though it did not exist.
+        XCTAssertEqual(viewModel.timetableError, TimetableError.notDownloaded.errorDescription)
     }
 
     func testPicksTheTimetableUpAfterTheIndexArrives() async throws {
@@ -136,7 +138,10 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
         await other.loadDetail(for: Fixture.vehicle(id: 2, line: "999999"))
 
         XCTAssertNil(other.lineTimetable)
-        XCTAssertNil(other.timetableError)
+        XCTAssertEqual(
+            other.timetableError,
+            String(localized: "Timetable for this service is not available.")
+        )
     }
 
     func testReportsAnArchiveFailure() async throws {
@@ -147,13 +152,15 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
         let viewModel = makeViewModel(store: store)
         await viewModel.load()
 
-        // No index: the card simply has nothing to add, and says nothing.
+        // No index: the card has nothing to add, and says so rather than nothing.
         await viewModel.loadDetail(for: Fixture.vehicle(id: 1, line: "764337"))
         XCTAssertNil(viewModel.lineTimetable)
-        XCTAssertNil(viewModel.timetableError)
+        XCTAssertEqual(viewModel.timetableError, TimetableError.notDownloaded.errorDescription)
 
-        // With an index but an unreachable archive, the failure is reported.
+        // A download that fails leaves no index, so the card keeps saying that,
+        // and the store's own message is what the settings screen reports.
         await store.downloadIndex()
-        XCTAssertNil(viewModel.timetableError)
+        XCTAssertNotNil(store.errorMessage)
+        XCTAssertEqual(viewModel.timetableError, TimetableError.notDownloaded.errorDescription)
     }
 }
