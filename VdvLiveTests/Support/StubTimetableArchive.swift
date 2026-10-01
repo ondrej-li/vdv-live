@@ -7,6 +7,14 @@ struct StubTimetableArchive: TimetableArchiveReading {
     let archive: Data
     /// Entry names that should fail, or `*` for everything.
     var failures: Set<String> = []
+    /// What the server offers when asked which archive it has.
+    var serverVersion = ArchiveVersion(
+        etag: "\"a3306dce1451dd1:0\"",
+        lastModified: Date(timeIntervalSince1970: 1_700_000_000),
+        size: 106_230_086
+    )
+    /// True when the server cannot be asked at all, while the index still reads.
+    var versionFails = false
 
     func entries() async throws -> [ZipArchive.Entry] {
         if failures.contains("*") { throw TimetableError.transport("offline") }
@@ -18,6 +26,13 @@ struct StubTimetableArchive: TimetableArchiveReading {
             throw TimetableError.transport("offline")
         }
         return try ZipArchive.contents(of: entry, in: archive)
+    }
+
+    func version() async throws -> ArchiveVersion {
+        if versionFails || failures.contains("*") {
+            throw TimetableError.transport("offline")
+        }
+        return serverVersion
     }
 }
 

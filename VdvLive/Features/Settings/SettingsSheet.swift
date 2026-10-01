@@ -31,10 +31,14 @@ struct SettingsSheet: View {
     /// State of the official timetable index.
     let isTimetableReady: Bool
     let isDownloadingTimetables: Bool
+    let isCheckingTimetables: Bool
     let downloadedAt: Date?
+    let archivePublishedAt: Date?
+    let timetableUpdate: TimetableUpdate
     let timetableErrorMessage: String?
     let knownLineCount: Int
     let onDownloadTimetables: () -> Void
+    let onCheckTimetables: () -> Void
     let onForgetTimetables: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -88,10 +92,14 @@ struct SettingsSheet: View {
                         TimetablesView(
                             isReady: isTimetableReady,
                             isDownloading: isDownloadingTimetables,
+                            isCheckingForUpdates: isCheckingTimetables,
                             downloadedAt: downloadedAt,
+                            archivePublishedAt: archivePublishedAt,
+                            update: timetableUpdate,
                             errorMessage: timetableErrorMessage,
                             knownLineCount: knownLineCount,
                             onDownload: onDownloadTimetables,
+                            onCheckForUpdates: onCheckTimetables,
                             onForget: onForgetTimetables
                         )
                     } label: {

@@ -266,7 +266,10 @@ struct VehicleMapView: View {
             },
             isTimetableReady: viewModel.timetables.isReady,
             isDownloadingTimetables: viewModel.timetables.isDownloading,
+            isCheckingTimetables: viewModel.timetables.isCheckingForUpdates,
             downloadedAt: viewModel.timetables.downloadedAt,
+            archivePublishedAt: viewModel.timetables.archivePublishedAt,
+            timetableUpdate: viewModel.timetables.update,
             timetableErrorMessage: viewModel.timetables.errorMessage,
             knownLineCount: viewModel.timetables.knownLineCount,
             onDownloadTimetables: {
@@ -276,6 +279,9 @@ struct VehicleMapView: View {
                     // away rather than at the next refresh.
                     await viewModel.reloadTimetableForSelection()
                 }
+            },
+            onCheckTimetables: {
+                Task { await viewModel.timetables.checkForUpdates() }
             },
             onForgetTimetables: { viewModel.forgetTimetables() }
         )

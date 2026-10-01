@@ -91,6 +91,23 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Live vehicle positions"), "Polohy vozidel v reálném čase")
     }
 
+    func testTranslatesTheTimetableScreenIntoCzech() throws {
+        XCTAssertEqual(try czechString("Timetables"), "Jízdní řády")
+        XCTAssertEqual(try czechString("Download timetables"), "Stáhnout jízdní řády")
+        XCTAssertEqual(try czechString("Download again"), "Stáhnout znovu")
+        XCTAssertEqual(try czechString("Published"), "Zveřejněno")
+        XCTAssertEqual(try czechString("Check for updates"), "Zkontrolovat aktualizace")
+        XCTAssertEqual(try czechString("Checking for updates…"), "Kontroluji aktualizace…")
+        XCTAssertEqual(try czechString("Update now"), "Aktualizovat")
+        XCTAssertEqual(try czechString("Up to date."), "Aktuální.")
+        XCTAssertEqual(try czechString("A newer archive is published."), "Je zveřejněn novější archiv.")
+        XCTAssertEqual(
+            try czechString("This index does not record which archive it came from."),
+            "Index neuvádí, ze kterého archivu pochází."
+        )
+        XCTAssertEqual(try czechString("Remove"), "Odebrat")
+    }
+
     func testTranslatesTheBannersIntoCzech() throws {
         XCTAssertEqual(
             try czechString("The feed is not reporting any vehicles at the moment."),
