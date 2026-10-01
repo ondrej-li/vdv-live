@@ -134,6 +134,12 @@ dataset with its licence and database right, and Apple Maps - and says who wrote
 the app, with the address to send feedback, bug reports and feature requests to.
 It is all static text, so it reads offline, and the address opens a message with
 the subject already filled in.
+- **Offline, and honest about it.** Losing the network does not empty the map. The
+  last payload is kept on disk and comes back on the next launch, drawn grey until
+  a live payload replaces it, because a position from an hour ago is not the map.
+  The header says `Offline · last 12:34` in place of the vehicle count, and the
+  banner says what is on screen and offers a retry. Nothing else is kept, and
+  `docs/offline.md` records what and why.
 - **Honest failure handling.** Errors keep the last good data on screen and show
   a banner with a retry button.
 
@@ -268,6 +274,10 @@ a network.
 - the update check: the one byte range request and the date it comes back with,
   a server that ignores the range, the ETag before the date before the size, and
   an index that predates the version being recorded
+- offline: what the last launch left is drawn grey rather than as current, the
+  mark appears when the feed cannot be reached and goes when it answers again, a
+  corrupt payload file is ignored, and the payload is written once a session and
+  again when the app goes away
 - the string catalogue: both languages ship, the Czech translations are the
   expected ones, and counted strings use Czech plural forms (`1 vozidlo`,
   `3 vozidla`, `12 vozidel`)

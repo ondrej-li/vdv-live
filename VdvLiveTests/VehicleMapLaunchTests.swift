@@ -32,6 +32,7 @@ final class VehicleMapLaunchTests: XCTestCase {
         let store = InMemoryAppSettingsStore(settings: settings)
         let location = StubLocationProvider(coordinate: coordinate)
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: StubVehicleFetcher(),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: store,

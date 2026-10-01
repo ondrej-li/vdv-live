@@ -2,7 +2,7 @@ import CoreLocation
 import Foundation
 
 /// A single vehicle position as published by the regional feed.
-struct Vehicle: Identifiable, Hashable, Sendable {
+struct Vehicle: Identifiable, Codable, Hashable, Sendable {
     /// Server side identifier, unique within one response. Trains and vehicles
     /// that are not part of the public timetable carry negative ids.
     let id: Int

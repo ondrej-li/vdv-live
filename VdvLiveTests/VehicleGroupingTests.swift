@@ -22,6 +22,7 @@ final class VehicleGroupingTests: XCTestCase {
     ) -> (viewModel: VehicleMapViewModel, store: InMemoryAppSettingsStore) {
         let store = InMemoryAppSettingsStore(settings: settings)
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: StubVehicleFetcher(vehicles: vehicles),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: store,
@@ -129,6 +130,7 @@ final class VehicleGroupingTests: XCTestCase {
             )
         ])
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(settings: settings(clusterRadiusMetres: 100)),
@@ -173,6 +175,7 @@ final class VehicleGroupingTests: XCTestCase {
             )
         ])
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(settings: settings(clusterRadiusMetres: 100)),
@@ -213,6 +216,7 @@ final class VehicleGroupingTests: XCTestCase {
             )
         ])
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(settings: settings(clusterRadiusMetres: 0)),
@@ -238,6 +242,7 @@ final class VehicleGroupingTests: XCTestCase {
             VehiclePayload(vehicles: [sampleVehicles[2]], skippedRecordCount: 0, unlocatableRecordCount: 0)
         ])
         let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
             fetcher: fetcher,
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(settings: settings(clusterRadiusMetres: 0)),

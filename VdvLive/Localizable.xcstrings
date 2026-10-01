@@ -141,6 +141,46 @@
         }
       }
     },
+    "Offline": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bez připojení"
+          }
+        }
+      }
+    },
+    "last %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "naposledy %@"
+          }
+        }
+      }
+    },
+    "No connection to the feed.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Není připojení ke zdroji dat."
+          }
+        }
+      }
+    },
+    "No connection to the feed. Showing the last positions from %@.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Není připojení ke zdroji dat. Zobrazuji poslední polohy z %@."
+          }
+        }
+      }
+    },
     "loading": {
       "localizations": {
         "cs": {

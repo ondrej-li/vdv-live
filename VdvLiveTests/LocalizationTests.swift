@@ -117,6 +117,16 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Remove"), "Odebrat")
     }
 
+    func testTranslatesTheOfflineStateIntoCzech() throws {
+        XCTAssertEqual(try czechString("Offline"), "Bez připojení")
+        XCTAssertEqual(try czechString("last %@"), "naposledy %@")
+        XCTAssertEqual(try czechString("No connection to the feed."), "Není připojení ke zdroji dat.")
+        XCTAssertEqual(
+            try czechString("No connection to the feed. Showing the last positions from %@."),
+            "Není připojení ke zdroji dat. Zobrazuji poslední polohy z %@."
+        )
+    }
+
     func testTranslatesTheBannersIntoCzech() throws {
         XCTAssertEqual(
             try czechString("The feed is not reporting any vehicles at the moment."),

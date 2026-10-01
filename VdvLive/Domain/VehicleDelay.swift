@@ -5,7 +5,7 @@ import Foundation
 /// The feed uses `Int32.min` (`-2147483648`) as the value for "not known",
 /// which is how about a third of the records arrive. Negative values are
 /// legitimate and mean the vehicle is ahead of schedule.
-enum VehicleDelay: Hashable, Sendable {
+enum VehicleDelay: Codable, Hashable, Sendable {
     case unknown
     case minutes(Int)
 
