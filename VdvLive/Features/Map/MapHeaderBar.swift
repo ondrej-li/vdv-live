@@ -30,10 +30,6 @@ struct MapHeaderBar: View {
             HStack(spacing: 10) {
                 title
                 Spacer(minLength: 8)
-                if isRefreshing {
-                    ProgressView()
-                        .controlSize(.small)
-                }
                 iconButton(
                     systemName: favouriteLineCount == 0 ? "star" : "star.fill",
                     label: favouriteLineCount == 0
@@ -87,11 +83,20 @@ struct MapHeaderBar: View {
             }
 
             // The status line gets the whole card to itself: squeezed in beside
-            // the buttons it wrapped onto four lines once there were seven.
-            Text(subtitle)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            // the buttons it wrapped onto four lines once there were seven. The
+            // refresh spinner lives here too, where there is room for it - in
+            // the button row it pushed the name into an ellipsis.
+            HStack(spacing: 6) {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+
+                if isRefreshing {
+                    ProgressView()
+                        .controlSize(.small)
+                }
+            }
 
             filterChips
         }

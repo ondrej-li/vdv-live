@@ -209,9 +209,9 @@ final class AppSettingsTests: XCTestCase {
     }
 
     func testRadiusLabelsReadAsDistances() {
-        XCTAssertEqual(SettingsSheet.radiusLabel(0), String(localized: "Off"))
-        XCTAssertEqual(SettingsSheet.radiusLabel(250), "250 m")
-        XCTAssertEqual(SettingsSheet.radiusLabel(1_000), "1 km")
+        XCTAssertEqual(PreferencesView.radiusLabel(0), String(localized: "Off"))
+        XCTAssertEqual(PreferencesView.radiusLabel(250), "250 m")
+        XCTAssertEqual(PreferencesView.radiusLabel(1_000), "1 km")
     }
 
     func testThePositionIsShownUnlessItIsSwitchedOff() {
@@ -270,10 +270,10 @@ final class AppSettingsTests: XCTestCase {
     // MARK: - Settings screen labels
 
     func testIntervalLabelsUseSecondsUpToAMinute() {
-        XCTAssertEqual(SettingsSheet.intervalLabel(5), "5 s")
-        XCTAssertEqual(SettingsSheet.intervalLabel(59), "59 s")
-        XCTAssertEqual(SettingsSheet.intervalLabel(60), "1 min")
-        XCTAssertEqual(SettingsSheet.intervalLabel(120), "2 min")
+        XCTAssertEqual(PreferencesView.intervalLabel(5), "5 s")
+        XCTAssertEqual(PreferencesView.intervalLabel(59), "59 s")
+        XCTAssertEqual(PreferencesView.intervalLabel(60), "1 min")
+        XCTAssertEqual(PreferencesView.intervalLabel(120), "2 min")
     }
 
     // MARK: - Refresh progress line

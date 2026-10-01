@@ -1031,6 +1031,116 @@
         }
       }
     },
+    "Preferences": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Předvolby"
+          }
+        }
+      }
+    },
+    "Acknowledgements": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Poděkování"
+          }
+        }
+      }
+    },
+    "Refresh, language and the map": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualizace, jazyk a mapa"
+          }
+        }
+      }
+    },
+    "Pin and unpin bus lines": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidávání a odebírání linek"
+          }
+        }
+      }
+    },
+    "Download or remove the official timetables": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stažení a odebrání oficiálních jízdních řádů"
+          }
+        }
+      }
+    },
+    "Where the data comes from": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odkud pocházejí data"
+          }
+        }
+      }
+    },
+    "Live vehicle positions": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polohy vozidel v reálném čase"
+          }
+        }
+      }
+    },
+    "Positions come from the regional map of the Vysočina Region at mapavdv.kr-vysocina.cz. This app is not affiliated with the region or with the transport operators.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Polohy pocházejí z regionální mapy Kraje Vysočina na mapavdv.kr-vysocina.cz. Tato aplikace není nijak spojena s krajem ani s dopravci."
+          }
+        }
+      }
+    },
+    "Maps": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapy"
+          }
+        }
+      }
+    },
+    "The base map and its tiles are Apple Maps, drawn through MapKit.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podkladová mapa a její dlaždice jsou Apple Maps, vykreslované přes MapKit."
+          }
+        }
+      }
+    },
+    "Timetables come from “Jízdní řády veřejné linkové dopravy”, published by the Ministry of Transport of the Czech Republic (IČO 66003008) on the CIS JŘ portal at portal.cisjr.cz, under the Creative Commons Attribution 4.0 licence (creativecommons.org/licenses/by/4.0/) and the sui generis database right.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jízdní řády pocházejí z datové sady „Jízdní řády veřejné linkové dopravy“, kterou vydává Ministerstvo dopravy ČR (IČO 66003008) na portálu CIS JŘ na portal.cisjr.cz, pod licencí Creative Commons Attribution 4.0 (creativecommons.org/licenses/by/4.0/) a s právy sui generis k databázi."
+          }
+        }
+      }
+    },
     "There is no internet connection.": {
       "localizations": {
         "cs": {
