@@ -120,8 +120,14 @@ times they are actually expected - the published time moved by the delay the fee
 reports - and marks the stop the vehicle was last seen at. Request stops, which
 the archive marks with `<`, are labelled as such instead of being given a time.
 Each line's timetable is then fetched on its own, a few kilobytes at a time, and
-kept on disk, so it works offline afterwards. `docs/timetables.md` has the whole
-investigation, including why the 106 MB archive is never downloaded.
+kept on disk, so it works offline afterwards. The Ministry rebuilds the archive
+three times a week, so the screen also manages it: **check for updates** asks the
+archive which version it is offering - one range request, about a kilobyte, and
+no download - and says whether the index in hand is still the published one,
+along with the date it was published. When it is not, **update** reads the index
+again. **Remove** deletes it, and with it the record of which archive it came
+from. `docs/timetables.md` has the whole investigation, including why the 106 MB
+archive is never downloaded.
 - **Acknowledgements, and who to complain to.** The same screen names every source
 the app depends on - the region's live feed, the Ministry of Transport's timetable
 dataset with its licence and database right, and Apple Maps - and says who wrote
@@ -259,6 +265,9 @@ a network.
   central directory from a range request, extracting (and nesting) entries,
   parsing a line's JDF files, request stops, and the line-to-entry mapping being
   verified before a timetable is trusted
+- the update check: the one byte range request and the date it comes back with,
+  a server that ignores the range, the ETag before the date before the size, and
+  an index that predates the version being recorded
 - the string catalogue: both languages ship, the Czech translations are the
   expected ones, and counted strings use Czech plural forms (`1 vozidlo`,
   `3 vozidla`, `12 vozidel`)

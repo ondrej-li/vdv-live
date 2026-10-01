@@ -38,6 +38,14 @@ live sources on 2026-09-30; the commands to reproduce each claim are at the end.
 | | attribution is required and wholesale re-publication is not on. |
 | Server | supports ranges: `206`, `accept-ranges: bytes`, `ETag`, `Last-Modified` |
 
+The server also answers a `HEAD`, and both it and a **one byte range** carry those
+three identifiers, which is what the app's "check for updates" is built on: asking
+whether a downloaded index is still the published one costs about a kilobyte
+rather than a re-download. Measured again on 2026-10-01 the archive was
+**106,230,086 bytes** with `last-modified: Wed, 30 Sep 2026 19:49:29 GMT` and
+`etag: "a3306dce1451dd1:0"` — the size had gone **down** since the 2026-09-30
+figures above, so the date and the ETag identify a publication, not the size.
+
 Also published, all worse for a phone:
 
 - `pub/netex/NeTEx_VerejnaLinkovaDoprava.zip` — **200 MB**, XML, same content.
