@@ -67,8 +67,8 @@ final class VehicleMapViewModel {
     /// the map at all. Kept next to the region rather than recomputed so that a
     /// pan which does not change the box does not rebuild every marker.
     private var visibleBounds = RegionOfInterest.BoundingBox(region: RegionOfInterest.vysocina.region)
-    /// Viewport the map is showing, so that the lock button can remember exactly
-    /// what is on screen rather than guessing from the zoom level alone.
+    /// Viewport the map is showing, so that the bookmark button can remember
+    /// exactly what is on screen rather than guessing from the zoom level alone.
     private var visibleRegion: MKCoordinateRegion = RegionOfInterest.vysocina.region
     /// True while what is on the map is known to be out of date: the app has been
     /// away, so every marker is drawn grey until a payload replaces it.
@@ -226,8 +226,8 @@ final class VehicleMapViewModel {
 
     /// Called when the map settles after a pan or a zoom.
     func updateVisibleRegion(_ region: MKCoordinateRegion) {
-        // Kept whole, not just as a span: the lock button saves the viewport the
-        // user is looking at, which is a centre as well as a zoom level.
+        // Kept whole, not just as a span: the bookmark button saves the viewport
+        // the user is looking at, which is a centre as well as a zoom level.
         visibleRegion = region
         // Kept before the grid check: the legend needs the new zoom level even
         // when the markers end up grouped exactly as they were.

@@ -8,11 +8,11 @@ struct AppSettings: Equatable, Sendable {
     var autoRefreshEnabled: Bool
     var language: AppLanguage
     /// Whether the map opens on the current location when it starts, unless a
-    /// viewport has been locked.
+    /// viewport has been saved.
     var startsAtCurrentLocation: Bool = true
-    /// Viewport the user locked with the lock button, if any.
+    /// Viewport the user saved with the bookmark button, if any.
     ///
-    /// It outranks the current location: locking one is a deliberate choice, and
+    /// It outranks the current location: saving one is a deliberate choice, and
     /// the location is only ever a guess.
     var savedMapView: SavedMapView?
     /// Distance within which buses are drawn as one marker.

@@ -1,8 +1,8 @@
 import CoreLocation
 import MapKit
 
-/// The viewport the user locked with the lock button: where the map should open
-/// next time, and how far in it was zoomed.
+/// The viewport the user saved with the bookmark button: where the map should
+/// open next time, and how far in it was zoomed.
 ///
 /// Stored as four plain numbers rather than a `Data` blob, so that the value in
 /// the user defaults stays readable and a partially written value can be

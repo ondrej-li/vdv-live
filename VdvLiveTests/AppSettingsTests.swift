@@ -109,7 +109,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertNil(AppSettings.default.savedMapView)
     }
 
-    func testStoreRoundTripsTheLockedViewport() throws {
+    func testStoreRoundTripsTheSavedViewport() throws {
         let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
         var settings = AppSettings.default
         settings.savedMapView = try XCTUnwrap(

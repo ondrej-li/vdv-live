@@ -3,7 +3,7 @@ import MapKit
 import XCTest
 @testable import VdvLive
 
-/// Which viewport the map opens on, and what the lock button remembers.
+/// Which viewport the map opens on, and what the bookmark button remembers.
 @MainActor
 final class VehicleMapLaunchTests: XCTestCase {
     private let jihlava = CLLocationCoordinate2D(latitude: 49.3960, longitude: 15.5910)

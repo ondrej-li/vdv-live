@@ -72,7 +72,7 @@ struct PreferencesView: View {
             } header: {
                 Text("My location")
             } footer: {
-                Text("The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the lock button remembers the view you are looking at instead.")
+                Text("The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the bookmark button remembers the view you are looking at instead.")
             }
         }
         .navigationTitle("Preferences")
