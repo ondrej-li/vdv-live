@@ -31,10 +31,10 @@ draws them on a map that is framed - and locked - to the region.
   seen from far out. The position is read once per launch, never leaves the
   device, and is only used when it falls inside the region the feed covers: a map
   of somewhere with no vehicles on it would be worse than the region view. The
-  lock button in the header does the opposite - it remembers the viewport you are
-  looking at, zoom included, and opens there from then on, which suits a commute
-  you check every morning. Both are in the settings, and pressing the lock again
-  forgets the viewport it saved.
+  bookmark button in the header does the opposite - it remembers the viewport you
+  are looking at, zoom included, and opens there from then on, which suits a
+  commute you check every morning. Both are in the settings, and pressing the
+  bookmark again forgets the viewport it saved.
 - **Distance legend.** A small scale bar under the header says what a stretch of
   the map is worth ("10 km"), so a marker a couple of centimetres away can be
   read as a real distance. It follows the zoom level and rounds to numbers worth

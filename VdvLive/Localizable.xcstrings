@@ -791,12 +791,12 @@
         }
       }
     },
-    "The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the lock button remembers the view you are looking at instead.": {
+    "The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the bookmark button remembers the view you are looking at instead.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Poloha se načítá v zařízení a nikam se neposílá. Modrá tečka je systémová; sledování drží mapu vycentrovanou na poloze, když se pohybujete, a tlačítkem se zámkem si místo toho uložíte právě zobrazený výřez."
+            "value": "Poloha se načítá v zařízení a nikam se neposílá. Modrá tečka je systémová; sledování drží mapu vycentrovanou na poloze, když se pohybujete, a tlačítkem se záložkou si místo toho uložíte právě zobrazený výřez."
           }
         }
       }

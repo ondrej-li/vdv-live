@@ -3,7 +3,7 @@ import MapKit
 import XCTest
 @testable import VdvLive
 
-/// The viewport the lock button remembers, and what it refuses to remember.
+/// The viewport the bookmark button remembers, and what it refuses to remember.
 final class SavedMapViewTests: XCTestCase {
     private var jihlavaRegion: MKCoordinateRegion {
         MKCoordinateRegion(

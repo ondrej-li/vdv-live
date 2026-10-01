@@ -12,7 +12,8 @@ struct MapHeaderBar: View {
     /// Seconds between automatic refreshes, `nil` while automatic refresh is off.
     let refreshInterval: TimeInterval?
     let favouriteLineCount: Int
-    /// Whether the map opens at a viewport the user locked with the lock button.
+    /// Whether the map opens at a viewport the user saved with the bookmark
+    /// button.
     let isMapViewSaved: Bool
     /// Whether the map keeps the position in the middle as it moves.
     let isFollowingCurrentLocation: Bool
@@ -68,7 +69,7 @@ struct MapHeaderBar: View {
                     action: onToggleFollowCurrentLocation
                 )
                 iconButton(
-                    systemName: isMapViewSaved ? "lock.fill" : "lock.open",
+                    systemName: isMapViewSaved ? "bookmark.fill" : "bookmark",
                     label: isMapViewSaved
                         ? String(localized: "Stop opening the map here")
                         : String(localized: "Open the map here from now on"),
