@@ -348,6 +348,16 @@ struct VehicleMapView: View {
                 isLoadingDetail: viewModel.isLoadingDetail,
                 timetable: viewModel.lineTimetable,
                 isLoadingTimetable: viewModel.isLoadingTimetable,
+                timetableError: viewModel.timetableError,
+                isTimetableReady: viewModel.timetables.isReady,
+                onDownloadTimetable: {
+                    Task {
+                        await viewModel.timetables.downloadIndex()
+                        // The card on screen should pick the timetable up straight
+                        // away rather than at the next refresh.
+                        await viewModel.reloadTimetableForSelection()
+                    }
+                },
                 onToggleFavourite: { viewModel.toggleFavourite(line: $0) },
                 onSelectVehicle: focus,
                 onDismiss: { viewModel.selectedClusterID = nil }
