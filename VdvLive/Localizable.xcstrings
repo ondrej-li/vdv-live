@@ -1121,6 +1121,36 @@
         }
       }
     },
+    "The app": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikace"
+          }
+        }
+      }
+    },
+    "VDV Live is written and maintained by Ondrej Linek.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VDV Live vyvíjí a spravuje Ondrej Linek."
+          }
+        }
+      }
+    },
+    "Feedback, bug reports and feature requests are welcome there.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zpětná vazba, hlášení chyb a nápady na nové funkce jsou vítány právě tam."
+          }
+        }
+      }
+    },
     "Refresh, language and the map": {
       "localizations": {
         "cs": {
