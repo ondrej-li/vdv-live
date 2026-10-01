@@ -61,6 +61,14 @@ draws them on a map that is framed - and locked - to the region.
   drawn grey: a cluster is stale only when nothing in it is being reported. A
   failed load is not news either, so it never ages anything, and the header count
   keeps counting what the feed actually reports.
+- **Coming back to the screen shows grey, then shows live.** What is on the map
+  when the app is sent to the background is older than the refresh interval by the
+  time it comes back, and iOS suspends the automatic refresh meanwhile. So the
+  whole map is greyed straight away, and a payload is fetched at once rather than
+  when the interval next comes round. Each marker takes its colour back from the
+  payload that reports it again; a fetch that fails leaves everything grey, with
+  the error on screen, instead of passing old positions off as current. Launching
+  the app is not a return: there is nothing to grey.
 - **Grouping nearby vehicles, within a radius you choose.** Every vehicle is
   drawn on its own by default, which is what you want when you are looking for a
   particular bus. Pick a radius in the settings and buses within that distance of
@@ -236,6 +244,9 @@ a network.
 - the refresh countdown: progress across the interval, clamped at both ends
 - vehicles that go quiet: staying on the map greyed out, leaving on the fifth
   quiet payload, coming back live, and a failed load not counting as news
+- coming back to the screen: the grey landing before the request goes out, the
+  fetch happening out of cycle, the grey clearing per vehicle, a failed fetch
+  leaving the map grey, and a launch not counting as a return
 - marker motion: the easing curve, half way being half way, clamping, and that a
   marker which barely moved is not worth animating
 - timetables, against real bytes from the official archive: reading the zip
