@@ -871,6 +871,76 @@
         }
       }
     },
+    "Published": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zveřejněno"
+          }
+        }
+      }
+    },
+    "Update now": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualizovat"
+          }
+        }
+      }
+    },
+    "Check for updates": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zkontrolovat aktualizace"
+          }
+        }
+      }
+    },
+    "Checking for updates…": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontroluji aktualizace…"
+          }
+        }
+      }
+    },
+    "Up to date.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktuální."
+          }
+        }
+      }
+    },
+    "A newer archive is published.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Je zveřejněn novější archiv."
+          }
+        }
+      }
+    },
+    "This index does not record which archive it came from.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Index neuvádí, ze kterého archivu pochází."
+          }
+        }
+      }
+    },
     "Remove": {
       "localizations": {
         "cs": {
@@ -921,12 +991,12 @@
         }
       }
     },
-    "Downloads the index of the official timetable archive (a couple of megabytes), so the selected vehicle can list all of its stops with the times they are actually expected. Each line's timetable is then fetched on its own, a few kilobytes at a time.": {
+    "Downloads the index of the official timetable archive (a couple of megabytes), so the selected vehicle can list all of its stops with the times they are actually expected. Each line's timetable is then fetched on its own, a few kilobytes at a time. Checking for updates asks the archive which version it is, which costs about a kilobyte and nothing else.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stáhne index oficiálního archivu jízdních řádů (několik megabajtů), díky kterému umí vybrané vozidlo vypsat všechny své zastávky s časy, které se skutečně očekávají. Jízdní řád jednotlivé linky se pak stahuje zvlášť, po několika kilobajtech."
+            "value": "Stáhne index oficiálního archivu jízdních řádů (několik megabajtů), díky kterému umí vybrané vozidlo vypsat všechny své zastávky s časy, které se skutečně očekávají. Jízdní řád jednotlivé linky se pak stahuje zvlášť, po několika kilobajtech. Kontrola aktualizací se archivu zeptá, kterou verzi nabízí, což stojí přibližně kilobajt a nic víc."
           }
         }
       }

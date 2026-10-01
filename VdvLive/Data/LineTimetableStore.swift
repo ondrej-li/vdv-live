@@ -1,6 +1,19 @@
 import Foundation
 import Observation
 
+/// Whether the index the app holds is still the published one.
+enum TimetableUpdate: Equatable {
+    /// The server has not been asked in this launch.
+    case unchecked
+    /// The index is the published archive.
+    case upToDate
+    /// The server has rebuilt the archive since the index was read.
+    case outdated
+    /// The index does not say which archive it came from, so the two cannot be
+    /// compared. This is an index stored before the version was recorded.
+    case cannotTell
+}
+
 /// Keeps the timetable archive within reach of the app.
 ///
 /// The archive is one 106 MB zip for the whole country, and a line cannot be
@@ -24,11 +37,20 @@ final class LineTimetableStore {
     /// When the index was last read from the archive.
     private(set) var downloadedAt: Date?
     private(set) var errorMessage: String?
+    /// Whether the index is still the one the portal publishes, once it has been
+    /// asked. See `checkForUpdates()`.
+    private(set) var update: TimetableUpdate = .unchecked
+    /// True while the server is being asked which archive it is offering.
+    private(set) var isCheckingForUpdates = false
+    /// Which publication the index was read from, when it is known.
+    private var storedVersion: ArchiveVersion?
     /// Lines the shipped mapping knows about.
     let knownLineCount: Int
 
     /// Whether a line's timetable can be fetched at all.
     var isReady: Bool { !index.isEmpty }
+    /// When the archive the index came from was published, when it said so.
+    var archivePublishedAt: Date? { storedVersion?.lastModified }
 
     private let client: TimetableArchiveReading
     private let mapping: [String: [String]]
@@ -48,6 +70,7 @@ final class LineTimetableStore {
         self.knownLineCount = mapping.count
         self.index = files.loadIndex()
         self.downloadedAt = files.loadDownloadDate()
+        self.storedVersion = files.loadVersion()
     }
 
     // MARK: - The index
@@ -66,6 +89,10 @@ final class LineTimetableStore {
             let now = Date()
             downloadedAt = now
             files.saveIndex(entries, date: now)
+            // Which archive this index came from, so that the next launch can
+            // say whether it is still the published one.
+            await recordVersion()
+            update = storedVersion == nil ? .cannotTell : .upToDate
         } catch {
             errorMessage = (error as? TimetableError)?.errorDescription ?? error.localizedDescription
         }
@@ -77,7 +104,52 @@ final class LineTimetableStore {
         timetables.removeAll()
         downloadedAt = nil
         errorMessage = nil
+        storedVersion = nil
+        update = .unchecked
         files.removeAll()
+    }
+
+    // MARK: - Is this index still current?
+
+    /// Records which archive the index that is now on disk came from.
+    ///
+    /// A failure here is not a failed download: the index is read and usable, and
+    /// the only thing lost is the ability to say later whether it is still the
+    /// published one, which `update` then reports as `.cannotTell`.
+    private func recordVersion() async {
+        do {
+            let version = try await client.version()
+            storedVersion = version
+            files.saveVersion(version)
+        } catch {
+            storedVersion = nil
+            files.removeVersion()
+        }
+    }
+
+    /// Asks the portal which archive it is offering and compares it with the one
+    /// the index was read from.
+    ///
+    /// One range request and no download: the answer is in the response's
+    /// headers.
+    func checkForUpdates() async {
+        guard isReady, !isCheckingForUpdates else { return }
+        isCheckingForUpdates = true
+        errorMessage = nil
+        defer { isCheckingForUpdates = false }
+
+        do {
+            let published = try await client.version()
+            guard let stored = storedVersion else {
+                // Stored before the version was recorded: nothing to compare it
+                // with, and calling it current would be a guess.
+                update = .cannotTell
+                return
+            }
+            update = stored.describesSamePublication(as: published) ? .upToDate : .outdated
+        } catch {
+            errorMessage = (error as? TimetableError)?.errorDescription ?? error.localizedDescription
+        }
     }
 
     // MARK: - One line
@@ -163,6 +235,7 @@ struct TimetableFiles: Sendable {
 
     private var indexURL: URL { directory.appendingPathComponent("index.json") }
     private var dateURL: URL { directory.appendingPathComponent("index-date.txt") }
+    private var versionURL: URL { directory.appendingPathComponent("index-version.json") }
 
     func loadIndex() -> [String: ZipArchive.Entry] {
         guard let data = try? Data(contentsOf: indexURL),
@@ -185,6 +258,22 @@ struct TimetableFiles: Sendable {
         }
         let text = ISO8601DateFormatter().string(from: date)
         try? text.write(to: dateURL, atomically: true, encoding: .utf8)
+    }
+
+    /// The archive the index on disk was read from, when it was recorded.
+    func loadVersion() -> ArchiveVersion? {
+        guard let data = try? Data(contentsOf: versionURL) else { return nil }
+        return try? JSONDecoder().decode(ArchiveVersion.self, from: data)
+    }
+
+    func saveVersion(_ version: ArchiveVersion) {
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        guard let data = try? JSONEncoder().encode(version) else { return }
+        try? data.write(to: versionURL, options: .atomic)
+    }
+
+    func removeVersion() {
+        try? FileManager.default.removeItem(at: versionURL)
     }
 
     /// The entry's own zip. Small - a few kilobytes - and reused, so a line is
