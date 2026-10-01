@@ -174,6 +174,46 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertNil(UserDefaultsAppSettingsStore(defaults: defaults).load().savedMapView)
     }
 
+    // MARK: - Vehicles on the map
+
+    func testStoreRoundTripsTheGroupingRadius() {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+        XCTAssertEqual(store.load().clusterRadiusMetres, 0)
+
+        var settings = AppSettings.default
+        settings.clusterRadiusMetres = 250
+        store.save(settings)
+
+        XCTAssertEqual(store.load().clusterRadiusMetres, 250)
+
+        settings.clusterRadiusMetres = 0
+        store.save(settings)
+
+        XCTAssertEqual(store.load().clusterRadiusMetres, 0)
+    }
+
+    func testARadiusOfNothingOrLessMeansNoGrouping() {
+        XCTAssertEqual(AppSettings.clampedClusterRadius(0), 0)
+        XCTAssertEqual(AppSettings.clampedClusterRadius(-100), 0)
+        XCTAssertEqual(AppSettings.clampedClusterRadius(.nan), 0)
+        XCTAssertEqual(AppSettings.clampedClusterRadius(.infinity), 0)
+        XCTAssertEqual(AppSettings.clampedClusterRadius(100), 100)
+        XCTAssertEqual(AppSettings.clampedClusterRadius(1.5), 1.5)
+    }
+
+    func testStoredRadiusIsValidatedOnTheWayIn() {
+        let defaults = TestDefaults.make()
+        defaults.set(-1.0, forKey: UserDefaultsAppSettingsStore.clusterRadiusMetresKey)
+
+        XCTAssertEqual(UserDefaultsAppSettingsStore(defaults: defaults).load().clusterRadiusMetres, 0)
+    }
+
+    func testRadiusLabelsReadAsDistances() {
+        XCTAssertEqual(SettingsSheet.radiusLabel(0), String(localized: "Off"))
+        XCTAssertEqual(SettingsSheet.radiusLabel(250), "250 m")
+        XCTAssertEqual(SettingsSheet.radiusLabel(1_000), "1 km")
+    }
+
     // MARK: - Language
 
     func testLocalizationCodes() {

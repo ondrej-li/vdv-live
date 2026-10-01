@@ -771,6 +771,46 @@
         }
       }
     },
+    "Vehicles": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vozidla"
+          }
+        }
+      }
+    },
+    "Group buses within": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seskupovat autobusy blíž než"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vypnuto"
+          }
+        }
+      }
+    },
+    "Buses closer together than this share one marker, which keeps a busy region readable when it is zoomed out. Off, every vehicle is drawn on its own.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autobusy blíž k sobě než tato vzdálenost sdílejí jeden marker, takže zůstane přeplněný kraj čitelný i při oddálení. Po vypnutí se každé vozidlo kreslí zvlášť."
+          }
+        }
+      }
+    },
     "Timetables": {
       "localizations": {
         "cs": {

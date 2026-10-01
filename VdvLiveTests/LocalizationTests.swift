@@ -79,6 +79,9 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Open at my location"), "Otevřít na mé poloze")
         XCTAssertEqual(try czechString("Opening the map"), "Otevírání mapy")
         XCTAssertEqual(try czechString("Clear saved view"), "Zrušit uložený výřez")
+        XCTAssertEqual(try czechString("Vehicles"), "Vozidla")
+        XCTAssertEqual(try czechString("Group buses within"), "Seskupovat autobusy blíž než")
+        XCTAssertEqual(try czechString("Off"), "Vypnuto")
     }
 
     func testTranslatesTheBannersIntoCzech() throws {

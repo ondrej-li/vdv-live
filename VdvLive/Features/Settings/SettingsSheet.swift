@@ -10,6 +10,8 @@ struct SettingsSheet: View {
     let onSetStartsAtCurrentLocation: (Bool) -> Void
     /// Forgets the viewport the lock button saved.
     let onClearSavedMapView: () -> Void
+    /// Distance within which buses are drawn as one marker.
+    let onSetClusterRadius: (Double) -> Void
 
     /// State of the official timetable index, owned by the map screen.
     let isTimetableReady: Bool
@@ -69,6 +71,18 @@ struct SettingsSheet: View {
                     Text("Opening the map")
                 } footer: {
                     Text("The map starts about 10 km around your position, read once when the app starts and never sent anywhere. The lock button on the map remembers the view you are looking at instead; press it again to forget that view.")
+                }
+
+                Section {
+                    Picker("Group buses within", selection: clusterRadiusBinding) {
+                        ForEach(radiusOptions, id: \.self) { radius in
+                            Text(Self.radiusLabel(radius)).tag(radius)
+                        }
+                    }
+                } header: {
+                    Text("Vehicles")
+                } footer: {
+                    Text("Buses closer together than this share one marker, which keeps a busy region readable when it is zoomed out. Off, every vehicle is drawn on its own.")
                 }
 
                 Section {
@@ -140,12 +154,33 @@ struct SettingsSheet: View {
         Binding(get: { settings.startsAtCurrentLocation }, set: onSetStartsAtCurrentLocation)
     }
 
+    private var clusterRadiusBinding: Binding<Double> {
+        Binding(get: { settings.clusterRadiusMetres }, set: onSetClusterRadius)
+    }
+
+    /// Offered radii, plus whatever is stored when it is not among them, so that a
+    /// value written by another build still shows up in the picker.
+    private var radiusOptions: [Double] {
+        let selectable = AppSettings.selectableClusterRadii
+        guard !selectable.contains(settings.clusterRadiusMetres) else { return selectable }
+        return (selectable + [settings.clusterRadiusMetres]).sorted()
+    }
+
     /// "30 s" for the short intervals, "2 min" for the long ones.
     static func intervalLabel(_ interval: TimeInterval) -> String {
         if interval < 60 {
             return String(format: String(localized: "%lld s"), Int(interval))
         }
         return String(format: String(localized: "%lld min"), Int(interval / 60))
+    }
+
+    /// "Off", "250 m" or "1 km".
+    static func radiusLabel(_ radius: Double) -> String {
+        guard radius > 0 else { return String(localized: "Off") }
+        if radius < 1_000 {
+            return String(format: String(localized: "%lld m"), Int(radius.rounded()))
+        }
+        return String(format: String(localized: "%lld km"), Int((radius / 1_000).rounded()))
     }
 }
 
@@ -157,6 +192,7 @@ struct SettingsSheet: View {
         onSetLanguage: { _ in },
         onSetStartsAtCurrentLocation: { _ in },
         onClearSavedMapView: {},
+        onSetClusterRadius: { _ in },
         isTimetableReady: false,
         isDownloadingTimetables: false,
         downloadedAt: nil,

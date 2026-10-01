@@ -29,6 +29,30 @@ enum RegionOfInterest {
         var latitudeSpan: Double { northLatitude - southLatitude }
         var longitudeSpan: Double { eastLongitude - westLongitude }
 
+        init(
+            southLatitude: Double,
+            westLongitude: Double,
+            northLatitude: Double,
+            eastLongitude: Double
+        ) {
+            self.southLatitude = southLatitude
+            self.westLongitude = westLongitude
+            self.northLatitude = northLatitude
+            self.eastLongitude = eastLongitude
+        }
+
+        /// Box covering exactly what a map region shows.
+        init(region: MKCoordinateRegion) {
+            let latitudeRadius = region.span.latitudeDelta / 2
+            let longitudeRadius = region.span.longitudeDelta / 2
+            self.init(
+                southLatitude: region.center.latitude - latitudeRadius,
+                westLongitude: region.center.longitude - longitudeRadius,
+                northLatitude: region.center.latitude + latitudeRadius,
+                eastLongitude: region.center.longitude + longitudeRadius
+            )
+        }
+
         var center: CLLocationCoordinate2D {
             CLLocationCoordinate2D(
                 latitude: (southLatitude + northLatitude) / 2,
