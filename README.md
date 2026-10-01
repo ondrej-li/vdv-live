@@ -21,6 +21,11 @@ draws them on a map that is framed - and locked - to the region.
   needs the same permission as opening the map at your location, so iOS is not
   asked for anything unless one of the two wants it, and the position is never
   stored or sent anywhere - MapKit draws the dot and keeps it up to date.
+- **Following the position.** Off by default, and turned on from the header or
+  from the settings. The map then keeps the position in the middle as you move,
+  which is the mode to use in a car. Panning counts as looking at something else
+  and stops it, and so do the controls that fly the map somewhere themselves -
+  the recenter button, a tap on a vehicle, a jump to a pinned line.
 - **Opens on the current location.** The map starts about 10 km around where you
   are, so the first thing on screen is your neighbourhood rather than a region
   seen from far out. The position is read once per launch, never leaves the

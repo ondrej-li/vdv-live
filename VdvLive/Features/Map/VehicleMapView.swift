@@ -25,8 +25,14 @@ struct VehicleMapView: View {
         _viewModel = State(initialValue: viewModel)
         // A viewport the user locked is known before the first frame, so the map
         // opens straight at it. Opening on the current location needs a position,
-        // which only arrives later - see the second `task` in `body`.
-        _camera = State(initialValue: .region(viewModel.launchRegion))
+        // which only arrives later - see the `task` in `body`. Following is known
+        // before the first frame too, and outranks the opening viewport: the map
+        // is going to move as soon as the user does.
+        _camera = State(
+            initialValue: viewModel.followsCurrentLocation
+                ? Self.followingCamera
+                : .region(viewModel.launchRegion)
+        )
     }
 
     var body: some View {
@@ -50,7 +56,9 @@ struct VehicleMapView: View {
             // The map draws the position itself, so when opening there did not
             // already ask for permission, this is what puts the prompt up.
             await viewModel.requestLocationPermissionIfNeeded()
-            guard let region else { return }
+            // Following is where the camera already started, and it outranks
+            // opening on the location: it is the more specific instruction.
+            guard let region, !viewModel.followsCurrentLocation else { return }
             withAnimation(.easeInOut(duration: 0.6)) {
                 camera = .region(region)
             }
@@ -60,6 +68,14 @@ struct VehicleMapView: View {
             // waiting for the next launch.
             guard showsCurrentLocation else { return }
             Task { await viewModel.requestLocationPermissionIfNeeded() }
+        }
+        .onChange(of: viewModel.followsCurrentLocation) { _, followsCurrentLocation in
+            // Turning it off leaves the map exactly where it is: following stops,
+            // the camera does not move.
+            guard followsCurrentLocation else { return }
+            withAnimation(.easeInOut(duration: 0.5)) {
+                camera = Self.followingCamera
+            }
         }
         .onDisappear { viewModel.stopAutoRefresh() }
     }
@@ -103,6 +119,11 @@ struct VehicleMapView: View {
         }
         .onMapCameraChange(frequency: .onEnd) { context in
             viewModel.updateVisibleRegion(context.region)
+            // A pan is the user taking over. Following stops rather than pulling
+            // the map back to the position under their finger.
+            if camera.positionedByUser, viewModel.followsCurrentLocation {
+                viewModel.setFollowsCurrentLocation(false)
+            }
         }
         .onGeometryChange(for: CGSize.self) { proxy in
             proxy.size
@@ -132,6 +153,7 @@ struct VehicleMapView: View {
                 refreshInterval: viewModel.isAutoRefreshEnabled ? viewModel.autoRefreshInterval : nil,
                 favouriteLineCount: viewModel.favouriteLines.count,
                 isMapViewSaved: viewModel.savedMapView != nil,
+                isFollowingCurrentLocation: viewModel.followsCurrentLocation,
                 onSelectFilter: { viewModel.select(filter: $0) },
                 onRefresh: { Task { await viewModel.load() } },
                 onRecenter: recenter,
@@ -139,6 +161,9 @@ struct VehicleMapView: View {
                     viewModel.setAutoRefresh(enabled: !viewModel.isAutoRefreshEnabled)
                 },
                 onShowFavourites: { isShowingFavourites = true },
+                onToggleFollowCurrentLocation: {
+                    viewModel.setFollowsCurrentLocation(!viewModel.followsCurrentLocation)
+                },
                 onToggleSavedMapView: { viewModel.toggleSavedMapView() },
                 onShowSettings: { isShowingSettings = true }
             )
@@ -215,6 +240,7 @@ struct VehicleMapView: View {
             onSetAutoRefreshInterval: { viewModel.setAutoRefreshInterval($0) },
             onSetLanguage: { viewModel.setLanguage($0) },
             onSetShowsCurrentLocation: { viewModel.setShowsCurrentLocation($0) },
+            onSetFollowsCurrentLocation: { viewModel.setFollowsCurrentLocation($0) },
             onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
             onClearSavedMapView: { viewModel.setSavedMapView(nil) },
             onSetClusterRadius: { viewModel.setClusterRadius($0) },
@@ -273,7 +299,20 @@ struct VehicleMapView: View {
         }
     }
 
+    /// Camera position that makes MapKit keep the user in the middle as they move.
+    ///
+    /// The fallback covers a refused permission or a position that never arrives:
+    /// the map then shows everything the camera bounds allow, which is the whole
+    /// region.
+    private static let followingCamera = MapCameraPosition.userLocation(
+        followsHeading: false,
+        fallback: .automatic
+    )
+
     private func recenter() {
+        // Deliberate camera moves take over from following, which would otherwise
+        // pull the map straight back to the position.
+        viewModel.setFollowsCurrentLocation(false)
         withAnimation(.easeInOut(duration: 0.4)) {
             camera = .region(RegionOfInterest.vysocina.region)
         }
@@ -286,6 +325,8 @@ struct VehicleMapView: View {
     /// showing every traction.
     private func focus(onLine line: String) {
         guard let vehicle = viewModel.firstVehicle(forLine: line) else { return }
+        // Flying somewhere is a deliberate camera move, so following gives way.
+        viewModel.setFollowsCurrentLocation(false)
         if viewModel.isFavourite(line: line) {
             viewModel.select(filter: .favourites)
         } else if case .traction = viewModel.filter {
@@ -302,6 +343,8 @@ struct VehicleMapView: View {
     }
 
     private func focus(on vehicle: Vehicle) {
+        // Flying somewhere is a deliberate camera move, so following gives way.
+        viewModel.setFollowsCurrentLocation(false)
         withAnimation(.easeInOut(duration: 0.4)) {
             camera = .region(
                 MKCoordinateRegion(

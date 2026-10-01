@@ -22,6 +22,8 @@ struct AppSettings: Equatable, Sendable {
     var clusterRadiusMetres: Double = 0
     /// Whether the map draws the user's own position as the usual blue dot.
     var showsCurrentLocation: Bool = true
+    /// Whether the map keeps the position in the middle as it moves.
+    var followsCurrentLocation: Bool = false
 
     /// The feed updates continuously, but not that fast: asking more often than
     /// every five seconds only costs battery.

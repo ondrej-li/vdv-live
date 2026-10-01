@@ -45,7 +45,8 @@ final class VehicleMapLaunchTests: XCTestCase {
     private func settings(
         startsAtCurrentLocation: Bool = true,
         savedMapView: SavedMapView? = nil,
-        showsCurrentLocation: Bool = true
+        showsCurrentLocation: Bool = true,
+        followsCurrentLocation: Bool = false
     ) -> AppSettings {
         AppSettings(
             autoRefreshInterval: AppSettings.defaultAutoRefreshInterval,
@@ -53,7 +54,8 @@ final class VehicleMapLaunchTests: XCTestCase {
             language: .czech,
             startsAtCurrentLocation: startsAtCurrentLocation,
             savedMapView: savedMapView,
-            showsCurrentLocation: showsCurrentLocation
+            showsCurrentLocation: showsCurrentLocation,
+            followsCurrentLocation: followsCurrentLocation
         )
     }
 
@@ -147,6 +149,50 @@ final class VehicleMapLaunchTests: XCTestCase {
         await viewModel.requestLocationPermissionIfNeeded()
 
         XCTAssertEqual(location.authorizationRequestCount, 0)
+    }
+
+    // MARK: - Following the position
+
+    func testFollowingIsOffByDefault() {
+        let (viewModel, _, _) = makeViewModel(settings: .default)
+
+        XCTAssertFalse(AppSettings.default.followsCurrentLocation)
+        XCTAssertFalse(viewModel.followsCurrentLocation)
+    }
+
+    func testTurningFollowingOnIsPersisted() {
+        let (viewModel, store, _) = makeViewModel(settings: settings())
+
+        viewModel.setFollowsCurrentLocation(true)
+
+        XCTAssertTrue(viewModel.followsCurrentLocation)
+        XCTAssertTrue(store.load().followsCurrentLocation)
+        XCTAssertEqual(store.saveCount, 1)
+
+        viewModel.setFollowsCurrentLocation(true)
+
+        XCTAssertEqual(store.saveCount, 1, "the same value twice is not a change")
+    }
+
+    func testStoppingFollowingIsPersisted() {
+        let (viewModel, store, _) = makeViewModel(settings: settings(followsCurrentLocation: true))
+        XCTAssertTrue(viewModel.followsCurrentLocation)
+
+        // What a pan, the recenter button and flying to a vehicle all do.
+        viewModel.setFollowsCurrentLocation(false)
+
+        XCTAssertFalse(viewModel.followsCurrentLocation)
+        XCTAssertFalse(store.load().followsCurrentLocation)
+    }
+
+    func testPermissionIsAskedForWhenFollowingEvenWithoutTheDot() async {
+        let (viewModel, _, location) = makeViewModel(
+            settings: settings(showsCurrentLocation: false, followsCurrentLocation: true)
+        )
+
+        await viewModel.requestLocationPermissionIfNeeded()
+
+        XCTAssertEqual(location.authorizationRequestCount, 1)
     }
 
     // MARK: - The locked viewport

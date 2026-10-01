@@ -14,11 +14,14 @@ struct MapHeaderBar: View {
     let favouriteLineCount: Int
     /// Whether the map opens at a viewport the user locked with the lock button.
     let isMapViewSaved: Bool
+    /// Whether the map keeps the position in the middle as it moves.
+    let isFollowingCurrentLocation: Bool
     let onSelectFilter: (VehicleFilter) -> Void
     let onRefresh: () -> Void
     let onRecenter: () -> Void
     let onToggleAutoRefresh: () -> Void
     let onShowFavourites: () -> Void
+    let onToggleFollowCurrentLocation: () -> Void
     let onToggleSavedMapView: () -> Void
     let onShowSettings: () -> Void
 
@@ -61,6 +64,14 @@ struct MapHeaderBar: View {
                     action: onRecenter
                 )
                 iconButton(
+                    systemName: isFollowingCurrentLocation ? "location.fill" : "location",
+                    label: isFollowingCurrentLocation
+                        ? String(localized: "Stop following my position")
+                        : String(localized: "Follow my position"),
+                    tint: isFollowingCurrentLocation ? Color.accentColor : nil,
+                    action: onToggleFollowCurrentLocation
+                )
+                iconButton(
                     systemName: isMapViewSaved ? "lock.fill" : "lock.open",
                     label: isMapViewSaved
                         ? String(localized: "Stop opening the map here")
@@ -74,6 +85,13 @@ struct MapHeaderBar: View {
                     action: onShowSettings
                 )
             }
+
+            // The status line gets the whole card to itself: squeezed in beside
+            // the buttons it wrapped onto four lines once there were seven.
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
 
             filterChips
         }
@@ -103,13 +121,12 @@ struct MapHeaderBar: View {
     }
 
     private var title: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("Vysočina")
-                .font(.headline)
-            Text(subtitle)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
+        Text("Vysočina")
+            .font(.headline)
+            // The row is shared with seven buttons, so on a narrow phone shrink
+            // the name rather than wrapping it onto a second line.
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
     }
 
     private var subtitle: String {

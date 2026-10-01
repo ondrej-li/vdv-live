@@ -226,6 +226,18 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(store.load().showsCurrentLocation)
     }
 
+    func testFollowingIsOffByDefaultAndRemembered() {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+        XCTAssertFalse(AppSettings.default.followsCurrentLocation)
+        XCTAssertFalse(store.load().followsCurrentLocation)
+
+        var settings = AppSettings.default
+        settings.followsCurrentLocation = true
+        store.save(settings)
+
+        XCTAssertTrue(store.load().followsCurrentLocation)
+    }
+
     // MARK: - Language
 
     func testLocalizationCodes() {
