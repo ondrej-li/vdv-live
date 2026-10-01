@@ -15,7 +15,7 @@ import Foundation
 import ImageIO
 
 let side = 1024
-let defaultOutput = "VdvMap/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png"
+let defaultOutput = "VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png"
 let outputPath = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : defaultOutput
 
 func fail(_ message: String) -> Never {
