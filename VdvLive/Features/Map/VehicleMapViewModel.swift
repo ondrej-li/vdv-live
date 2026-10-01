@@ -410,7 +410,7 @@ final class VehicleMapViewModel {
 
     /// Whether a vehicle runs on the given line.
     ///
-    /// Pins are held as line numbers (`337`) while the feed sends operator
+    /// Pins are held as line numbers (`337`) while the feed sends licence area
     /// prefixed codes (`764337`), so the comparison goes through ``LineCode``.
     func vehicle(_ vehicle: Vehicle, isOn line: String) -> Bool {
         favouriteLines.contains(vehicle.line) || favouriteLines.contains(line)
@@ -775,23 +775,23 @@ final class VehicleMapViewModel {
     private static func runningLines(in vehicles: [Vehicle]) -> [LineSummary] {
         var counts: [String: Int] = [:]
         var tractions: [String: [Traction: Int]] = [:]
-        var operators: [String: [String: Int]] = [:]
+        var licenceAreas: [String: [String: Int]] = [:]
         for vehicle in vehicles {
             // Grouped by the line number a passenger would recognise, not by
-            // the operator prefixed code the feed sends.
+            // the licence area prefixed code the feed sends.
             let line = vehicle.lineCode.number
             guard !line.isEmpty else { continue }
             counts[line, default: 0] += 1
             tractions[line, default: [:]][vehicle.traction, default: 0] += 1
-            if let operatorCode = vehicle.lineCode.operatorCode {
-                operators[line, default: [:]][operatorCode, default: 0] += 1
+            if let licenceAreaCode = vehicle.lineCode.licenceAreaCode {
+                licenceAreas[line, default: [:]][licenceAreaCode, default: 0] += 1
             }
         }
 
         let summaries = counts.map { line, count in
             LineSummary(
                 line: line,
-                operatorCode: Self.dominantCode(in: operators[line] ?? [:]),
+                licenceAreaCode: Self.dominantCode(in: licenceAreas[line] ?? [:]),
                 vehicleCount: count,
                 traction: Self.dominantTraction(in: tractions[line] ?? [:]) ?? .unknown
             )

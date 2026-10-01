@@ -20,7 +20,7 @@ struct Vehicle: Identifiable, Codable, Hashable, Sendable {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    /// The feed's line code, with the operator prefix separated out.
+    /// The feed's line code, with the licence area prefix separated out.
     var lineCode: LineCode { LineCode(raw: line) }
 
     /// Line as shown to passengers, e.g. `337` rather than `764337`.

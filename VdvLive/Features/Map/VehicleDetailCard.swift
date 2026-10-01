@@ -175,8 +175,8 @@ struct VehicleDetailCard: View {
                 HStack(spacing: 6) {
                     Text(titleText)
                         .font(.headline)
-                    if let operatorCode = cluster.representative.lineCode.operatorCode {
-                        Text("operator \(operatorCode)")
+                    if let licenceAreaCode = cluster.representative.lineCode.licenceAreaCode {
+                        Text("licence area \(licenceAreaCode)")
                             .font(.caption2.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 6)

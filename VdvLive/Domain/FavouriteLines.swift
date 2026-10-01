@@ -51,7 +51,7 @@ struct FavouriteLines: Hashable, Sendable {
     }
 
     /// Lines are stored the way a passenger writes them down, so a feed code
-    /// carrying an operator prefix (`764337`) is filed as line `337`.
+    /// carrying a licence area prefix (`764337`) is filed as line `337`.
     static func normalize(_ line: String) -> String {
         LineCode(raw: line).number.uppercased()
     }

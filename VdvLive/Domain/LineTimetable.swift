@@ -86,7 +86,7 @@ struct ScheduledRun: Hashable, Identifiable, Sendable {
 
 /// A line's published timetable, read out of the official JDF export.
 struct LineTimetable: Hashable, Sendable {
-    /// CIS line number, operator prefix included: `764337`.
+    /// CIS line number, licence area prefix included: `764337`.
     let lineNumber: String
     /// Passenger facing number: `337`.
     let displayNumber: String

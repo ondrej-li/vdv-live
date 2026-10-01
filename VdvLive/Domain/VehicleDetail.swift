@@ -16,7 +16,7 @@ struct RunStop: Hashable, Sendable {
 /// and `/Ajax/GetTimetable` (the stop list of the current run), neither of
 /// which is part of the points feed.
 struct VehicleDetail: Equatable, Sendable {
-    /// Line as the feed's detail page reports it, operator prefix included.
+    /// Line as the feed's detail page reports it, licence area prefix included.
     let lineCode: LineCode
     /// `Spoj`: which run of the line this is, e.g. the 11th service of the day.
     let serviceNumber: String?
@@ -45,7 +45,7 @@ struct VehicleDetail: Equatable, Sendable {
         return runStops[index + 1]
     }
 
-    /// Line number with the operator prefix taken off.
+    /// Line number with the licence area prefix taken off.
     var lineNumber: String { lineCode.number }
 }
 
