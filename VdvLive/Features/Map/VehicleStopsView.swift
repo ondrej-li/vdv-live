@@ -1,13 +1,59 @@
 import SwiftUI
 
+/// The row that offers the run's timetable: what it is and how long it is.
+///
+/// The card is a drawer, so this is both the summary of what is behind it and the
+/// way in for anyone who would rather tap than drag.
+struct VehicleStopsSummary: View {
+    /// Run the vehicle is on, when the timetable has it.
+    let run: ScheduledRun
+    /// Minutes late, or `nil` when the feed has no delay information.
+    let delayMinutes: Int?
+    let isExpanded: Bool
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onToggle) {
+            HStack(spacing: 6) {
+                Text("All stops")
+                    .font(.subheadline)
+                Text(String(format: String(localized: "%lld stops"), run.calls.count))
+                    .font(.caption)
+                    .foregroundStyle(Color.cardSecondary)
+                Spacer(minLength: 6)
+                if let delayMinutes, delayMinutes != 0 {
+                    Text(delayText(delayMinutes))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(delayTint(delayMinutes))
+                }
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.up")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.cardSecondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func delayText(_ minutes: Int) -> String {
+        minutes > 0
+            ? String(format: String(localized: "+%lld min"), minutes)
+            : String(format: String(localized: "%lld min"), minutes)
+    }
+
+    private func delayTint(_ minutes: Int) -> Color {
+        minutes > 0 ? .orange : .green
+    }
+}
+
 /// Every stop of the run, with the timetable's times moved by the delay the feed
 /// reports.
 ///
-/// Collapsed by default: the card is already busy, and the two or three stops a
-/// passenger needs are in the rows above this.
+/// Only drawn once the drawer is up: the two or three stops a passenger needs are
+/// in the rows above it, in the short state the card opens in.
 struct VehicleStopsView: View {
     /// Run the vehicle is on, when the timetable has it.
-    let run: ScheduledRun?
+    let run: ScheduledRun
     /// Stop the feed last saw the vehicle at, highlighted in the list.
     let reportedStopName: String?
     /// Stop the vehicle is heading for, marked as well as the current one.
@@ -15,42 +61,22 @@ struct VehicleStopsView: View {
     /// Minutes late, or `nil` when the feed has no delay information.
     let delayMinutes: Int?
 
-    @State private var isExpanded = false
+    /// Tallest the list gets before it starts to scroll. The card is a drawer over
+    /// the map, so a long run must not push the map off the screen.
+    private static let maximumHeight: CGFloat = 240
+    /// What a one or two stop run gets, so the list is not a sliver.
+    private static let minimumHeight: CGFloat = 44
 
     var body: some View {
-        if let run {
-            DisclosureGroup(isExpanded: $isExpanded) {
-                // The list is as long as the run is: it scrolls within a fixed
-                // height so the map behind the card stays visible while it is open.
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 3) {
-                        ForEach(run.calls) { call in
-                            row(for: call, in: run)
-                        }
-                    }
-                    .padding(.top, 4)
+        // As tall as the run needs, up to the limit: the drawer itself is measured
+        // from this, so the card grows by exactly what the list adds.
+        BoundedList(maximumHeight: Self.maximumHeight, minimumHeight: Self.minimumHeight) {
+            VStack(alignment: .leading, spacing: 3) {
+                ForEach(run.calls) { call in
+                    row(for: call, in: run)
                 }
-                .frame(maxHeight: 240)
-            } label: {
-                label(for: run)
             }
-            .font(.caption)
-        }
-    }
-
-    private func label(for run: ScheduledRun) -> some View {
-        HStack(spacing: 6) {
-            Text("All stops")
-                .font(.subheadline)
-            Text(String(format: String(localized: "%lld stops"), run.calls.count))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer(minLength: 6)
-            if let delayMinutes, delayMinutes != 0 {
-                Text(delayText(delayMinutes))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(delayTint(delayMinutes))
-            }
+            .padding(.top, 4)
         }
     }
 
@@ -59,15 +85,15 @@ struct VehicleStopsView: View {
         let isNext = !isCurrent && nextCall(in: run)?.stopID == call.stopID
         let weight: Font.Weight = isCurrent ? .semibold : (isNext ? .medium : .regular)
         return HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(timeText(for: call))
+            Text(timeText(for: call, in: run))
                 .font(.caption.monospacedDigit())
-                .foregroundStyle(call.isOnRequest ? Color.secondary : Color.primary)
+                .foregroundStyle(call.isOnRequest ? Color.cardSecondary : Color.primary)
                 .frame(width: 52, alignment: .leading)
 
-            if let planned = plannedTime(for: call) {
+            if let planned = plannedTime(for: call, in: run) {
                 Text("(\(planned.text))")
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.cardSecondary)
                     .frame(width: 44, alignment: .leading)
             } else {
                 Color.clear.frame(width: 44)
@@ -83,7 +109,7 @@ struct VehicleStopsView: View {
             if let kilometres = call.distanceKilometres, isCurrent {
                 Text(String(format: String(localized: "%lld km"), kilometres))
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.cardSecondary)
             }
         }
         .padding(.vertical, 2)
@@ -97,21 +123,41 @@ struct VehicleStopsView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// The time to show: the timetable's own time when the feed knows no delay,
-    /// otherwise the time the vehicle should actually be there.
-    private func timeText(for call: ScheduledCall) -> String {
+    /// The time to show for a stop the vehicle still has ahead of it: the feed's
+    /// delay moved onto the timetable's time. Behind the vehicle the timetable's
+    /// own time stands, because there the delay is history rather than a
+    /// prediction.
+    private func timeText(for call: ScheduledCall, in run: ScheduledRun) -> String {
         if call.isOnRequest { return String(localized: "on request") }
-        guard let delayMinutes, delayMinutes != 0, let shifted = call.time(lateByMinutes: delayMinutes) else {
+        guard isAhead(of: call, in: run),
+              let delayMinutes, delayMinutes != 0,
+              let shifted = call.time(lateByMinutes: delayMinutes) else {
             return call.time?.text ?? "–"
         }
         return shifted.text
     }
 
-    /// The published time, shown next to the delayed one so the delay is visible
-    /// per stop and not just in the header.
-    private func plannedTime(for call: ScheduledCall) -> TimeOfDay? {
-        guard !call.isOnRequest, let delayMinutes, delayMinutes != 0 else { return nil }
+    /// The published time, shown beside the estimated one for the stops still
+    /// ahead: the timetable is the promise and the delayed time is what the feed
+    /// expects, and a passenger at a stop wants to see both.
+    private func plannedTime(for call: ScheduledCall, in run: ScheduledRun) -> TimeOfDay? {
+        guard !call.isOnRequest, isAhead(of: call, in: run), let delayMinutes, delayMinutes != 0 else {
+            return nil
+        }
         return call.time
+    }
+
+    /// Whether the vehicle still has this call ahead of it.
+    ///
+    /// Without a reported stop there is no way to tell where the vehicle is, and
+    /// the whole run is treated as ahead of it.
+    private func isAhead(of call: ScheduledCall, in run: ScheduledRun) -> Bool {
+        guard let current = currentCall(in: run),
+              let index = run.calls.firstIndex(where: { $0.id == call.id }),
+              let currentIndex = run.calls.firstIndex(where: { $0.id == current.id }) else {
+            return true
+        }
+        return index > currentIndex
     }
 
     private func currentCall(in run: ScheduledRun) -> ScheduledCall? {
@@ -123,15 +169,5 @@ struct VehicleStopsView: View {
     private func nextCall(in run: ScheduledRun) -> ScheduledCall? {
         guard let nextStopName else { return nil }
         return run.call(matchingStopName: nextStopName)
-    }
-
-    private func delayText(_ minutes: Int) -> String {
-        minutes > 0
-            ? String(format: String(localized: "+%lld min"), minutes)
-            : String(format: String(localized: "%lld min"), minutes)
-    }
-
-    private func delayTint(_ minutes: Int) -> Color {
-        minutes > 0 ? .orange : .green
     }
 }

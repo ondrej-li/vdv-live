@@ -22,40 +22,202 @@ struct VehicleDetailCard: View {
     let onSelectVehicle: (Vehicle) -> Void
     let onDismiss: () -> Void
 
+    /// The card is a drawer: it opens short, with the few things a passenger came
+    /// for, and is pulled up when the timetable is what they want.
+    @State private var isExpanded = false
+    /// Live drag distance, negative while the card is being pulled up.
+    @State private var dragTranslation: CGFloat = 0
+    /// Where the two states end, measured rather than assumed: a longer run, or a
+    /// longer word in another language, would otherwise clip the wrong thing.
+    @State private var peekHeight: CGFloat = 150
+    @State private var fullHeight: CGFloat = 150
+
+    private static let space = "vehicleDetailCard"
+    private static let padding: CGFloat = 14
+    /// How far the card has to travel before it changes state on release.
+    private static let threshold: CGFloat = 44
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            handle
             header
-            content
+            VStack(alignment: .leading, spacing: 12) {
+                shortContent
+                marker { peekHeight = $0 + Self.padding }
+            }
+            if canExpand {
+                longContent
+            }
         }
-        .padding(14)
+        .padding(Self.padding)
+        .fixedSize(horizontal: false, vertical: true)
+        .coordinateSpace(name: Self.space)
+        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { fullHeight = $0 }
+        .frame(height: cardHeight, alignment: .top)
+        .clipped()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
+        .gesture(drag, including: canExpand && !isExpanded ? .all : .none)
     }
 
+    /// What the card opens with: the vehicle, the stop it is heading for, and the
+    /// way into its timetable.
     @ViewBuilder
-    private var content: some View {
+    private var shortContent: some View {
         if let vehicle = cluster.singleVehicle {
             VehicleDetailRow(vehicle: vehicle)
-            runSection
+            if isLoadingDetail {
+                loadingRow(String(localized: "Looking up this run…"))
+            } else {
+                if let next = detail?.nextStop {
+                    detailRow(label: "Next stop", value: next.name, time: next.timeText)
+                }
+                timetableEntry
+            }
         } else {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 10) {
-                    ForEach(cluster.vehicles) { vehicle in
-                        HStack(spacing: 10) {
-                            Button {
-                                onSelectVehicle(vehicle)
-                            } label: {
-                                VehicleDetailRow(vehicle: vehicle)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+            BoundedList(maximumHeight: 220, minimumHeight: 44) { clusterRows }
+        }
+    }
 
-                            favouriteButton(for: vehicle.line)
-                        }
+    /// What the drawer adds: the rest of what the feed said about the run, and the
+    /// timetable itself.
+    @ViewBuilder
+    private var longContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if cluster.isStale {
+                Label("No recent data for this vehicle.", systemImage: "wifi.exclamationmark")
+                    .font(.caption)
+                    .foregroundStyle(Color.cardSecondary)
+            }
+            if let serviceNumber = detail?.serviceNumber {
+                detailRow(label: "Service", value: serviceNumber)
+            }
+            if let stopName = detail?.stopName {
+                detailRow(label: "Last stop", value: stopName, time: detail?.stop?.timeText)
+            }
+            if detail?.isBarrierFree == true {
+                Label("Barrier-free", systemImage: "figure.roll")
+                    .font(.caption)
+                    .foregroundStyle(Color.cardSecondary)
+            }
+            if let run {
+                VehicleStopsView(
+                    run: run,
+                    reportedStopName: detail?.stopName,
+                    nextStopName: detail?.nextStop?.name,
+                    delayMinutes: detail?.reportedDelayMinutes
+                )
+            }
+        }
+    }
+
+    /// The way into the timetable: the summary row when there is a timetable to
+    /// show, and otherwise the reason there is not.
+    @ViewBuilder
+    private var timetableEntry: some View {
+        if let run {
+            VehicleStopsSummary(
+                run: run,
+                delayMinutes: detail?.reportedDelayMinutes,
+                isExpanded: isExpanded
+            ) {
+                withAnimation(.easeOut(duration: 0.25)) { isExpanded.toggle() }
+            }
+        } else if isLoadingTimetable {
+            loadingRow(String(localized: "Looking up the timetable…"))
+        } else if let timetableError {
+            timetableProblem(timetableError)
+        }
+    }
+
+    /// The run the vehicle is on, when the timetable knows the service number the
+    /// feed reports for it.
+    private var run: ScheduledRun? {
+        timetable?.run(serviceNumber: detail?.serviceNumber)
+    }
+
+    /// Whether there is anything behind the short state: a merged marker has no
+    /// run of its own to show.
+    private var canExpand: Bool {
+        cluster.singleVehicle != nil && detail != nil
+    }
+
+    /// The height to draw the card at: the state it is in, moved by the finger
+    /// while it is being dragged, and never outside the two.
+    private var cardHeight: CGFloat {
+        let resting = isExpanded ? fullHeight : peekHeight
+        return min(max(resting - dragTranslation, peekHeight), max(fullHeight, peekHeight))
+    }
+
+    /// The grabber. Decorative - the summary row below it is the way in for anyone
+    /// who would rather tap than drag.
+    private var handle: some View {
+        Capsule()
+            .fill(Color.cardHandle)
+            .frame(width: 40, height: 5)
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+    }
+
+    /// Reports where the short state ends: a zero height view placed after those
+    /// rows and measured in the card's own coordinates.
+    private func marker(_ update: @escaping (CGFloat) -> Void) -> some View {
+        Color.clear
+            .frame(height: 0)
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.frame(in: .named(Self.space)).maxY
+            } action: { bottom in
+                update(bottom)
+            }
+    }
+
+    private var drag: some Gesture {
+        DragGesture(minimumDistance: 8)
+            .onChanged { value in
+                dragTranslation = value.translation.height
+            }
+            .onEnded { value in
+                let distance = value.translation.height
+                // Where the finger was heading, not only where it stopped: a quick
+                // flick should be enough to change state.
+                let fling = value.predictedEndTranslation.height
+                withAnimation(.easeOut(duration: 0.25)) {
+                    if distance < -Self.threshold || fling < -Self.threshold * 3 {
+                        isExpanded = true
+                    } else if distance > Self.threshold || fling > Self.threshold * 3 {
+                        isExpanded = false
                     }
+                    dragTranslation = 0
                 }
             }
-            .frame(maxHeight: 220)
+    }
+
+    private func loadingRow(_ title: String) -> some View {
+        HStack(spacing: 8) {
+            ProgressView()
+                .controlSize(.small)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(Color.cardSecondary)
+        }
+    }
+
+    /// The rows of a merged marker: one vehicle each, with its own star.
+    private var clusterRows: some View {
+        LazyVStack(alignment: .leading, spacing: 10) {
+            ForEach(cluster.vehicles) { vehicle in
+                HStack(spacing: 10) {
+                    Button {
+                        onSelectVehicle(vehicle)
+                    } label: {
+                        VehicleDetailRow(vehicle: vehicle)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    favouriteButton(for: vehicle.line)
+                }
+            }
         }
     }
 
@@ -70,7 +232,7 @@ struct VehicleDetailCard: View {
         } label: {
             Image(systemName: isFavourite ? "star.fill" : "star")
                 .font(.title3)
-                .foregroundStyle(isFavourite ? VehicleFilter.favouriteTint : Color.secondary)
+                .foregroundStyle(isFavourite ? VehicleFilter.favouriteTint : Color.cardSecondary)
                 .frame(width: 32, height: 32)
                 .contentShape(Rectangle())
         }
@@ -82,68 +244,6 @@ struct VehicleDetailCard: View {
         )
     }
 
-    /// What the map's own popup adds: which run this is, and where it is.
-    ///
-    /// ``detail`` is only fetched for single vehicle markers, so a merged
-    /// marker simply has no extra rows.
-    @ViewBuilder
-    private var runSection: some View {
-        if isLoadingDetail {
-            HStack(spacing: 8) {
-                ProgressView()
-                    .controlSize(.small)
-                Text("Looking up this run…")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        } else if let detail {
-            VStack(alignment: .leading, spacing: 8) {
-                if cluster.isStale {                    Label("No recent data for this vehicle.", systemImage: "wifi.exclamationmark")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                if let serviceNumber = detail.serviceNumber {
-                    detailRow(label: "Service", value: serviceNumber)
-                }
-                if let stopName = detail.stopName {
-                    // The feed reports where the vehicle last was. The timetable
-                    // adds the scheduled time when it knows that run at all.
-                    detailRow(label: "Last stop", value: stopName, time: detail.stop?.timeText)
-                }
-                if let next = detail.nextStop {
-                    detailRow(label: "Next stop", value: next.name, time: next.timeText)
-                }
-                if detail.isBarrierFree == true {
-                    Label("Barrier-free", systemImage: "figure.roll")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                if let timetable {
-                    VehicleStopsView(
-                        run: timetable.run(serviceNumber: detail.serviceNumber),
-                        reportedStopName: detail.stopName,
-                        nextStopName: detail.nextStop?.name,
-                        delayMinutes: detail.reportedDelayMinutes
-                    )
-                } else if isLoadingTimetable {
-                    HStack(spacing: 8) {
-                        ProgressView()
-                            .controlSize(.small)
-                        Text("Looking up the timetable…")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                } else if let timetableError {
-                    timetableProblem(timetableError)
-                }
-            }
-        } else if cluster.isStale {
-            Label("No recent data for this vehicle.", systemImage: "wifi.exclamationmark")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
     /// The timetable is not on screen: say why, and offer the download when that is
     /// what is missing.
     ///
@@ -153,7 +253,7 @@ struct VehicleDetailCard: View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(message)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.cardSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             if !isTimetableReady {
                 Spacer(minLength: 6)
@@ -175,7 +275,7 @@ struct VehicleDetailCard: View {
             // label the card uses, so the Czech wording is not cut off.
             Text(label)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.cardSecondary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 96, alignment: .leading)
@@ -186,7 +286,7 @@ struct VehicleDetailCard: View {
             if let time {
                 Text(time)
                     .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.cardSecondary)
             }
         }
     }
@@ -205,20 +305,16 @@ struct VehicleDetailCard: View {
                     if let licenceAreaCode = cluster.representative.lineCode.licenceAreaCode {
                         Text("licence area \(licenceAreaCode)")
                             .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.cardSecondary)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(.quaternary, in: Capsule())
                     }
                 }
-                if let destination = cluster.singleVehicle?.destination {
-                    Text(destination)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                } else if cluster.count > 1 {
+                if cluster.count > 1 {
                     Text("Tap one to centre the map on it")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.cardSecondary)
                 }
             }
 
@@ -231,7 +327,7 @@ struct VehicleDetailCard: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.cardSecondary)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(String(localized: "Close details"))
@@ -271,7 +367,7 @@ struct VehicleDetailRow: View {
                         .foregroundStyle(vehicle.delay.tint)
                 }
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.cardSecondary)
             }
 
             Spacer(minLength: 0)

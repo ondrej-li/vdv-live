@@ -79,8 +79,7 @@ struct ScheduledRun: Hashable, Identifiable, Sendable {
 
     /// The call of this run at a stop the feed reported, matched the relaxed way.
     func call(matchingStopName name: String) -> ScheduledCall? {
-        let wanted = LineTimetable.comparableStopName(name)
-        return calls.first { LineTimetable.comparableStopName($0.stopName) == wanted }
+        LineTimetable.call(matchingStopName: name, in: calls)
     }
 }
 
@@ -113,10 +112,35 @@ struct LineTimetable: Hashable, Sendable {
     /// The feed reports the stop a vehicle was last seen at, so this is what
     /// turns "somewhere on this line" into "call 7 of 23".
     func call(matchingStopName name: String) -> ScheduledCall? {
-        let wanted = LineTimetable.comparableStopName(name)
-        return runs
-            .flatMap(\.calls)
-            .first { LineTimetable.comparableStopName($0.stopName) == wanted }
+        LineTimetable.call(matchingStopName: name, in: runs.flatMap(\.calls))
+    }
+
+    /// The call whose stop the feed reported, or `nil` when nothing on the line
+    /// comes close.
+    static func call(matchingStopName name: String, in calls: [ScheduledCall]) -> ScheduledCall? {
+        let wanted = comparableStopName(name)
+        let matches = calls.compactMap { stopMatch(wanted, $0) }
+        guard let best = matches.map(\.score).max() else { return nil }
+        // The first of the best: on a line that calls at the same stop twice, the
+        // earlier call is the one the vehicle has just reached.
+        return matches.first { $0.score == best }?.call
+    }
+
+    /// How well a call's stop name matches the one the feed reported.
+    ///
+    /// The feed names stops in more detail than the archive does - it reports
+    /// "Stonařov,Sokolíčko,rozc." where the timetable has "Stonařov,Sokolíčko" -
+    /// so a name that starts with the whole of the other is the same stop, and the
+    /// longest such match wins. Scoring by length is what keeps the plain
+    /// "Stonařov" stop from answering when the vehicle is at the one beyond it.
+    private static func stopMatch(
+        _ wanted: String,
+        _ call: ScheduledCall
+    ) -> (call: ScheduledCall, score: Int)? {
+        let name = comparableStopName(call.stopName)
+        let (shorter, longer) = wanted.count <= name.count ? (wanted, name) : (name, wanted)
+        guard shorter == longer || longer.hasPrefix(shorter + " ") else { return nil }
+        return (call, shorter.count)
     }
 
     /// Stop names differ in small ways between the feed and the archive, so they
