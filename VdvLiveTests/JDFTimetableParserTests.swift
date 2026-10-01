@@ -115,6 +115,47 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertEqual(call.stopName, "Třešť,nám.")
     }
 
+    func testFindsAStopTheFeedNamesInMoreDetail() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+
+        // The feed reports the qualifier the archive leaves out.
+        let call = try XCTUnwrap(timetable.call(matchingStopName: "Třešť,nám.,rozc."))
+
+        XCTAssertEqual(call.stopName, "Třešť,nám.")
+    }
+
+    func testPrefersTheStopTheReportedNameExtends() {
+        let run = ScheduledRun(serviceNumber: "13", calls: [
+            scheduledCall(order: 1, stopName: "Stonařov"),
+            scheduledCall(order: 2, stopName: "Stonařov,Sokolíčko")
+        ])
+
+        XCTAssertEqual(run.call(matchingStopName: "Stonařov,Sokolíčko,rozc.")?.order, 2)
+        XCTAssertEqual(run.call(matchingStopName: "Stonařov,rozc.")?.order, 1)
+        XCTAssertNil(run.call(matchingStopName: "Telč,aut.nádr."))
+    }
+
+    func testFindsTheFirstOfTwoCallsAtTheSameStop() {
+        let run = ScheduledRun(serviceNumber: "13", calls: [
+            scheduledCall(order: 1, stopName: "Brtnice,Jestřebí"),
+            scheduledCall(order: 2, stopName: "Brtnice,Jestřebí")
+        ])
+
+        XCTAssertEqual(run.call(matchingStopName: "Brtnice,Jestřebí")?.order, 1)
+    }
+
+    private func scheduledCall(order: Int, stopName: String) -> ScheduledCall {
+        ScheduledCall(
+            order: order,
+            stopID: "\(order)",
+            stopName: stopName,
+            arrival: nil,
+            departure: nil,
+            distanceKilometres: nil,
+            isOnRequest: false
+        )
+    }
+
     func testStopNamesIgnoreDistrictSuffixes() {
         XCTAssertEqual(
             LineTimetable.comparableStopName("Brtnice [JI],Horní město"),
