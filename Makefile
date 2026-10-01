@@ -1,4 +1,4 @@
-# Commands for the VdvMap app.
+# Commands for the VdvLive app.
 #
 # DEVELOPER_DIR is set explicitly so the build works even when xcode-select
 # points at the Command Line Tools instead of Xcode.
@@ -6,16 +6,16 @@
 DEVELOPER_DIR ?= /Applications/Xcode.app/Contents/Developer
 export DEVELOPER_DIR
 
-PROJECT := VdvMap.xcodeproj
-SCHEME := VdvMap
+PROJECT := VdvLive.xcodeproj
+SCHEME := VdvLive
 CONFIGURATION ?= Debug
 DERIVED_DATA := build
 
 # Pick another simulator with: make run SIMULATOR="iPhone 16 Pro"
 SIMULATOR ?= iPhone 17
-APP_ID := cz.ondralinek.VdvMap
-APP_BUNDLE := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphonesimulator/VdvMap.app
-DEVICE_APP := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/VdvMap.app
+APP_ID := cz.ondralinek.VdvLive
+APP_BUNDLE := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphonesimulator/VdvLive.app
+DEVICE_APP := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/VdvLive.app
 SIMULATOR_APP := $(DEVELOPER_DIR)/Applications/Simulator.app
 
 # Which iPhone to install on, as a UDID. Empty means "the only one plugged in".
@@ -57,8 +57,8 @@ TYPECHECK_DIR := $(DERIVED_DATA)/typecheck
 LIVE_DIR := $(DERIVED_DATA)/live
 # Width the mirrored frames are downscaled to before they reach the browser.
 LIVE_WIDTH ?= 720
-APP_SOURCES := $(shell find VdvMap -name '*.swift' | sort)
-TEST_SOURCES := $(shell find VdvMapTests -name '*.swift' | sort)
+APP_SOURCES := $(shell find VdvLive -name '*.swift' | sort)
+TEST_SOURCES := $(shell find VdvLiveTests -name '*.swift' | sort)
 
 .PHONY: all build test typecheck run deploy launch iphones screenshot live icon devices open clean help
 
@@ -75,9 +75,9 @@ test:
 ## Type check the app and test sources without building or signing anything.
 typecheck:
 	@mkdir -p $(TYPECHECK_DIR)
-	$(SWIFTC) -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -D DEBUG -enable-testing -module-name VdvMap -emit-module -emit-module-path $(TYPECHECK_DIR)/VdvMap.swiftmodule $(APP_SOURCES)
+	$(SWIFTC) -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -D DEBUG -enable-testing -module-name VdvLive -emit-module -emit-module-path $(TYPECHECK_DIR)/VdvLive.swiftmodule $(APP_SOURCES)
 	$(SWIFTC) -typecheck -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -D DEBUG $(APP_SOURCES)
-	$(SWIFTC) -typecheck -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -enable-testing -module-name VdvMapTests -I $(TYPECHECK_DIR) -I '$(IOS_SIMULATOR_PLATFORM)/usr/lib' -F '$(IOS_SIMULATOR_PLATFORM)/Library/Frameworks' $(TEST_SOURCES)
+	$(SWIFTC) -typecheck -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -enable-testing -module-name VdvLiveTests -I $(TYPECHECK_DIR) -I '$(IOS_SIMULATOR_PLATFORM)/usr/lib' -F '$(IOS_SIMULATOR_PLATFORM)/Library/Frameworks' $(TEST_SOURCES)
 	@echo "type check passed"
 
 ## Build, install and launch the app on the booted simulator.

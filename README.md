@@ -1,4 +1,4 @@
-# VDV Map
+# VDV Live
 
 An iOS app that shows the live positions of buses and trains in the Vysočina
 Region (Czechia) on Apple Maps.
@@ -9,7 +9,7 @@ JSON array. The app polls that endpoint, groups nearby vehicles into markers and
 draws them on a map that is framed - and locked - to the region.
 
 <p align="center">
-  <img src="VdvMap/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png" width="180" alt="App icon: a white bus on a blue to teal gradient">
+  <img src="VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png" width="180" alt="App icon: a white bus on a blue to teal gradient">
 </p>
 
 ## What it does today
@@ -103,7 +103,7 @@ There are no third party dependencies, so there is nothing to resolve before
 building.
 
 ```sh
-open VdvMap.xcodeproj          # or: make open
+open VdvLive.xcodeproj          # or: make open
 make build                     # build for the simulator
 make test                      # run the unit tests
 make run                       # build, install and launch on a simulator
@@ -126,10 +126,10 @@ mirror, so interactions have to go through DeviceHub, Xcode or a device build.
 first, and the first two need the Xcode application rather than the command line:
 
 - **An Apple ID under Xcode > Settings > Accounts.** A free Apple ID is enough.
-- **A team chosen for the VdvMap target**, under Signing & Capabilities, with
+- **A team chosen for the VdvLive target**, under Signing & Capabilities, with
   "Automatically manage signing" ticked. Adding the account alone creates neither
   a certificate nor a profile - selecting the team is what does, and without it
-  the build stops at `Signing for "VdvMap" requires a development team`. The
+  the build stops at `Signing for "VdvLive" requires a development team`. The
   project records the team as `DEVELOPMENT_TEAM`, so this is a one-off; use
   `make deploy TEAM=<team id>` to override it.
 - **Developer Mode on the iPhone**, under Settings > Privacy & Security >
@@ -145,13 +145,13 @@ first, and the first two need the Xcode application rather than the command line
 A free Apple ID signs for seven days at a time, so a free account means repeating
 `make deploy` weekly; a paid membership extends that to a year. With several
 iPhones plugged in, `make iphones` lists them and `make deploy DEVICE=<udid>` picks
-one. The app id is `cz.ondralinek.VdvMap`, so with a free account that id has to be
+one. The app id is `cz.ondralinek.VdvLive`, so with a free account that id has to be
 free too. A launch that is refused is reported by `make launch` as what it is:
 iOS will not open an app while the phone is locked, and it will not open one
 signed by a developer it has not been told to trust.
 
 The Xcode project uses file system synchronised groups, so new files inside
-`VdvMap/` or `VdvMapTests/` are picked up automatically - there is no `.pbxproj`
+`VdvLive/` or `VdvLiveTests/` are picked up automatically - there is no `.pbxproj`
 merge conflict to worry about.
 
 If the command line tools are pointed at the Command Line Tools rather than
@@ -165,7 +165,7 @@ sudo xcodebuild -license accept
 ## Project layout
 
 ```
-VdvMap/
+VdvLive/
   App/            entry point and the one place that builds the live stack
   Domain/         value types: Vehicle, Traction, VehicleDelay, FavouriteLines,
                   the region, the grid clusterer that turns vehicles into markers,
@@ -178,7 +178,7 @@ VdvMap/
   Resources/      asset catalog (app icon, accent colour)
   Support/        sample data used by SwiftUI previews (#if DEBUG)
   Localizable.xcstrings   English source strings with Czech translations
-VdvMapTests/      unit tests plus JSON fixtures captured from the live feed
+VdvLiveTests/      unit tests plus JSON fixtures captured from the live feed
 tools/            the app icon generator, the live mirror page, and the JDF
                   investigation scripts (see docs/timetables.md)
 docs/api.md       what the feed returns, as verified against a live sample

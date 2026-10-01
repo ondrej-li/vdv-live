@@ -8,7 +8,7 @@ directory itself (a couple of megabytes) to learn where those entries live, so
 only the names are baked in - and every fetch is verified against the line's own
 `Linky.txt` in case the names are ever reassigned.
 
-    python3 tools/jdf_lines_mapping.py /tmp/jdf/JDF.zip VdvMap/Resources/jdf-lines.json
+    python3 tools/jdf_lines_mapping.py /tmp/jdf/JDF.zip VdvLive/Resources/jdf-lines.json
 """
 
 import io
