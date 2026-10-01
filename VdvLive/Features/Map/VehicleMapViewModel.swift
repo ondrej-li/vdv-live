@@ -416,6 +416,33 @@ final class VehicleMapViewModel {
         settingsStore.save(settings)
     }
 
+    // MARK: - The user's position
+
+    /// Whether the map draws the user's own position.
+    var showsCurrentLocation: Bool { settings.showsCurrentLocation }
+
+    /// Turns the position on or off.
+    ///
+    /// Asking for permission is left to the view, which is the thing that knows
+    /// whether the map is on screen to draw the answer with.
+    func setShowsCurrentLocation(_ showsCurrentLocation: Bool) {
+        guard settings.showsCurrentLocation != showsCurrentLocation else { return }
+        settings.showsCurrentLocation = showsCurrentLocation
+        settingsStore.save(settings)
+    }
+
+    /// Asks for permission for the position the map draws, when nothing else has
+    /// needed it.
+    ///
+    /// Opening the map on the current location asks as part of looking the
+    /// position up. With a viewport locked, or with that option switched off,
+    /// nothing has asked, so the dot would never appear without this. It is a
+    /// cheap no-op once the question has been answered.
+    func requestLocationPermissionIfNeeded() async {
+        guard settings.showsCurrentLocation else { return }
+        await locationProvider.requestAuthorization()
+    }
+
     /// Distance within which buses are drawn as one marker, zero for none.
     var clusterRadiusMetres: Double { settings.clusterRadiusMetres }
 

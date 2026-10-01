@@ -9,14 +9,23 @@ import CoreLocation
 @MainActor
 final class StubLocationProvider: LocationProviding {
     var coordinate: CLLocationCoordinate2D?
+    /// What ``requestAuthorization()`` answers.
+    var isAuthorized = true
     private(set) var requestCount = 0
+    private(set) var authorizationRequestCount = 0
 
-    init(coordinate: CLLocationCoordinate2D? = nil) {
+    init(coordinate: CLLocationCoordinate2D? = nil, isAuthorized: Bool = true) {
         self.coordinate = coordinate
+        self.isAuthorized = isAuthorized
     }
 
     func requestCurrentCoordinate() async -> CLLocationCoordinate2D? {
         requestCount += 1
         return coordinate
+    }
+
+    func requestAuthorization() async -> Bool {
+        authorizationRequestCount += 1
+        return isAuthorized
     }
 }

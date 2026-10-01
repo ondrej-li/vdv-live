@@ -741,12 +741,22 @@
         }
       }
     },
-    "Opening the map": {
+    "Show my position on the map": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Otevírání mapy"
+            "value": "Zobrazit moji polohu na mapě"
+          }
+        }
+      }
+    },
+    "My location": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moje poloha"
           }
         }
       }
@@ -761,12 +771,12 @@
         }
       }
     },
-    "The map starts about 10 km around your position, read once when the app starts and never sent anywhere. The lock button on the map remembers the view you are looking at instead; press it again to forget that view.": {
+    "The position is read on the device and never sent anywhere. The blue dot is the system's own; the map opens about 10 km around the position, and the lock button remembers the view you are looking at instead.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mapa se otevře zhruba 10 km okolo vaší polohy. Poloha se načte právě jednou při spuštění a nikam se neposílá. Tlačítkem se zámkem na mapě si místo toho uložíte právě zobrazený výřez; dalším stisknutím ho zrušíte."
+            "value": "Poloha se načítá v zařízení a nikam se neposílá. Modrá tečka je systémová; mapa se otevře zhruba 10 km okolo polohy a tlačítkem se zámkem si místo toho uložíte právě zobrazený výřez."
           }
         }
       }

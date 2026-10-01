@@ -16,6 +16,11 @@ draws them on a map that is framed - and locked - to the region.
 
 - **Live map of the region.** Apple Maps, standard style, camera restricted to
   the Vysočina Region so the map cannot be panned into the sea.
+- **Your own position.** The map draws the system's blue dot, with its accuracy
+  ring, where you are. It is on by default and switched off in the settings. It
+  needs the same permission as opening the map at your location, so iOS is not
+  asked for anything unless one of the two wants it, and the position is never
+  stored or sent anywhere - MapKit draws the dot and keeps it up to date.
 - **Opens on the current location.** The map starts about 10 km around where you
   are, so the first thing on screen is your neighbourhood rather than a region
   seen from far out. The position is read once per launch, never leaves the

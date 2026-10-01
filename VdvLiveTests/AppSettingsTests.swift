@@ -214,6 +214,18 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(SettingsSheet.radiusLabel(1_000), "1 km")
     }
 
+    func testThePositionIsShownUnlessItIsSwitchedOff() {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+        XCTAssertTrue(AppSettings.default.showsCurrentLocation)
+        XCTAssertTrue(store.load().showsCurrentLocation)
+
+        var settings = AppSettings.default
+        settings.showsCurrentLocation = false
+        store.save(settings)
+
+        XCTAssertFalse(store.load().showsCurrentLocation)
+    }
+
     // MARK: - Language
 
     func testLocalizationCodes() {
