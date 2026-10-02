@@ -708,8 +708,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.clusters, clusters)
     }
 
-    func testRemembersTheVisibleRegionSoTheMapCanBeTurnedBackToNorth() async {
-        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+    func testRemembersTheVisibleRegionSoTheMapCanBeTurnedBackToNorth() async {        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
         await viewModel.load()
 
         let region = MKCoordinateRegion(
@@ -727,6 +726,49 @@ final class VehicleMapViewModelTests: XCTestCase {
     }
 
     // MARK: - Selection
+
+    func testFollowsTheVehicleTheCardIsShowing() async {
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        await viewModel.load()
+        viewModel.selectedClusterID = viewModel.clusters.first?.id
+
+        viewModel.setFollowsSelectedVehicle(true)
+
+        XCTAssertTrue(viewModel.followsSelectedVehicle)
+        XCTAssertEqual(viewModel.followedClusterID, viewModel.selectedClusterID)
+    }
+
+    func testDoesNotFollowAnythingUntilItIsAsked() async {
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        await viewModel.load()
+        viewModel.selectedClusterID = viewModel.clusters.first?.id
+
+        XCTAssertFalse(viewModel.followsSelectedVehicle)
+        XCTAssertNil(viewModel.followedClusterID)
+    }
+
+    func testStopsFollowingWhenAnotherVehicleIsChosen() async {
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        await viewModel.load()
+        viewModel.selectedClusterID = viewModel.clusters.first?.id
+        viewModel.setFollowsSelectedVehicle(true)
+
+        viewModel.selectedClusterID = "some other marker"
+
+        XCTAssertFalse(viewModel.followsSelectedVehicle)
+        XCTAssertNil(viewModel.followedClusterID)
+    }
+
+    func testStopsFollowingWhenTheCardIsClosed() async {
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        await viewModel.load()
+        viewModel.selectedClusterID = viewModel.clusters.first?.id
+        viewModel.setFollowsSelectedVehicle(true)
+
+        viewModel.selectedClusterID = nil
+
+        XCTAssertFalse(viewModel.followsSelectedVehicle)
+    }
 
     func testResolvesTheSelectedMarkerAndForgetsItWhenItLeavesTheScreen() async {
         let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
