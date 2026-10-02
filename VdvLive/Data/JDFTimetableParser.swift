@@ -99,7 +99,7 @@ enum JDFTimetableParser {
         }
 
         let runs = callsByRun
-            .map { ScheduledRun(serviceNumber: $0.key, calls: $0.value.sorted { $0.order < $1.order }) }
+            .map { ScheduledRun(serviceNumber: $0.key, calls: ScheduledRun.inTravelOrder($0.value)) }
             .sorted { $0.serviceNumber.compare($1.serviceNumber, options: .numeric) == .orderedAscending }
 
         let line = try rows(in: files["Linky.txt"] ?? Data(), name: "Linky.txt").first

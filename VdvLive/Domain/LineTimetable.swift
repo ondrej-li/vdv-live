@@ -77,6 +77,26 @@ struct ScheduledRun: Hashable, Identifiable, Sendable {
 
     var lastCall: ScheduledCall? { calls.last }
 
+    /// The calls of one run, in the order the vehicle calls at them.
+    ///
+    /// JDF numbers the stops along the *line*, not along the run, so a run
+    /// travelling the other way counts up against the direction it is going in
+    /// and its times run backwards against that numbering. That is the case for
+    /// about half the runs in the published archive, and taken at face value it
+    /// prints those timetables in reverse.
+    ///
+    /// The direction is decided from the times, while the numbering still says
+    /// where each call sits within the run - which is what keeps a request stop,
+    /// whose time JDF does not print at all, in its place instead of at one end.
+    static func inTravelOrder(_ calls: [ScheduledCall]) -> [ScheduledCall] {
+        let ordered = calls.sorted { $0.order < $1.order }
+        let times = ordered.compactMap(\.time)
+        guard let first = times.first, let last = times.last, first > last else {
+            return ordered
+        }
+        return ordered.reversed()
+    }
+
     /// The call of this run at a stop the feed reported, matched the relaxed way.
     func call(matchingStopName name: String) -> ScheduledCall? {
         LineTimetable.call(matchingStopName: name, in: calls)
