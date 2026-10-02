@@ -10,6 +10,9 @@ struct VehicleMapView: View {
     @State private var isShowingSettings = false
     /// Size of the map, needed to turn a zoom level into a distance.
     @State private var mapSize: CGSize = .zero
+    /// Where the map is pointing. Kept from the last camera change, because a
+    /// region cannot describe a direction and the reset has to.
+    @State private var lastCamera: MapCamera?
 
     init(
         fetcher: VehicleFetching = AppDependencies.live.vehicleFetcher,
@@ -135,6 +138,7 @@ struct VehicleMapView: View {
         }
         .onMapCameraChange(frequency: .onEnd) { context in
             viewModel.updateVisibleRegion(context.region)
+            lastCamera = context.camera
             // A pan is the user taking over. Following stops rather than pulling
             // the map back to the position under their finger.
             if camera.positionedByUser, viewModel.followsCurrentLocation {
@@ -395,16 +399,22 @@ struct VehicleMapView: View {
     /// The map can be turned and tilted with two fingers, and until now the only
     /// way back was the system compass: it appears only while the map is turned,
     /// and it sits at the opposite corner from everything else the app puts on
-    /// screen. A region carries no direction, so handing the map the one it is
-    /// already showing is what takes the rotation and the tilt out.
+    /// screen.
     private func pointNorthUp() {
         // While the map is following the position it has its own north-up camera,
-        // and a region here would quietly take the following away with the turn.
-        let position: MapCameraPosition = viewModel.followsCurrentLocation
-            ? Self.followingCamera
-            : .region(viewModel.visibleRegion)
+        // and a camera here would quietly take the following away with the turn.
+        guard !viewModel.followsCurrentLocation else {
+            withAnimation(.easeInOut(duration: 0.35)) {
+                camera = Self.followingCamera
+            }
+            return
+        }
+        // The centre and the zoom are the ones already on screen, so only the
+        // direction changes. Handing back a region here did nothing: a region
+        // describes what to look at, and a turned map handed one keeps its turn.
+        guard let current = lastCamera else { return }
         withAnimation(.easeInOut(duration: 0.35)) {
-            camera = position
+            camera = .camera(current.pointingNorth)
         }
     }
 
