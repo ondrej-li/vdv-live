@@ -325,13 +325,14 @@ struct VehicleMapView: View {
     /// vehicle is selected, and hard against the bottom edge when it is not.
     private var bottomOverlay: some View {
         VStack(spacing: 10) {
-            HStack(spacing: 0) {
+            HStack(spacing: 8) {
                 if let mapScale {
                     MapScaleLegend(scale: mapScale)
-                        .padding(.leading, 16)
                 }
+                northUpButton
                 Spacer(minLength: 0)
             }
+            .padding(.leading, 16)
 
             detailCard
         }
@@ -387,6 +388,39 @@ struct VehicleMapView: View {
         withAnimation(.easeInOut(duration: 0.4)) {
             camera = .region(RegionOfInterest.vysocina.region)
         }
+    }
+
+    /// Turns the map back to north, keeping the centre and the zoom where they are.
+    ///
+    /// The map can be turned and tilted with two fingers, and until now the only
+    /// way back was the system compass: it appears only while the map is turned,
+    /// and it sits at the opposite corner from everything else the app puts on
+    /// screen. A region carries no direction, so handing the map the one it is
+    /// already showing is what takes the rotation and the tilt out.
+    private func pointNorthUp() {
+        // While the map is following the position it has its own north-up camera,
+        // and a region here would quietly take the following away with the turn.
+        let position: MapCameraPosition = viewModel.followsCurrentLocation
+            ? Self.followingCamera
+            : .region(viewModel.visibleRegion)
+        withAnimation(.easeInOut(duration: 0.35)) {
+            camera = position
+        }
+    }
+
+    /// Reset for the map's direction, which belongs with the scale legend: both
+    /// answer the same question, which is how the map is being read.
+    private var northUpButton: some View {
+        Button(action: pointNorthUp) {
+            Image(systemName: "safari")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Color.primary.opacity(0.7))
+                .frame(width: 30, height: 30)
+                .background(.regularMaterial, in: Circle())
+                .shadow(color: .black.opacity(0.1), radius: 5, y: 1)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Point north up"))
     }
 
     /// Flies to the first vehicle reporting on `line`.

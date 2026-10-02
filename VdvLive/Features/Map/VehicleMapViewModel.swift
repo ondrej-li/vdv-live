@@ -69,7 +69,9 @@ final class VehicleMapViewModel {
     private var visibleBounds = RegionOfInterest.BoundingBox(region: RegionOfInterest.vysocina.region)
     /// Viewport the map is showing, so that the bookmark button can remember
     /// exactly what is on screen rather than guessing from the zoom level alone.
-    private var visibleRegion: MKCoordinateRegion = RegionOfInterest.vysocina.region
+    /// The north-up reset hands the same region back to the map, which is what
+    /// clears a rotation without moving the centre or the zoom.
+    private(set) var visibleRegion: MKCoordinateRegion = RegionOfInterest.vysocina.region
     /// True while what is on the map is known to be out of date: the app has been
     /// away, so every marker is drawn grey until a payload replaces it.
     private var showsStalePayload = false
