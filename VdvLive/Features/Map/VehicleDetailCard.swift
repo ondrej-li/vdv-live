@@ -17,7 +17,10 @@ struct VehicleDetailCard: View {
     /// Whether the timetable index has been downloaded, which decides whether
     /// offering the download here makes sense.
     var isTimetableReady = true
+    /// Whether the map is keeping this vehicle in the middle.
+    var isFollowing = false
     let onDownloadTimetable: () -> Void
+    let onToggleFollow: () -> Void
     let onToggleFavourite: (String) -> Void
     let onSelectVehicle: (Vehicle) -> Void
     let onDismiss: () -> Void
@@ -236,6 +239,28 @@ struct VehicleDetailCard: View {
         }
     }
 
+    /// Follows the vehicle the card is showing: the map keeps it in the middle
+    /// for as long as the card is open, which is as long as the follow lasts.
+    ///
+    /// Beside the star rather than instead of it, because the two are different
+    /// promises: the star is about the line and survives the card, this is about
+    /// the vehicle on screen and does not.
+    private var followButton: some View {
+        Button(action: onToggleFollow) {
+            Image(systemName: isFollowing ? "location.fill" : "location")
+                .font(.title3)
+                .foregroundStyle(isFollowing ? Color.accentColor : Color.cardSecondary)
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            isFollowing
+                ? String(localized: "Stop following this vehicle")
+                : String(localized: "Follow this vehicle")
+        )
+    }
+
     /// Star that pins or unpins one line.
     ///
     /// A sibling of the row button rather than nested inside it, so that tapping
@@ -336,6 +361,7 @@ struct VehicleDetailCard: View {
             Spacer(minLength: 8)
 
             if let vehicle = cluster.singleVehicle {
+                followButton
                 favouriteButton(for: vehicle.line)
             }
 

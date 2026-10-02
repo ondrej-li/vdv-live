@@ -48,6 +48,14 @@ final class VehicleMapViewModel {
     /// Marker the user tapped; owned by the view through a binding.
     var selectedClusterID: String?
 
+    /// The marker a follow was asked for.
+    ///
+    /// Kept as the request rather than as a state of its own, so that following
+    /// is on only while the marker it was asked for is the one on screen:
+    /// closing the card or tapping another vehicle ends it without anything
+    /// having to remember to. Nothing about it is stored anywhere.
+    private var requestedFollowClusterID: String?
+
     private let fetcher: VehicleFetching
     private let favouriteLinesStore: FavouriteLinesPersisting
     private let settingsStore: AppSettingsStoring
@@ -153,6 +161,22 @@ final class VehicleMapViewModel {
     var selectedCluster: VehicleCluster? {
         guard let selectedClusterID else { return nil }
         return clusters.first { $0.id == selectedClusterID }
+    }
+
+    /// The marker the map is keeping in the middle, if any.
+    var followedClusterID: String? {
+        requestedFollowClusterID == selectedClusterID ? selectedClusterID : nil
+    }
+
+    /// Whether the map is keeping the selected vehicle in the middle.
+    var followsSelectedVehicle: Bool { followedClusterID != nil }
+
+    /// Starts or stops following the marker that is on screen.
+    ///
+    /// Deliberately not written to the settings: it lasts as long as the card it
+    /// was asked from, and a launch never begins with one on.
+    func setFollowsSelectedVehicle(_ follows: Bool) {
+        requestedFollowClusterID = follows ? selectedClusterID : nil
     }
 
     /// Loads the first payload, once.

@@ -52,6 +52,17 @@ struct VehicleMapView: View {
         .onChange(of: viewModel.selectedClusterID) { _, _ in
             Task { await viewModel.selectionDidChange() }
         }
+        .onChange(of: viewModel.clusters) { _, _ in
+            // The markers change on every frame of a glide, which is what makes
+            // the camera travel with the followed vehicle rather than jump to it.
+            centreOnFollowedVehicle()
+        }
+        .onChange(of: viewModel.followsSelectedVehicle) { _, follows in
+            // The vehicle only moves every so often, so it also has to be
+            // centred when the follow starts rather than only when it next moves.
+            guard follows else { return }
+            centreOnFollowedVehicle()
+        }
         .task { await viewModel.loadIfNeeded() }
         .task {
             // Opening on the current location needs a position, which is only
@@ -141,8 +152,13 @@ struct VehicleMapView: View {
             lastCamera = context.camera
             // A pan is the user taking over. Following stops rather than pulling
             // the map back to the position under their finger.
-            if camera.positionedByUser, viewModel.followsCurrentLocation {
-                viewModel.setFollowsCurrentLocation(false)
+            if camera.positionedByUser {
+                if viewModel.followsCurrentLocation {
+                    viewModel.setFollowsCurrentLocation(false)
+                }
+                if viewModel.followsSelectedVehicle {
+                    viewModel.setFollowsSelectedVehicle(false)
+                }
             }
         }
         .onGeometryChange(for: CGSize.self) { proxy in
@@ -355,6 +371,7 @@ struct VehicleMapView: View {
                 isLoadingTimetable: viewModel.isLoadingTimetable,
                 timetableError: viewModel.timetableError,
                 isTimetableReady: viewModel.timetables.isReady,
+                isFollowing: viewModel.followsSelectedVehicle,
                 onDownloadTimetable: {
                     Task {
                         await viewModel.timetables.downloadIndex()
@@ -362,6 +379,9 @@ struct VehicleMapView: View {
                         // away rather than at the next refresh.
                         await viewModel.reloadTimetableForSelection()
                     }
+                },
+                onToggleFollow: {
+                    viewModel.setFollowsSelectedVehicle(!viewModel.followsSelectedVehicle)
                 },
                 onToggleFavourite: { viewModel.toggleFavourite(line: $0) },
                 onSelectVehicle: focus,
@@ -392,6 +412,31 @@ struct VehicleMapView: View {
         withAnimation(.easeInOut(duration: 0.4)) {
             camera = .region(RegionOfInterest.vysocina.region)
         }
+    }
+
+    /// Where the followed vehicle is being drawn, which is what the map centres.
+    ///
+    /// The drawn position rather than the reported one, so the camera travels
+    /// with the marker as it glides to where the feed last saw it.
+    private var followedCoordinate: CLLocationCoordinate2D? {
+        guard let id = viewModel.followedClusterID else { return nil }
+        return viewModel.clusters.first { $0.id == id }?.drawnCoordinate
+    }
+
+    /// Keeps the followed vehicle in the middle.
+    ///
+    /// The camera is built from the one on screen, so that the zoom and the
+    /// direction the user has chosen for the map survive being dragged along.
+    private func centreOnFollowedVehicle() {
+        guard let coordinate = followedCoordinate, let current = lastCamera else { return }
+        camera = .camera(
+            MapCamera(
+                centerCoordinate: coordinate,
+                distance: current.distance,
+                heading: current.heading,
+                pitch: current.pitch
+            )
+        )
     }
 
     /// Turns the map back to north, keeping the centre and the zoom where they are.
