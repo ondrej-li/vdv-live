@@ -708,6 +708,24 @@ final class VehicleMapViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.clusters, clusters)
     }
 
+    func testRemembersTheVisibleRegionSoTheMapCanBeTurnedBackToNorth() async {
+        let (viewModel, _) = makeViewModel(vehicles: sampleVehicles)
+        await viewModel.load()
+
+        let region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 49.4, longitude: 15.6),
+            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.04)
+        )
+        viewModel.updateVisibleRegion(region)
+
+        // The reset hands this straight back to the map, so a region kept as a
+        // span alone would turn the map north at the wrong zoom.
+        XCTAssertEqual(viewModel.visibleRegion.center.latitude, 49.4, accuracy: 0.0001)
+        XCTAssertEqual(viewModel.visibleRegion.center.longitude, 15.6, accuracy: 0.0001)
+        XCTAssertEqual(viewModel.visibleRegion.span.latitudeDelta, 0.02, accuracy: 0.0001)
+        XCTAssertEqual(viewModel.visibleRegion.span.longitudeDelta, 0.04, accuracy: 0.0001)
+    }
+
     // MARK: - Selection
 
     func testResolvesTheSelectedMarkerAndForgetsItWhenItLeavesTheScreen() async {
