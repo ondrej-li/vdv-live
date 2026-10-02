@@ -58,11 +58,15 @@ struct VehicleDetailCard: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
         .offset(y: followOffset)
-        .gesture(drag, including: canExpand && !isExpanded ? .all : .none)
     }
 
     /// The grabber, the header and the rows a passenger came for: the state the
     /// card opens in, and the height it is cut to while it does.
+    ///
+    /// The pull lives here rather than on the card as a whole, and in both
+    /// directions: these rows are what the finger goes to, and they are the only
+    /// part of the card that has nothing else to do with a drag. A pull on the
+    /// timetable below them belongs to the list, which scrolls.
     private var shortState: some View {
         VStack(alignment: .leading, spacing: 12) {
             handle
@@ -73,6 +77,9 @@ struct VehicleDetailCard: View {
             let needed = height + Self.padding * 2
             if abs(shortHeight - needed) > 1 { shortHeight = needed }
         }
+        // Simultaneous so the rows inside it keep their own taps: the summary row
+        // toggles the drawer, and the header's star pins the line.
+        .simultaneousGesture(drag, including: canExpand ? .all : .none)
     }
 
     /// What the card opens with: the vehicle, the stop it is heading for, and the
