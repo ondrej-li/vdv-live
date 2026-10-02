@@ -59,8 +59,11 @@ enum JDFTimetableParser {
         let lineNumber = firstCall[Column.lineNumber]
 
         // Stops: id -> "Obec,část". The archive writes the municipality with a
-        // district suffix ("Brtnice [JI]") and puts the local part either in the
-        // part column or in the one after it.
+        // district suffix ("Brtnice [JI]") and then up to two more parts: the part
+        // of the municipality and a local name such as "rozc.1.0". The last two
+        // are not alternatives - 114 of 1055 stops in a sample of the archive have
+        // both - and keeping only the first of them is what used to cut
+        // "Zašovice,Nová Brtnice,rozc.1.0" down to its first two parts.
         var stopNames: [String: String] = [:]
         if let stopsData = files["Zastavky.txt"] {
             for row in try rows(in: stopsData, name: "Zastavky.txt") {
@@ -68,7 +71,8 @@ enum JDFTimetableParser {
                 let municipality = strippingDistrict(row[Column.Stop.municipality])
                 let detail = [row[safe: Column.Stop.part], row[safe: Column.Stop.localName]]
                     .compactMap { $0 }
-                    .first { !$0.isEmpty } ?? ""
+                    .filter { !$0.isEmpty }
+                    .joined(separator: ",")
                 stopNames[row[Column.Stop.name]] = detail.isEmpty
                     ? municipality
                     : "\(municipality),\(detail)"

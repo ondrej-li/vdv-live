@@ -58,6 +58,17 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertEqual(orders.last, orders.min())
     }
 
+    /// Stops can have three parts, and the list used to cut names to a single
+    /// line, which is what hid the last one. Every part survives parsing, so the
+    /// row only has to stop truncating them.
+    func testKeepsEveryPartOfAStopName() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+        let names = Set(timetable.runs.flatMap(\.calls).map(\.stopName))
+
+        XCTAssertTrue(names.contains("Zašovice,Nová Brtnice,rozc.1.0"))
+        XCTAssertTrue(names.contains("Stonařov,Sokolíčko,rozc."))
+    }
+
     func testEveryCallEitherHasATimeOrIsOnRequest() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
 
