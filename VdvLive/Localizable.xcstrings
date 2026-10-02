@@ -621,6 +621,36 @@
         }
       }
     },
+    "Follow this vehicle": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sledovat toto vozidlo"
+          }
+        }
+      }
+    },
+    "Point north up": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otočit na sever"
+          }
+        }
+      }
+    },
+    "Stop following this vehicle": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přestat sledovat toto vozidlo"
+          }
+        }
+      }
+    },
     "not running": {
       "localizations": {
         "cs": {
