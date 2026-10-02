@@ -33,7 +33,11 @@ enum VehicleDetailHTMLParser {
             case .stopName:
                 stopName = cleanText(valueMarkup)
             case .delay:
-                reportedDelayMinutes = leadingInteger(in: cleanText(valueMarkup))
+                // The feed writes Int32.min when it has no delay to report.
+                // Carrying that on as minutes shows "-2147483648 min" in the
+                // card and moves every stop of the run to midnight in the list.
+                let minutes = leadingInteger(in: cleanText(valueMarkup))
+                reportedDelayMinutes = minutes == VehicleDelay.unknownSentinel ? nil : minutes
             case .barrierFree:
                 // The site renders this row as a disabled checkbox that is only
                 // ticked for accessible vehicles.

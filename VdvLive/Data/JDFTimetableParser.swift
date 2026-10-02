@@ -95,9 +95,10 @@ enum JDFTimetableParser {
                     arrival: TimeOfDay(clock: arrival),
                     departure: TimeOfDay(clock: departure),
                     distanceKilometres: row[safe: Column.Call.distance].flatMap(Int.init),
-                    // A request stop carries `<` in the time columns, or a time
-                    // with a symbol after it ("0435<").
-                    isOnRequest: arrival.contains("<") || departure.contains("<")
+                    // A call the run does not serve carries `<` or `|` in the time
+                    // columns instead of a time, so it has none at all.
+                    isServed: !(arrival.contains("<") || arrival.contains("|")
+                        || departure.contains("<") || departure.contains("|")),
                 )
             )
         }

@@ -87,8 +87,8 @@ struct VehicleStopsView: View {
         return HStack(alignment: .firstTextBaseline, spacing: 8) {
             timeColumn(for: call, in: run)
 
-            if let planned = plannedTime(for: call, in: run) {
-                Text("(\(planned.text))")
+            if let projected = projectedTime(for: call, in: run) {
+                Text("(\(projected.text))")
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(Color.cardSecondary)
                     .frame(width: 44, alignment: .leading)
@@ -101,6 +101,7 @@ struct VehicleStopsView: View {
             Text(call.stopName)
                 .font(.caption)
                 .fontWeight(weight)
+                .foregroundStyle(call.isServed ? Color.primary : Color.cardSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 6)
@@ -122,48 +123,44 @@ struct VehicleStopsView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// The time, or the mark for a stop the vehicle only calls at on request.
+    /// The time the timetable prints for this call, or the mark that says the run
+    /// does not call at the stop at all.
     ///
-    /// A request stop has no time to print - JDF writes a `<` where the clock
-    /// would be - and printing words there instead made the list read as prose,
-    /// and made the one column that is always a time the one that sometimes is
-    /// not. The mark is what a timetable uses; VoiceOver still says the words.
+    /// A service does not have to serve every stop of its line: the archive puts a
+    /// symbol where the time would be for the ones it skips, and it has no time to
+    /// print. The pipe is what a printed timetable uses for the same thing, and
+    /// words there would make the one column that is always a clock the one that
+    /// sometimes is not. VoiceOver still says what the pipe means.
     @ViewBuilder
     private func timeColumn(for call: ScheduledCall, in run: ScheduledRun) -> some View {
-        if call.isOnRequest {
-            Image(systemName: "hand.raised")
-                .font(.caption2)
-                .foregroundStyle(Color.cardSecondary)
-                .frame(width: 52, alignment: .leading)
-                .accessibilityLabel(Text("on request"))
-        } else {
-            Text(timeText(for: call, in: run))
+        if call.isServed {
+            Text(scheduledTime(for: call))
                 .font(.caption.monospacedDigit())
                 .frame(width: 52, alignment: .leading)
+        } else {
+            Text("|")
+                .font(.caption)
+                .foregroundStyle(Color.cardSecondary)
+                .frame(width: 52, alignment: .leading)
+                .accessibilityLabel(Text("not served"))
         }
     }
 
-    /// The time to show for a stop the vehicle still has ahead of it: the feed's
-    /// delay moved onto the timetable's time. Behind the vehicle the timetable's
-    /// own time stands, because there the delay is history rather than a
-    /// prediction.
-    private func timeText(for call: ScheduledCall, in run: ScheduledRun) -> String {
-        guard isAhead(of: call, in: run),
-              let delayMinutes, delayMinutes != 0,
-              let shifted = call.time(lateByMinutes: delayMinutes) else {
-            return call.time?.text ?? "–"
-        }
-        return shifted.text
+    /// The time the timetable prints, which is what the row leads with.
+    private func scheduledTime(for call: ScheduledCall) -> String {
+        call.time?.text ?? "–"
     }
 
-    /// The published time, shown beside the estimated one for the stops still
-    /// ahead: the timetable is the promise and the delayed time is what the feed
-    /// expects, and a passenger at a stop wants to see both.
-    private func plannedTime(for call: ScheduledCall, in run: ScheduledRun) -> TimeOfDay? {
-        guard !call.isOnRequest, isAhead(of: call, in: run), let delayMinutes, delayMinutes != 0 else {
+    /// What the feed expects instead: the timetable's own time with the delay
+    /// moved onto it, for the stops the vehicle still has ahead of it. Behind the
+    /// vehicle the timetable's time stands, because there the delay is history
+    /// rather than a prediction, and a call the run skips has no time to project.
+    private func projectedTime(for call: ScheduledCall, in run: ScheduledRun) -> TimeOfDay? {
+        guard call.isServed, isAhead(of: call, in: run),
+              let delayMinutes, delayMinutes != 0 else {
             return nil
         }
-        return call.time
+        return call.time?.shifted(byMinutes: delayMinutes)
     }
 
     /// Whether the vehicle still has this call ahead of it.

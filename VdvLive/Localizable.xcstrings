@@ -1071,12 +1071,12 @@
         }
       }
     },
-    "on request": {
+    "not served": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "na znamení"
+            "value": "nezastavuje"
           }
         }
       }
