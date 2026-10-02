@@ -41,6 +41,23 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertFalse(first.isOnRequest)
     }
 
+    /// Run 2 of this line is one of the runs the archive numbers against the
+    /// direction it travels in, so before the ordering was worked out from the
+    /// times, this run printed backwards - the times were right, the list was not.
+    func testListsAReversedRunFromItsFirstStopToItsLast() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+        let run = try XCTUnwrap(timetable.run(serviceNumber: "2"))
+        let times = run.calls.compactMap(\.time)
+        let orders = run.calls.map(\.order)
+
+        XCTAssertGreaterThan(times.count, 3)
+        XCTAssertEqual(times, times.sorted())
+        // Turned around: the run starts at the far end of the line's numbering,
+        // which is where the earliest time sits.
+        XCTAssertEqual(orders.first, orders.max())
+        XCTAssertEqual(orders.last, orders.min())
+    }
+
     func testEveryCallEitherHasATimeOrIsOnRequest() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
 
@@ -144,16 +161,61 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertEqual(run.call(matchingStopName: "Brtnice,Jestřebí")?.order, 1)
     }
 
-    private func scheduledCall(order: Int, stopName: String) -> ScheduledCall {
+    private func scheduledCall(
+        order: Int,
+        stopName: String,
+        departure: String? = nil,
+        onRequest: Bool = false
+    ) -> ScheduledCall {
         ScheduledCall(
             order: order,
             stopID: "\(order)",
             stopName: stopName,
             arrival: nil,
-            departure: nil,
+            departure: departure.flatMap(TimeOfDay.init(clock:)),
             distanceKilometres: nil,
-            isOnRequest: false
+            isOnRequest: onRequest
         )
+    }
+
+    func testLeavesARunThatTravelsTheWayTheLineIsNumbered() {
+        let calls = [
+            scheduledCall(order: 1, stopName: "A", departure: "0800"),
+            scheduledCall(order: 2, stopName: "B", departure: "0810"),
+            scheduledCall(order: 3, stopName: "C", departure: "0820")
+        ]
+
+        XCTAssertEqual(ScheduledRun.inTravelOrder(calls).map(\.stopName), ["A", "B", "C"])
+    }
+
+    /// Half the runs in the published archive are numbered against the direction
+    /// they travel in, and used to be printed backwards because of it.
+    func testTurnsARunThatTravelsAgainstTheNumberingAround() {
+        let calls = [
+            scheduledCall(order: 1, stopName: "A", departure: "0820"),
+            scheduledCall(order: 2, stopName: "B", departure: "0810"),
+            scheduledCall(order: 3, stopName: "C", departure: "0800")
+        ]
+
+        XCTAssertEqual(ScheduledRun.inTravelOrder(calls).map(\.stopName), ["C", "B", "A"])
+    }
+
+    /// A request stop has no time of its own, so it can only be placed by the
+    /// numbering - which is why the numbering is still what orders the calls.
+    func testKeepsARequestStopWhereItBelongsToInTheRun() {
+        let calls = [
+            scheduledCall(order: 1, stopName: "A", departure: "0800"),
+            scheduledCall(order: 2, stopName: "B", onRequest: true),
+            scheduledCall(order: 3, stopName: "C", departure: "0820")
+        ]
+
+        XCTAssertEqual(ScheduledRun.inTravelOrder(calls).map(\.stopName), ["A", "B", "C"])
+    }
+
+    func testKeepsAnUnorderedSingleCallAlone() {
+        let calls = [scheduledCall(order: 4, stopName: "A")]
+
+        XCTAssertEqual(ScheduledRun.inTravelOrder(calls).map(\.stopName), ["A"])
     }
 
     func testStopNamesIgnoreDistrictSuffixes() {
