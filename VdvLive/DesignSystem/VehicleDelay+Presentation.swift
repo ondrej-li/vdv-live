@@ -21,7 +21,7 @@ extension VehicleDelay {
         case .unknown:
             return .secondary
         case .minutes(let minutes):
-            if minutes >= 5 { return .red }
+            if isBadlyLate { return .red }
             if minutes > 0 { return .orange }
             return .green
         }

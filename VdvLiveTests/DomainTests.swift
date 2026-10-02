@@ -42,6 +42,17 @@ final class VehicleDelayTests: XCTestCase {
         XCTAssertEqual(VehicleDelay(rawMinutes: 5).tint, .red)
         XCTAssertEqual(VehicleDelay(rawMinutes: 357).tint, .red)
     }
+
+    /// The markers draw a red border from this, so the threshold is pinned here
+    /// rather than left to whichever view happens to ask.
+    func testOnlyCallsAVehicleBadlyLateFromFiveMinutesBehind() {
+        XCTAssertFalse(VehicleDelay.unknown.isBadlyLate)
+        XCTAssertFalse(VehicleDelay(rawMinutes: 0).isBadlyLate)
+        XCTAssertFalse(VehicleDelay(rawMinutes: 4).isBadlyLate)
+        XCTAssertFalse(VehicleDelay(rawMinutes: -6).isBadlyLate)
+        XCTAssertTrue(VehicleDelay(rawMinutes: 5).isBadlyLate)
+        XCTAssertTrue(VehicleDelay(rawMinutes: 40).isBadlyLate)
+    }
 }
 
 final class TractionTests: XCTestCase {

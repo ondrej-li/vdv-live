@@ -24,11 +24,41 @@ struct VehicleAnnotationView: View {
             .accessibilityLabel(accessibilityTitle)
     }
 
-    /// Voice over says the same thing the grey says to the eye.
+    /// Voice over says the same thing the grey says to the eye, and the delay the
+    /// border says.
     private var accessibilityTitle: String {
-        cluster.isStale
-            ? "\(cluster.title), \(String(localized: "no recent data"))"
-            : cluster.title
+        if cluster.isStale {
+            return "\(cluster.title), \(String(localized: "no recent data"))"
+        }
+        guard let delay = worstDelay, delay.isBadlyLate else { return cluster.title }
+        return "\(cluster.title), \(delay.displayText)"
+    }
+
+    /// What the border says, before a tap: the line is pinned, or the vehicle is
+    /// running badly late.
+    ///
+    /// Late wins, because it is the one that changes plans, and nothing is lost
+    /// by it: the star is drawn on the badge separately from the border.
+    private var borderColour: Color {
+        isBadlyDelayed ? .red : (isFavourite ? VehicleFilter.favouriteTint : .white.opacity(0.9))
+    }
+
+    private var borderWidth: CGFloat {
+        isBadlyDelayed || isFavourite ? 2 : 1.5
+    }
+
+    /// Whether any vehicle this marker stands for is badly late. A merged marker
+    /// has to say so, because tapping it is how the user finds out which one.
+    private var isBadlyDelayed: Bool {
+        worstDelay?.isBadlyLate == true
+    }
+
+    /// The delay of the vehicle running furthest behind.
+    private var worstDelay: VehicleDelay? {
+        cluster.vehicles
+            .compactMap(\.delay.minutes)
+            .max()
+            .map(VehicleDelay.minutes)
     }
 
     @ViewBuilder
@@ -63,8 +93,8 @@ struct VehicleAnnotationView: View {
             )
             .overlay(
                 Capsule().strokeBorder(
-                    isFavourite ? VehicleFilter.favouriteTint : .white.opacity(0.9),
-                    lineWidth: isFavourite ? 2 : 1.5
+                    borderColour,
+                    lineWidth: borderWidth
                 )
             )
             .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
