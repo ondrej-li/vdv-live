@@ -85,10 +85,7 @@ struct VehicleStopsView: View {
         let isNext = !isCurrent && nextCall(in: run)?.stopID == call.stopID
         let weight: Font.Weight = isCurrent ? .semibold : (isNext ? .medium : .regular)
         return HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(timeText(for: call, in: run))
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(call.isOnRequest ? Color.cardSecondary : Color.primary)
-                .frame(width: 52, alignment: .leading)
+            timeColumn(for: call, in: run)
 
             if let planned = plannedTime(for: call, in: run) {
                 Text("(\(planned.text))")
@@ -99,10 +96,12 @@ struct VehicleStopsView: View {
                 Color.clear.frame(width: 44)
             }
 
+            // No line limit: a stop can have three parts, and the last one is as
+            // much of the answer as the first two.
             Text(call.stopName)
                 .font(.caption)
                 .fontWeight(weight)
-                .lineLimit(1)
+                .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 6)
 
@@ -123,12 +122,32 @@ struct VehicleStopsView: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// The time, or the mark for a stop the vehicle only calls at on request.
+    ///
+    /// A request stop has no time to print - JDF writes a `<` where the clock
+    /// would be - and printing words there instead made the list read as prose,
+    /// and made the one column that is always a time the one that sometimes is
+    /// not. The mark is what a timetable uses; VoiceOver still says the words.
+    @ViewBuilder
+    private func timeColumn(for call: ScheduledCall, in run: ScheduledRun) -> some View {
+        if call.isOnRequest {
+            Image(systemName: "hand.raised")
+                .font(.caption2)
+                .foregroundStyle(Color.cardSecondary)
+                .frame(width: 52, alignment: .leading)
+                .accessibilityLabel(Text("on request"))
+        } else {
+            Text(timeText(for: call, in: run))
+                .font(.caption.monospacedDigit())
+                .frame(width: 52, alignment: .leading)
+        }
+    }
+
     /// The time to show for a stop the vehicle still has ahead of it: the feed's
     /// delay moved onto the timetable's time. Behind the vehicle the timetable's
     /// own time stands, because there the delay is history rather than a
     /// prediction.
     private func timeText(for call: ScheduledCall, in run: ScheduledRun) -> String {
-        if call.isOnRequest { return String(localized: "on request") }
         guard isAhead(of: call, in: run),
               let delayMinutes, delayMinutes != 0,
               let shifted = call.time(lateByMinutes: delayMinutes) else {
