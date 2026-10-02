@@ -462,10 +462,15 @@ struct VehicleMapView: View {
 }
 
 #Preview {
-    VehicleMapView(
-        fetcher: AppDependencies.preview.vehicleFetcher,
-        favouriteLinesStore: AppDependencies.preview.favouriteLinesStore,
-        settingsStore: AppDependencies.preview.settingsStore,
-        locationProvider: AppDependencies.preview.locationProvider
-    )
+    // The preview runs on the debug-only sample feed, and a `#Preview` is
+    // compiled in every configuration, so this one has to be kept out of the
+    // Release build that gets archived.
+    #if DEBUG
+        VehicleMapView(
+            fetcher: AppDependencies.preview.vehicleFetcher,
+            favouriteLinesStore: AppDependencies.preview.favouriteLinesStore,
+            settingsStore: AppDependencies.preview.settingsStore,
+            locationProvider: AppDependencies.preview.locationProvider
+        )
+    #endif
 }
