@@ -38,7 +38,7 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertEqual(first.time, TimeOfDay(minutes: 4 * 60 + 35))
         XCTAssertEqual(first.time?.text, "04:35")
         XCTAssertEqual(first.distanceKilometres, 0)
-        XCTAssertFalse(first.isOnRequest)
+        XCTAssertTrue(first.isServed)
     }
 
     /// Run 2 of this line is one of the runs the archive numbers against the
@@ -69,7 +69,7 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertTrue(names.contains("Stonařov,Sokolíčko,rozc."))
     }
 
-    func testEveryCallEitherHasATimeOrIsOnRequest() throws {
+    func testEveryCallEitherHasATimeOrIsNotServed() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
 
         for run in timetable.runs {
@@ -77,31 +77,43 @@ final class JDFTimetableParserTests: XCTestCase {
             for call in run.calls {
                 XCTAssertFalse(call.stopName.isEmpty, "run \(run.serviceNumber) call \(call.order)")
                 XCTAssertTrue(
-                    call.hasTime || call.isOnRequest,
-                    "run \(run.serviceNumber) call \(call.order) has neither"
+                    call.hasTime || !call.isServed,
+                    "run \(run.serviceNumber) call \(call.order) has neither a time nor a mark"
                 )
             }
         }
     }
 
-    func testRequestStopsCarryNoTime() throws {
+    /// A service does not have to serve every stop of its line, and this line is a
+    /// case of it: Petrovice is served by two of its twelve runs and marked by the
+    /// other ten.
+    func testACallTheRunSkipsCarriesNoTime() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
         let run = try XCTUnwrap(timetable.run(serviceNumber: "13"))
         let call = try XCTUnwrap(run.calls.first { $0.order == 16 })
 
-        // The archive writes `<` in the time columns for a stop served only on
-        // request, which means there is no time to quote - not a broken row.
-        XCTAssertTrue(call.isOnRequest)
+        // The archive writes a symbol in the time columns for a stop the run does
+        // not call at, which leaves no time to quote - not a broken row.
+        XCTAssertFalse(call.isServed)
         XCTAssertNil(call.time)
         XCTAssertEqual(call.stopName, "Petrovice")
+    }
+
+    func testARunServesTheStopsItHasTimesFor() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+        let run = try XCTUnwrap(timetable.run(serviceNumber: "13"))
+
+        for call in run.calls where call.hasTime {
+            XCTAssertTrue(call.isServed, "run 13 call \(call.order) is marked and timed")
+        }
     }
 
     func testTimesIncreaseAlongARun() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
         let run = try XCTUnwrap(timetable.run(serviceNumber: "1"))
 
-        // A run that serves every stop on request is skipped: with no quoted
-        // times there is nothing to compare.
+        // Run 1 serves every stop it has a time for, so its times can be compared
+        // in one sequence.
         let times = run.calls.compactMap(\.time)
         XCTAssertEqual(times.count, run.calls.count)
         XCTAssertEqual(times, times.sorted())
@@ -176,7 +188,7 @@ final class JDFTimetableParserTests: XCTestCase {
         order: Int,
         stopName: String,
         departure: String? = nil,
-        onRequest: Bool = false
+        isServed: Bool = true
     ) -> ScheduledCall {
         ScheduledCall(
             order: order,
@@ -185,7 +197,7 @@ final class JDFTimetableParserTests: XCTestCase {
             arrival: nil,
             departure: departure.flatMap(TimeOfDay.init(clock:)),
             distanceKilometres: nil,
-            isOnRequest: onRequest
+            isServed: isServed
         )
     }
 
@@ -211,12 +223,12 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertEqual(ScheduledRun.inTravelOrder(calls).map(\.stopName), ["C", "B", "A"])
     }
 
-    /// A request stop has no time of its own, so it can only be placed by the
-    /// numbering - which is why the numbering is still what orders the calls.
-    func testKeepsARequestStopWhereItBelongsToInTheRun() {
+    /// A call the run does not serve still belongs where the numbering puts it,
+    /// which is why the numbering orders the calls rather than the times.
+    func testKeepsACallTheRunSkipsWhereItBelongsToInTheRun() {
         let calls = [
             scheduledCall(order: 1, stopName: "A", departure: "0800"),
-            scheduledCall(order: 2, stopName: "B", onRequest: true),
+            scheduledCall(order: 2, stopName: "B", isServed: false),
             scheduledCall(order: 3, stopName: "C", departure: "0820")
         ]
 

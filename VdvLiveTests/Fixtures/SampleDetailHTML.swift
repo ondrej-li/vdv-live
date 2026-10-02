@@ -56,6 +56,20 @@ enum SampleDetailHTML {
     </table>
     """#
 
+    /// Same endpoint for a vehicle the feed has no delay for. The column carries
+    /// `Int32.min` rather than a number of minutes.
+    static let infoWindowWithoutADelay = #"""
+    <table>
+        <tbody>
+            <tr><th>Linka</th><td>764337</td></tr>
+            <tr><th>Spoj</th><td>337</td></tr>
+            <tr><th>Bezbarierov&#xFD;</th><td><input type="checkbox" disabled></td></tr>
+            <tr><th>Zast&#xE1;vka</th><td>Petrovice</td></tr>
+            <tr><th>Zpo&#x17E;d&#x11B;n&#xED;</th><td>-2147483648 min.</td></tr>
+        </tbody>
+    </table>
+    """#
+
     /// `GET /Ajax/GetTimetable?vehicleNumber=173067&currentStopId=0`, trimmed
     /// to the first five stops of the run.
     static let timetable = #"""

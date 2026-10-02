@@ -24,6 +24,14 @@ final class VehicleDetailHTMLParserTests: XCTestCase {
         XCTAssertEqual(info.reportedDelayMinutes, -3)
     }
 
+    func testReadsNoDelayWhenTheFeedSendsItsSentinel() throws {
+        let info = try VehicleDetailHTMLParser.parseInfoWindow(
+            SampleDetailHTML.infoWindowWithoutADelay
+        )
+
+        XCTAssertNil(info.reportedDelayMinutes)
+    }
+
     func testReadsTheStopsOfTheRun() throws {
         let stops = try VehicleDetailHTMLParser.parseRunStops(SampleDetailHTML.timetable)
 

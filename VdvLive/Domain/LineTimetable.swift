@@ -47,9 +47,13 @@ struct ScheduledCall: Hashable, Identifiable, Sendable {
     let departure: TimeOfDay?
     /// Distance from the start of the run, in kilometres.
     let distanceKilometres: Int?
-    /// True for a stop the vehicle only serves on request. JDF writes `<` in the
-    /// time columns instead of a time, so such a call has no time at all.
-    let isOnRequest: Bool
+    /// Whether this run calls at the stop at all.
+    ///
+    /// A service does not have to serve every stop of its line: some runs of a
+    /// line take a different way round, and the archive marks the stops they skip
+    /// with a symbol in the time columns rather than a time. For line 337 that is
+    /// Petrovice, served by two runs out of twelve and marked by the other ten.
+    let isServed: Bool
 
     var id: Int { order }
 
