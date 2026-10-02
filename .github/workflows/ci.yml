@@ -33,6 +33,18 @@ jobs:
           for tool in tools/*.py; do python3 -m py_compile "$tool"; done
           echo "tools compile"
 
+      # The configuration that gets archived, built where the debug-only sample
+      # feed, fixtures and previews are not there. A preview referring to one of
+      # them is enough to make an archive impossible, and the rest of this
+      # workflow would not notice, because the tests and the type check both run
+      # in the debug configuration.
+      - name: Build the Release configuration
+        run: |
+          set -euo pipefail
+          xcodebuild -project VdvLive.xcodeproj -scheme VdvLive \
+            -configuration Release -destination "generic/platform=iOS" \
+            CODE_SIGNING_ALLOWED=NO build
+
   tests:
     name: Unit tests
     runs-on: macos-15
