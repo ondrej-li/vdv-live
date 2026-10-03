@@ -6,6 +6,7 @@ struct VehicleMapView: View {
     @State private var viewModel: VehicleMapViewModel
     @State private var camera: MapCameraPosition
     @Environment(\.scenePhase) private var scenePhase
+    @State private var isShowingFavourites = false
     @State private var isShowingSettings = false
     /// Size of the map, needed to turn a zoom level into a distance.
     @State private var mapSize: CGSize = .zero
@@ -46,11 +47,8 @@ struct VehicleMapView: View {
         }
         .overlay(alignment: .bottom) { bottomOverlay }
         .animation(.easeOut(duration: 0.2), value: viewModel.selectedClusterID)
+        .sheet(isPresented: $isShowingFavourites) { favouritesSheet }
         .sheet(isPresented: $isShowingSettings) { settingsSheet }
-        // The appearance is a property of the window rather than of a view, so
-        // handing it over here is what makes a change visible at once and keeps
-        // the sheets in the same scheme.
-        .preferredColorScheme(viewModel.appearance.colorScheme)
         .onChange(of: viewModel.selectedClusterID) { _, _ in
             Task { await viewModel.selectionDidChange() }
         }
@@ -213,13 +211,19 @@ struct VehicleMapView: View {
                 selectedFilter: viewModel.filter,
                 isAutoRefreshEnabled: viewModel.isAutoRefreshEnabled,
                 refreshInterval: viewModel.isAutoRefreshEnabled ? viewModel.autoRefreshInterval : nil,
+                favouriteLineCount: viewModel.favouriteLines.count,
                 isMapViewSaved: viewModel.savedMapView != nil,
+                isFollowingCurrentLocation: viewModel.followsCurrentLocation,
                 isOffline: viewModel.isOffline,
                 onSelectFilter: { viewModel.select(filter: $0) },
                 onRefresh: { Task { await viewModel.load() } },
                 onRecenter: recenter,
                 onToggleAutoRefresh: {
                     viewModel.setAutoRefresh(enabled: !viewModel.isAutoRefreshEnabled)
+                },
+                onShowFavourites: { isShowingFavourites = true },
+                onToggleFollowCurrentLocation: {
+                    viewModel.setFollowsCurrentLocation(!viewModel.followsCurrentLocation)
                 },
                 onToggleSavedMapView: { viewModel.toggleSavedMapView() },
                 onShowSettings: { isShowingSettings = true }
@@ -240,16 +244,21 @@ struct VehicleMapView: View {
                 )
             } else if viewModel.filter == .favourites, viewModel.favouriteLines.isEmpty {
                 MapStatusBanner(
-                    message: String(localized: "No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star."),
+                    message: String(localized: "No pinned lines yet. Tap the star to pin a line number, or tap a vehicle on the map and use its star."),
                     style: .information
                 )
             } else if viewModel.hasLoadedOnce,
                       viewModel.visibleVehicleCount == 0,
-                      viewModel.showsOnlyPinnedLines {
-                // Nothing in view while only pinned lines are shown: what is
-                // hiding the map is the filter rather than the viewport, so the
-                // hint says which, and how much is on the map at all.
-                MapStatusBanner(message: pinnedEmptyStateMessage, style: .information)
+                      viewModel.showsOnlyPinnedLines,
+                      let jumpToLine = viewModel.firstRunningPinnedLine {
+                // Nothing in view but a pinned line is out there: offer the jump
+                // instead of leaving the user staring at an empty map.
+                MapStatusBanner(
+                    message: String(localized: "Your pinned lines are not in this part of the map."),
+                    style: .information,
+                    actionTitle: String(format: String(localized: "Show line %@"), jumpToLine),
+                    onAction: { focus(onLine: jumpToLine) }
+                )
             } else if viewModel.hasLoadedOnce, viewModel.visibleVehicleCount == 0 {
                 MapStatusBanner(message: emptyStateMessage, style: .information)
             }
@@ -260,22 +269,37 @@ struct VehicleMapView: View {
         .padding(.top, 8)
     }
 
-    /// Wording for the "nothing on screen" hint while the pinned filter is on.
+    /// Wording for the "nothing on screen" hint.
     ///
-    /// The pinned filter is what the user chose, so the hint has to say what it
-    /// is hiding: a pinned line that is running but elsewhere is a different
-    /// answer from one that is not running at all.
-    private var pinnedEmptyStateMessage: String {
-        viewModel.vehicleCount == 0
-            ? String(localized: "None of your pinned lines are running right now.")
-            : String(localized: "Your pinned lines are not in this part of the map.")
+    /// With the pinned filter on, the usual "no vehicles in this part of the
+    /// map" would be wrong: it is the filter hiding them, not the viewport.
+    private var emptyStateMessage: String {
+        switch (viewModel.filter, viewModel.vehicleCount) {
+        case (.favourites, 0):
+            return String(localized: "None of your pinned lines are running right now.")
+        case (.favourites, _):
+            return String(localized: "Your pinned lines are not in this part of the map.")
+        case (_, 0):
+            return String(localized: "The feed is not reporting any vehicles at the moment.")
+        default:
+            return String(localized: "No vehicles in this part of the map.")
+        }
     }
 
-    /// Wording for the "nothing on screen" hint when every vehicle is shown.
-    private var emptyStateMessage: String {
-        viewModel.vehicleCount == 0
-            ? String(localized: "The feed is not reporting any vehicles at the moment.")
-            : String(localized: "No vehicles in this part of the map.")
+    private var favouritesSheet: some View {
+        FavouriteLinesSheet(
+            favouriteLines: viewModel.favouriteLines,
+            runningLines: viewModel.runningLines,
+            summaryForLine: { viewModel.summary(forLine: $0) },
+            showsOnlyPinned: viewModel.showsOnlyPinnedLines,
+            onSetShowsOnlyPinned: { viewModel.setShowsOnlyPinnedLines($0) },
+            onToggleLine: { viewModel.toggleFavourite(line: $0) },
+            onPinLine: { viewModel.pin(line: $0) },
+            onShowLine: { line in
+                isShowingFavourites = false
+                focus(onLine: line)
+            }
+        )
     }
 
     private var settingsSheet: some View {
@@ -284,7 +308,6 @@ struct VehicleMapView: View {
             onSetAutoRefreshEnabled: { viewModel.setAutoRefresh(enabled: $0) },
             onSetAutoRefreshInterval: { viewModel.setAutoRefreshInterval($0) },
             onSetLanguage: { viewModel.setLanguage($0) },
-            onSetAppearance: { viewModel.setAppearance($0) },
             onSetClusterRadius: { viewModel.setClusterRadius($0) },
             onSetShowsCurrentLocation: { viewModel.setShowsCurrentLocation($0) },
             onSetFollowsCurrentLocation: { viewModel.setFollowsCurrentLocation($0) },
@@ -300,7 +323,7 @@ struct VehicleMapView: View {
             onPinLine: { viewModel.pin(line: $0) },
             onShowLine: { line in
                 // The settings screen has to get out of the way first, the same
-                // way it does for any other jump.
+                // way the pinned lines sheet does.
                 isShowingSettings = false
                 focus(onLine: line)
             },
@@ -327,7 +350,7 @@ struct VehicleMapView: View {
         )
     }
 
-    /// Scale legend and the map's own controls, all anchored to the bottom left.
+    /// Scale legend and detail card, both anchored to the bottom left.
     ///
     /// Sharing one stack is what keeps the legend just above the card when a
     /// vehicle is selected, and hard against the bottom edge when it is not.
@@ -338,7 +361,6 @@ struct VehicleMapView: View {
                     MapScaleLegend(scale: mapScale)
                 }
                 northUpButton
-                followButton
                 Spacer(minLength: 0)
             }
             .padding(.leading, 16)
@@ -455,47 +477,16 @@ struct VehicleMapView: View {
     /// Reset for the map's direction, which belongs with the scale legend: both
     /// answer the same question, which is how the map is being read.
     private var northUpButton: some View {
-        mapControl(
-            systemName: "safari",
-            label: String(localized: "Point north up"),
-            action: pointNorthUp
-        )
-    }
-
-    /// Turns following the user's own position on and off.
-    ///
-    /// It sits with the compass rather than in the header card: both answer where
-    /// the map is looking, and the card already carries the two controls that
-    /// change what the map is showing.
-    private var followButton: some View {
-        mapControl(
-            systemName: viewModel.followsCurrentLocation ? "location.fill" : "location",
-            label: viewModel.followsCurrentLocation
-                ? String(localized: "Stop following my position")
-                : String(localized: "Follow my position"),
-            isActive: viewModel.followsCurrentLocation,
-            action: { viewModel.setFollowsCurrentLocation(!viewModel.followsCurrentLocation) }
-        )
-    }
-
-    /// Round button for the map's own controls, drawn like the legend it shares a
-    /// row with rather than like the icons inside the header card.
-    private func mapControl(
-        systemName: String,
-        label: String,
-        isActive: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
+        Button(action: pointNorthUp) {
+            Image(systemName: "safari")
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(isActive ? Color.accentColor : Color.primary.opacity(0.7))
+                .foregroundStyle(Color.primary.opacity(0.7))
                 .frame(width: 30, height: 30)
                 .background(.regularMaterial, in: Circle())
                 .shadow(color: .black.opacity(0.1), radius: 5, y: 1)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(label))
+        .accessibilityLabel(Text("Point north up"))
     }
 
     /// Flies to the first vehicle reporting on `line`.

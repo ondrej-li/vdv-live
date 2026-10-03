@@ -14,7 +14,6 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
     static let autoRefreshIntervalKey = "autoRefreshInterval"
     static let autoRefreshEnabledKey = "autoRefreshEnabled"
     static let languageKey = "appLanguage"
-    static let appearanceKey = "appearance"
     static let startsAtCurrentLocationKey = "startsAtCurrentLocation"
     static let savedMapViewKey = "savedMapView"
     static let clusterRadiusMetresKey = "clusterRadiusMetres"
@@ -33,9 +32,6 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
         let storedLanguage = defaults
             .string(forKey: Self.languageKey)
             .flatMap(AppLanguage.init(rawValue:))
-        let storedAppearance = defaults
-            .string(forKey: Self.appearanceKey)
-            .flatMap(AppAppearance.init(rawValue:))
 
         return AppSettings.validated(
             AppSettings(
@@ -43,7 +39,6 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
                 autoRefreshEnabled: defaults.object(forKey: Self.autoRefreshEnabledKey) as? Bool
                     ?? AppSettings.default.autoRefreshEnabled,
                 language: storedLanguage ?? AppSettings.default.language,
-                appearance: storedAppearance ?? AppSettings.default.appearance,
                 startsAtCurrentLocation: defaults.object(forKey: Self.startsAtCurrentLocationKey) as? Bool
                     ?? AppSettings.default.startsAtCurrentLocation,
                 savedMapView: Self.savedMapView(from: defaults),
@@ -63,7 +58,6 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
         defaults.set(settings.autoRefreshInterval, forKey: Self.autoRefreshIntervalKey)
         defaults.set(settings.autoRefreshEnabled, forKey: Self.autoRefreshEnabledKey)
         defaults.set(settings.language.rawValue, forKey: Self.languageKey)
-        defaults.set(settings.appearance.rawValue, forKey: Self.appearanceKey)
         defaults.set(settings.startsAtCurrentLocation, forKey: Self.startsAtCurrentLocationKey)
         defaults.set(settings.clusterRadiusMetres, forKey: Self.clusterRadiusMetresKey)
         defaults.set(settings.showsCurrentLocation, forKey: Self.showsCurrentLocationKey)

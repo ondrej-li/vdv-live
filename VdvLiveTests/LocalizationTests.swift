@@ -39,8 +39,7 @@ final class LocalizationTests: XCTestCase {
     }
 
     func testTranslatesTheMapInterfaceIntoCzech() throws {
-        XCTAssertEqual(try czechString("VDV"), "VDV")
-        XCTAssertEqual(try czechString("Veřejná doprava Vysočiny"), "Veřejná doprava Vysočiny")
+        XCTAssertEqual(try czechString("Vysočina"), "Vysočina")
         XCTAssertEqual(try czechString("All"), "Vše")
         XCTAssertEqual(try czechString("Pinned"), "Oblíbené")
         XCTAssertEqual(try czechString("Bus"), "Autobus")
@@ -74,17 +73,6 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Automatic refresh"), "Automatická aktualizace")
         XCTAssertEqual(try czechString("Refresh interval"), "Interval aktualizace")
         XCTAssertEqual(try czechString("Language"), "Jazyk")
-        XCTAssertEqual(try czechString("Appearance"), "Vzhled")
-        XCTAssertEqual(try czechString("Light"), "Světlý")
-        XCTAssertEqual(try czechString("Dark"), "Tmavý")
-        XCTAssertEqual(
-            try czechString("The app follows the device until you pick one here. The choice applies to this app only and is on screen straight away."),
-            "Aplikace se řídí nastavením zařízení, dokud zde nezvolíte jinak. Volba platí jen pro tuto aplikaci a projeví se okamžitě."
-        )
-        XCTAssertEqual(
-            try czechString("Refresh, language, appearance and the map"),
-            "Aktualizace, jazyk, vzhled a mapa"
-        )
         XCTAssertEqual(try czechString("System"), "Systémové")
         XCTAssertEqual(try czechString("Done"), "Hotovo")
         XCTAssertEqual(try czechString("Open at my location"), "Otevřít na mé poloze")
@@ -146,10 +134,6 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(
             try czechString("None of your pinned lines are running right now."),
             "Z vašich oblíbených linek momentálně nic nejede."
-        )
-        XCTAssertEqual(
-            try czechString("No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star."),
-            "Zatím žádné oblíbené linky. Přidejte číslo linky v Nastavení, nebo klepněte na vozidlo na mapě a použijte jeho hvězdičku."
         )
         XCTAssertEqual(
             try czechString("There is no internet connection."),
