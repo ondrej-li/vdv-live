@@ -128,6 +128,16 @@ struct VehicleMapView: View {
                 UserAnnotation()
             }
 
+            // Fixed points rather than traffic, so they are drawn under the
+            // vehicles, and only when the user has asked for them.
+            ForEach(viewModel.stopFlags, id: \.name) { stop in
+                Annotation(coordinate: stop.coordinate) {
+                    StopAnnotationView(stop: stop)
+                } label: {
+                    EmptyView()
+                }
+            }
+
             ForEach(viewModel.clusters) { cluster in
                 Annotation(coordinate: cluster.drawnCoordinate) {
                     VehicleAnnotationView(
@@ -279,6 +289,7 @@ struct VehicleMapView: View {
             onSetShowsCurrentLocation: { viewModel.setShowsCurrentLocation($0) },
             onSetFollowsCurrentLocation: { viewModel.setFollowsCurrentLocation($0) },
             onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
+            onSetShowsStops: { viewModel.setShowsStops($0) },
             onClearSavedMapView: { viewModel.setSavedMapView(nil) },
             favouriteLines: viewModel.favouriteLines,
             runningLines: viewModel.runningLines,

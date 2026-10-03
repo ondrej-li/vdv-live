@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 
 /// Where a stop is, as far as we could work out.
@@ -27,6 +28,11 @@ struct StopPosition: Equatable, Decodable, Sendable {
     let match: Match
     /// Roughly how far the position can be out, in metres.
     let accuracyMetres: Double
+
+    /// Where the stop is, for anything that draws.
+    var coordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
 
     /// True when the position belongs to the stop itself rather than to its village.
     var isExact: Bool { match != .place }
@@ -59,6 +65,17 @@ struct StopPositions: Sendable {
     /// The position of a stop, given the name the app shows for it.
     func position(forStopNamed name: String) -> StopPosition? {
         positions[Self.lookupKey(for: name)]
+    }
+
+    /// The stops inside a rectangle, which is what a map layer needs.
+    ///
+    /// Plain ranges rather than a map region, so the rule can be tested without
+    /// a map, and sorted by name so the flags are drawn in a stable order.
+    func positions(latitude: ClosedRange<Double>,
+                   longitude: ClosedRange<Double>) -> [StopPosition] {
+        positions.values
+            .filter { latitude.contains($0.latitude) && longitude.contains($0.longitude) }
+            .sorted { $0.name < $1.name }
     }
 
     var count: Int { positions.count }

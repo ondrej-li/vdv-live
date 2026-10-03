@@ -17,6 +17,7 @@ struct SettingsSheet: View {
     let onSetShowsCurrentLocation: (Bool) -> Void
     let onSetFollowsCurrentLocation: (Bool) -> Void
     let onSetStartsAtCurrentLocation: (Bool) -> Void
+    let onSetShowsStops: (Bool) -> Void
     let onClearSavedMapView: () -> Void
 
     /// Pinned lines, which the star in the header manages too.
@@ -59,6 +60,7 @@ struct SettingsSheet: View {
                             onSetShowsCurrentLocation: onSetShowsCurrentLocation,
                             onSetFollowsCurrentLocation: onSetFollowsCurrentLocation,
                             onSetStartsAtCurrentLocation: onSetStartsAtCurrentLocation,
+                            onSetShowsStops: onSetShowsStops,
                             onClearSavedMapView: onClearSavedMapView
                         )
                     } label: {

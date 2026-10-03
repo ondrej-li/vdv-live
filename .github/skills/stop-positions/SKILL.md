@@ -71,6 +71,10 @@ OpenStreetMap are both cached under `build/stops/`; `REFRESH_JDF=1` or
      to reject good positions. Skipping them rather than trusting them is what stopped a
      third of the table from being thrown away.
 
+## Where they are shown
+
+The map draws them behind a preference - **Settings ▸ Preferences ▸ Stops ▸ "Show stops on the map"**, off by default - and `VehicleMapViewModel.stopFlags` decides what that means: only the stops inside the viewport, and only once the map is zoomed in past `stopFlagsSpanMetres` (15 km across). At region zoom there are over a thousand known stops and drawing them covers the map. `StopPositions.positions(latitude:longitude:)` is the filter, `StopAnnotationView` is the flag, and the table is only read the first time the option is on.
+
 ## Judging a change
 
 Numbers to look at (the script prints them) and what they should look like:

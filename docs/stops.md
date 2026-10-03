@@ -90,6 +90,14 @@ Red flags the generator prints, and what they should read:
 | `positions rejected` | low hundreds, not thousands |
 | published entries | ~1,800 |
 
+## Drawing them
+
+The table reaches the map behind a preference: **Settings ▸ Preferences ▸ Stops ▸ "Show stops on the map"**, off by default. Off, because the positions cover most of the region and not all of it, and a map that quietly drew two thirds of the stops would read as a map that had gone wrong rather than as one that was honest.
+
+`VehicleMapViewModel.stopFlags` is what the layer asks for. It answers from three things: the preference, the viewport, and how far the map is zoomed in (`stopFlagsSpanMetres`, 15 km across). At region zoom the whole region is on screen with over a thousand known stops, which would cover the map instead of telling the reader anything, so the flags appear once the map is close enough for a flag to mean something - in practice from a few hundred metres to a couple of kilometres on the scale bar. Nothing reads the shipped table until the option is turned on.
+
+The marker is a flag (`StopAnnotationView`) rather than a dot: a stop is a fixed point the reader looks up, not something that moves, and the vehicles already own the dot-and-badge vocabulary. Flags are drawn under the vehicles, so a bus is never hidden by a stop it is about to call at.
+
 ## Known weaknesses
 
 - **Some matches are still out.** Judged by distance to a village centre of the same name,

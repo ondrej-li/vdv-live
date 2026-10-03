@@ -12,6 +12,7 @@ struct PreferencesView: View {
     let onSetShowsCurrentLocation: (Bool) -> Void
     let onSetFollowsCurrentLocation: (Bool) -> Void
     let onSetStartsAtCurrentLocation: (Bool) -> Void
+    let onSetShowsStops: (Bool) -> Void
     let onClearSavedMapView: () -> Void
 
     var body: some View {
@@ -72,6 +73,14 @@ struct PreferencesView: View {
                 Text("Vehicles")
             } footer: {
                 Text("Buses closer together than this share one marker, which keeps a busy region readable when it is zoomed out. Off, every vehicle is drawn on its own.")
+            }
+
+            Section {
+                Toggle("Show stops on the map", isOn: showsStopsBinding)
+            } header: {
+                Text("Stops")
+            } footer: {
+                Text("Stops are drawn as a flag once the map is zoomed in far enough to read them. The positions are matched from OpenStreetMap by name, so most of the region's stops are there and some are not.")
             }
 
             Section {
@@ -138,6 +147,10 @@ struct PreferencesView: View {
 
     private var startsAtCurrentLocationBinding: Binding<Bool> {
         Binding(get: { settings.startsAtCurrentLocation }, set: onSetStartsAtCurrentLocation)
+    }
+
+    private var showsStopsBinding: Binding<Bool> {
+        Binding(get: { settings.showsStops }, set: onSetShowsStops)
     }
 
     /// "30 s" for the short intervals, "2 min" for the long ones.

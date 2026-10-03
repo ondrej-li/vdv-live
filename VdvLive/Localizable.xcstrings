@@ -811,6 +811,36 @@
         }
       }
     },
+    "Show stops on the map": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobrazit zastávky na mapě"
+          }
+        }
+      }
+    },
+    "Stops": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastávky"
+          }
+        }
+      }
+    },
+    "Stops are drawn as a flag once the map is zoomed in far enough to read them. The positions are matched from OpenStreetMap by name, so most of the region's stops are there and some are not.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastávky se kreslí jako vlaječka, jakmile je mapa dostatečně přiblížená. Polohy jsou párované z OpenStreetMap podle názvu, takže většina zastávek regionu tam je a některé ne."
+          }
+        }
+      }
+    },
     "My location": {
       "localizations": {
         "cs": {

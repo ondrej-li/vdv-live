@@ -599,6 +599,51 @@ final class VehicleMapViewModel {
         rebuildClusters()
     }
 
+    /// Whether the map draws a flag for the stops whose position is known.
+    var showsStops: Bool { settings.showsStops }
+
+    /// Starts or stops drawing the stops, and remembers the choice.
+    ///
+    /// Nothing has to be rebuilt: which flags to draw is worked out from the
+    /// viewport and the setting whenever the map asks.
+    func setShowsStops(_ showsStops: Bool) {
+        guard settings.showsStops != showsStops else { return }
+        settings.showsStops = showsStops
+        settingsStore.save(settings)
+    }
+
+    /// How far in the map has to be before the stops are worth drawing.
+    ///
+    /// The region holds over a thousand stops we know the position of, and at
+    /// region zoom drawing them would cover the map instead of telling the reader
+    /// anything.
+    static let stopFlagsSpanMetres: CLLocationDistance = 15_000
+
+    /// Stops drawn on the map: the ones inside the viewport, when they have been
+    /// asked for and the map is zoomed in far enough for a flag to mean anything.
+    ///
+    /// The shipped table is read the first time this is asked for, so an app
+    /// where the option stays off never reads it at all.
+    var stopFlags: [StopPosition] {
+        guard settings.showsStops else { return [] }
+        guard visibleLatitudeDelta * MapScale.metresPerDegreeLatitude <= Self.stopFlagsSpanMetres
+        else { return [] }
+
+        if loadedStopPositions == nil {
+            loadedStopPositions = StopPositions.bundled()
+        }
+        let region = visibleRegion
+        let latitudeRange = (region.center.latitude - region.span.latitudeDelta / 2)
+            ... (region.center.latitude + region.span.latitudeDelta / 2)
+        let longitudeRange = (region.center.longitude - region.span.longitudeDelta / 2)
+            ... (region.center.longitude + region.span.longitudeDelta / 2)
+        return loadedStopPositions?.positions(latitude: latitudeRange,
+                                             longitude: longitudeRange) ?? []
+    }
+
+    /// Read once, the first time the stops are drawn.
+    private var loadedStopPositions: StopPositions?
+
     func setAutoRefresh(enabled: Bool) {
         guard settings.autoRefreshEnabled != enabled else { return }
         settings.autoRefreshEnabled = enabled
