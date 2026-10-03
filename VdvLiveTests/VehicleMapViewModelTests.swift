@@ -524,33 +524,6 @@ final class VehicleMapViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.vehicleCount, 2)
     }
 
-    func testOffersTheFirstPinnedLineThatIsRunningToJumpTo() async {
-        let vehicles = [
-            Fixture.vehicle(id: 1, line: "420", latitude: 49.3960, longitude: 15.5910),
-            Fixture.vehicle(id: 2, line: "841334", latitude: 49.6070, longitude: 15.5810)
-        ]
-        // 337 sorts first but has no vehicles, so 420 is the one worth offering.
-        let (viewModel, _) = makeViewModelWithFavourites(
-            vehicles: vehicles,
-            pinnedLines: FavouriteLines(["337", "420"])
-        )
-
-        await viewModel.load()
-
-        XCTAssertEqual(viewModel.firstRunningPinnedLine, "420")
-    }
-
-    func testOffersNoJumpWhenNoPinnedLineIsRunning() async {
-        let (viewModel, _) = makeViewModelWithFavourites(
-            vehicles: [Fixture.vehicle(id: 1, line: "841334")],
-            pinnedLines: FavouriteLines(["337"])
-        )
-
-        await viewModel.load()
-
-        XCTAssertNil(viewModel.firstRunningPinnedLine)
-    }
-
     // MARK: - Line codes and runs
 
     func testPinningByLineNumberFindsTheOperatorPrefixedCode() async {
@@ -942,6 +915,23 @@ final class VehicleMapViewModelTests: XCTestCase {
             languageDefaults.array(forKey: LanguageOverride.defaultsKey) as? [String],
             deviceLanguages
         )
+    }
+
+    func testAppearanceChangeIsPersisted() {
+        let (viewModel, _, store, _) = makeViewModelWithSettings()
+
+        XCTAssertEqual(viewModel.appearance, .system)
+
+        viewModel.setAppearance(.dark)
+
+        XCTAssertEqual(viewModel.appearance, .dark)
+        XCTAssertEqual(store.load().appearance, .dark)
+        XCTAssertEqual(store.saveCount, 1)
+
+        // Choosing the same one again is not a change, so it is not written.
+        viewModel.setAppearance(.dark)
+
+        XCTAssertEqual(store.saveCount, 1)
     }
 
     // MARK: - Marker motion

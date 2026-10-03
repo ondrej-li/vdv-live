@@ -7,6 +7,9 @@ struct AppSettings: Equatable, Sendable {
     /// Whether the map refreshes itself at all.
     var autoRefreshEnabled: Bool
     var language: AppLanguage
+    /// Whether the app follows the device's light and dark appearance or
+    /// overrides it.
+    var appearance: AppAppearance = .system
     /// Whether the map opens on the current location when it starts, unless a
     /// viewport has been saved.
     var startsAtCurrentLocation: Bool = true
