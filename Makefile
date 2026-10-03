@@ -168,6 +168,14 @@ mapping:
 	@[ -f "$(ARCHIVE)" ] || curl -sS -L -o "$(ARCHIVE)" $(ARCHIVE_URL)
 	python3 tools/jdf_lines_mapping.py "$(ARCHIVE)" VdvLive/Resources/jdf-lines.json
 
+## Refresh the shipped stop positions. No timetable source carries coordinates, so they
+## are matched from OpenStreetMap by stop name and judged against the timetable's own
+## distances; see docs/stops.md for what that does and does not cover. Commit the result.
+stops:
+	@mkdir -p $(dir $(ARCHIVE))
+	@[ -f "$(ARCHIVE)" ] || curl -sS -L -o "$(ARCHIVE)" $(ARCHIVE_URL)
+	python3 tools/stop_positions.py "$(ARCHIVE)" VdvLive/Resources/stop-positions.json
+
 ## List the simulators available for SIMULATOR=....
 devices:
 	@xcrun simctl list devices available | awk '/-- iOS/{found=1; next} /^--/{found=0} found'
