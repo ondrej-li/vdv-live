@@ -1,12 +1,13 @@
 import SwiftUI
 
-/// What the app prefers: how often it refreshes, in which language, how the map
-/// behaves, and everything about the user's own position.
+/// What the app prefers: how often it refreshes, in which language and
+/// appearance, how the map behaves, and everything about the user's own position.
 struct PreferencesView: View {
     let settings: AppSettings
     let onSetAutoRefreshEnabled: (Bool) -> Void
     let onSetAutoRefreshInterval: (TimeInterval) -> Void
     let onSetLanguage: (AppLanguage) -> Void
+    let onSetAppearance: (AppAppearance) -> Void
     let onSetClusterRadius: (Double) -> Void
     let onSetShowsCurrentLocation: (Bool) -> Void
     let onSetFollowsCurrentLocation: (Bool) -> Void
@@ -47,6 +48,18 @@ struct PreferencesView: View {
                 Text("Language")
             } footer: {
                 Text("Czech is the default. A language change takes effect the next time the app starts.")
+            }
+
+            Section {
+                Picker("Appearance", selection: appearanceBinding) {
+                    ForEach(AppAppearance.allCases) { appearance in
+                        Text(appearance.displayName).tag(appearance)
+                    }
+                }
+            } header: {
+                Text("Appearance")
+            } footer: {
+                Text("The app follows the device until you pick one here. The choice applies to this app only and is on screen straight away.")
             }
 
             Section {
@@ -105,6 +118,10 @@ struct PreferencesView: View {
 
     private var languageBinding: Binding<AppLanguage> {
         Binding(get: { settings.language }, set: onSetLanguage)
+    }
+
+    private var appearanceBinding: Binding<AppAppearance> {
+        Binding(get: { settings.appearance }, set: onSetAppearance)
     }
 
     private var clusterRadiusBinding: Binding<Double> {

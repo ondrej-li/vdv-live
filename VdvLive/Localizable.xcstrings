@@ -1,12 +1,22 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "Vysočina": {
+    "VDV": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vysočina"
+            "value": "VDV"
+          }
+        }
+      }
+    },
+    "Veřejná doprava Vysočiny": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veřejná doprava Vysočiny"
           }
         }
       }
@@ -321,12 +331,12 @@
         }
       }
     },
-    "No pinned lines yet. Tap the star to pin a line number, or tap a vehicle on the map and use its star.": {
+    "No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zatím žádné oblíbené linky. Klepněte na hvězdičku a přidejte číslo linky, nebo klepněte na vozidlo na mapě a použijte jeho hvězdičku."
+            "value": "Zatím žádné oblíbené linky. Přidejte číslo linky v Nastavení, nebo klepněte na vozidlo na mapě a použijte jeho hvězdičku."
           }
         }
       }
@@ -337,16 +347,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vaše oblíbené linky nejsou v této části mapy."
-          }
-        }
-      }
-    },
-    "Show line %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zobrazit linku %@"
           }
         }
       }
@@ -1211,12 +1211,52 @@
         }
       }
     },
-    "Refresh, language and the map": {
+    "Refresh, language, appearance and the map": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aktualizace, jazyk a mapa"
+            "value": "Aktualizace, jazyk, vzhled a mapa"
+          }
+        }
+      }
+    },
+    "Appearance": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vzhled"
+          }
+        }
+      }
+    },
+    "Light": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Světlý"
+          }
+        }
+      }
+    },
+    "Dark": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tmavý"
+          }
+        }
+      }
+    },
+    "The app follows the device until you pick one here. The choice applies to this app only and is on screen straight away.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikace se řídí nastavením zařízení, dokud zde nezvolíte jinak. Volba platí jen pro tuto aplikaci a projeví se okamžitě."
           }
         }
       }

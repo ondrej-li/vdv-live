@@ -12,6 +12,7 @@ struct SettingsSheet: View {
     let onSetAutoRefreshEnabled: (Bool) -> Void
     let onSetAutoRefreshInterval: (TimeInterval) -> Void
     let onSetLanguage: (AppLanguage) -> Void
+    let onSetAppearance: (AppAppearance) -> Void
     let onSetClusterRadius: (Double) -> Void
     let onSetShowsCurrentLocation: (Bool) -> Void
     let onSetFollowsCurrentLocation: (Bool) -> Void
@@ -53,6 +54,7 @@ struct SettingsSheet: View {
                             onSetAutoRefreshEnabled: onSetAutoRefreshEnabled,
                             onSetAutoRefreshInterval: onSetAutoRefreshInterval,
                             onSetLanguage: onSetLanguage,
+                            onSetAppearance: onSetAppearance,
                             onSetClusterRadius: onSetClusterRadius,
                             onSetShowsCurrentLocation: onSetShowsCurrentLocation,
                             onSetFollowsCurrentLocation: onSetFollowsCurrentLocation,
@@ -63,7 +65,7 @@ struct SettingsSheet: View {
                         SettingsRow(
                             title: "Preferences",
                             systemImage: "slider.horizontal.3",
-                            subtitle: "Refresh, language and the map"
+                            subtitle: "Refresh, language, appearance and the map"
                         )
                     }
 

@@ -11,6 +11,14 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(AppSettings.default.autoRefreshInterval, 15)
         XCTAssertTrue(AppSettings.default.autoRefreshEnabled)
         XCTAssertEqual(AppSettings.default.language, .czech)
+        XCTAssertEqual(AppSettings.default.appearance, .system)
+    }
+
+    func testOnlyChoosingAnAppearanceOverridesTheDevice() {
+        XCTAssertNil(AppAppearance.system.colorScheme)
+        XCTAssertEqual(AppAppearance.light.colorScheme, .light)
+        XCTAssertEqual(AppAppearance.dark.colorScheme, .dark)
+        XCTAssertEqual(AppAppearance.allCases.count, 3)
     }
 
     func testIntervalIsClampedToTheMinimum() {
@@ -86,6 +94,23 @@ final class AppSettingsTests: XCTestCase {
         let settings = UserDefaultsAppSettingsStore(defaults: defaults).load()
 
         XCTAssertEqual(settings.language, .czech)
+    }
+
+    func testStoreRoundTripsTheChosenAppearance() {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+
+        store.save(AppSettings(autoRefreshInterval: 15, autoRefreshEnabled: true, language: .czech, appearance: .dark))
+
+        XCTAssertEqual(store.load().appearance, .dark)
+    }
+
+    func testStoreFallsBackToTheDeviceForAnUnknownAppearance() {
+        let defaults = TestDefaults.make()
+        defaults.set("neon", forKey: UserDefaultsAppSettingsStore.appearanceKey)
+
+        let settings = UserDefaultsAppSettingsStore(defaults: defaults).load()
+
+        XCTAssertEqual(settings.appearance, .system)
     }
 
     func testInMemoryStoreKeepsWhatItIsGiven() {
