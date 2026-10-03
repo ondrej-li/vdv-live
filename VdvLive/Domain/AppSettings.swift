@@ -27,6 +27,14 @@ struct AppSettings: Equatable, Sendable {
     var showsCurrentLocation: Bool = true
     /// Whether the map keeps the position in the middle as it moves.
     var followsCurrentLocation: Bool = false
+    /// Whether the map draws flags for the stops whose position is known.
+    ///
+    /// Off by default, and deliberately: the positions are matched from
+    /// OpenStreetMap by name rather than published with the timetables, so they
+    /// cover most of the region's stops and not all of them. Drawing two thirds
+    /// of the stops without saying so would look like a map that had gone wrong.
+    /// `docs/stops.md` has the measurements.
+    var showsStops: Bool = false
 
     /// The feed updates continuously, but not that fast: asking more often than
     /// every five seconds only costs battery.

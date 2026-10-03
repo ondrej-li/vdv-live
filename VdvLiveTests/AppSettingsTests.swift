@@ -78,6 +78,24 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertEqual(store.load(), changed)
     }
 
+    /// The stops are matched from OpenStreetMap rather than published with the
+    /// timetables, so they cover most of the region and not all of it. A map that
+    /// drew them without being asked would be claiming more than it has.
+    func testStopsAreNotDrawnUntilTheyAreAskedFor() {
+        XCTAssertFalse(AppSettings.default.showsStops)
+    }
+
+    func testStoreRoundTripsTheStopFlagsChoice() {
+        let store = UserDefaultsAppSettingsStore(defaults: TestDefaults.make())
+        var settings = store.load()
+        XCTAssertFalse(settings.showsStops)
+
+        settings.showsStops = true
+        store.save(settings)
+
+        XCTAssertTrue(store.load().showsStops)
+    }
+
     func testStoreClampsAStoredIntervalBelowTheMinimum() {
         let defaults = TestDefaults.make()
         defaults.set(1.0, forKey: UserDefaultsAppSettingsStore.autoRefreshIntervalKey)

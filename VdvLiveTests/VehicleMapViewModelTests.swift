@@ -76,6 +76,65 @@ final class VehicleMapViewModelTests: XCTestCase {
         return (viewModel, fetcher, store, languageDefaults)
     }
 
+    /// Brtnice and the stops around it, about 2 km across: close enough in for the
+    /// stop flags to be drawn.
+    private var brtniceRegion: MKCoordinateRegion {
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 49.3073, longitude: 15.6767),
+            span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+        )
+    }
+
+    func testDrawsNoStopFlagsUntilTheyAreSwitchedOn() {
+        let (viewModel, _, _, _) = makeViewModelWithSettings()
+
+        viewModel.updateVisibleRegion(brtniceRegion)
+
+        XCTAssertFalse(viewModel.showsStops)
+        XCTAssertTrue(viewModel.stopFlags.isEmpty)
+    }
+
+    func testDrawsTheStopsInTheViewportWhenTheyAreSwitchedOn() {
+        let settings = AppSettings(autoRefreshInterval: AppSettings.defaultAutoRefreshInterval,
+                                   autoRefreshEnabled: false,
+                                   language: .czech,
+                                   showsStops: true)
+        let (viewModel, _, _, _) = makeViewModelWithSettings(settings: settings)
+
+        viewModel.updateVisibleRegion(brtniceRegion)
+
+        XCTAssertTrue(viewModel.showsStops)
+        XCTAssertTrue(viewModel.stopFlags.contains { $0.name == "Brtnice,nám." })
+        // Nothing from another town: the layer is what is on screen and no more.
+        XCTAssertFalse(viewModel.stopFlags.contains { $0.name.hasPrefix("Třešť") })
+    }
+
+    /// At region zoom the whole region is on screen and over a thousand stops are
+    /// known, which would cover the map rather than say anything.
+    func testDrawsNoStopFlagsWhenTheMapIsZoomedOut() {
+        let settings = AppSettings(autoRefreshInterval: AppSettings.defaultAutoRefreshInterval,
+                                   autoRefreshEnabled: false,
+                                   language: .czech,
+                                   showsStops: true)
+        let (viewModel, _, _, _) = makeViewModelWithSettings(settings: settings)
+
+        viewModel.updateVisibleRegion(RegionOfInterest.vysocina.region)
+
+        XCTAssertTrue(viewModel.stopFlags.isEmpty)
+    }
+
+    func testRemembersTurningTheStopFlagsOn() {
+        let (viewModel, _, store, _) = makeViewModelWithSettings()
+
+        viewModel.setShowsStops(true)
+
+        XCTAssertTrue(viewModel.showsStops)
+        XCTAssertTrue(store.load().showsStops)
+
+        viewModel.setShowsStops(false)
+        XCTAssertFalse(store.load().showsStops)
+    }
+
     /// Same, with pinned lines already seeded and the store handed back so that
     /// a test can assert what was persisted.
     private func makeViewModelWithFavourites(

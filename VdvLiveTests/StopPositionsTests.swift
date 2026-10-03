@@ -65,4 +65,23 @@ final class StopPositionsTests: XCTestCase {
         XCTAssertNil(StopPositions.bundled().position(forStopNamed: "Nikde,nic"))
         XCTAssertNil(StopPositions.empty.position(forStopNamed: "Brtnice,nám."))
     }
+
+    /// What the map layer asks for: whatever is inside the viewport, in a stable
+    /// order so the flags are drawn the same way every time.
+    func testFindsTheStopsInsideARectangle() {
+        let positions = StopPositions.bundled()
+        let around = positions.positions(latitude: 49.297...49.317,
+                                        longitude: 15.666...15.687)
+
+        XCTAssertTrue(around.contains { $0.name == "Brtnice,nám." })
+        // Třešť is the next town along, well outside a 2 km box round Brtnice.
+        XCTAssertFalse(around.contains { $0.name == "Třešť,nám." })
+        XCTAssertEqual(around, around.sorted { $0.name < $1.name })
+        XCTAssertTrue(around.allSatisfy(\.isExact))
+    }
+
+    func testAnEmptyRectangleHasNoStops() {
+        XCTAssertTrue(StopPositions.bundled()
+            .positions(latitude: 0...0.001, longitude: 0...0.001).isEmpty)
+    }
 }
