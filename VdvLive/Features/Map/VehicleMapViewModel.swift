@@ -487,6 +487,10 @@ final class VehicleMapViewModel {
 
     /// First pinned line that is running, used to offer a jump to it when the
     /// map is filtered down to pinned lines but none of them are in view.
+    var firstRunningPinnedLine: String? {
+        favouriteLines.orderedForDisplay.first { summary(forLine: $0).isRunning }
+    }
+
     private func setFavouriteLines(_ lines: FavouriteLines) {
         guard lines != favouriteLines else { return }
         favouriteLines = lines
@@ -677,20 +681,6 @@ final class VehicleMapViewModel {
         settings.language = language
         settingsStore.save(settings)
         LanguageOverride.apply(language, to: languageDefaults)
-    }
-
-    /// Whether the app follows the device's appearance or overrides it.
-    var appearance: AppAppearance { settings.appearance }
-
-    /// Remembers the chosen appearance.
-    ///
-    /// Nothing has to be restarted for this one, unlike the refresh interval and
-    /// the language: the view hands the scheme to the window, so the change is on
-    /// screen as soon as the settings screen is dismissed.
-    func setAppearance(_ appearance: AppAppearance) {
-        guard settings.appearance != appearance else { return }
-        settings.appearance = appearance
-        settingsStore.save(settings)
     }
 
     private func restartAutoRefreshTask() {
