@@ -11,12 +11,9 @@ struct MapHeaderBar: View {
     let isAutoRefreshEnabled: Bool
     /// Seconds between automatic refreshes, `nil` while automatic refresh is off.
     let refreshInterval: TimeInterval?
-    let favouriteLineCount: Int
     /// Whether the map opens at a viewport the user saved with the bookmark
     /// button.
     let isMapViewSaved: Bool
-    /// Whether the map keeps the position in the middle as it moves.
-    let isFollowingCurrentLocation: Bool
     /// Whether the feed could not be reached: what is on screen is the last known
     /// state rather than the current one.
     let isOffline: Bool
@@ -24,8 +21,6 @@ struct MapHeaderBar: View {
     let onRefresh: () -> Void
     let onRecenter: () -> Void
     let onToggleAutoRefresh: () -> Void
-    let onShowFavourites: () -> Void
-    let onToggleFollowCurrentLocation: () -> Void
     let onToggleSavedMapView: () -> Void
     let onShowSettings: () -> Void
 
@@ -34,17 +29,6 @@ struct MapHeaderBar: View {
             HStack(spacing: 10) {
                 title
                 Spacer(minLength: 8)
-                iconButton(
-                    systemName: favouriteLineCount == 0 ? "star" : "star.fill",
-                    label: favouriteLineCount == 0
-                        ? String(localized: "Pinned lines")
-                        : String(
-                            format: String(localized: "Pinned lines, %lld pinned"),
-                            favouriteLineCount
-                        ),
-                    tint: favouriteLineCount == 0 ? nil : VehicleFilter.favouriteTint,
-                    action: onShowFavourites
-                )
                 iconButton(
                     systemName: isAutoRefreshEnabled ? "pause.fill" : "play.fill",
                     label: isAutoRefreshEnabled
@@ -62,14 +46,6 @@ struct MapHeaderBar: View {
                     systemName: "scope",
                     label: String(localized: "Back to Vysočina"),
                     action: onRecenter
-                )
-                iconButton(
-                    systemName: isFollowingCurrentLocation ? "location.fill" : "location",
-                    label: isFollowingCurrentLocation
-                        ? String(localized: "Stop following my position")
-                        : String(localized: "Follow my position"),
-                    tint: isFollowingCurrentLocation ? Color.accentColor : nil,
-                    action: onToggleFollowCurrentLocation
                 )
                 iconButton(
                     systemName: isMapViewSaved ? "bookmark.fill" : "bookmark",
@@ -130,12 +106,19 @@ struct MapHeaderBar: View {
     }
 
     private var title: some View {
-        Text("Vysočina")
-            .font(.headline)
-            // The row is shared with seven buttons, so on a narrow phone shrink
-            // the name rather than wrapping it onto a second line.
-            .lineLimit(1)
-            .minimumScaleFactor(0.8)
+        VStack(alignment: .leading, spacing: 1) {
+            Text("VDV")
+                .font(.headline)
+            Text("Veřejná doprava Vysočiny")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        // The row is shared with five buttons, so the name gets a line of its
+        // own rather than shrinking into an ellipsis. It deliberately does not
+        // wrap: a wrapped title is what once made this card a third of the
+        // screen.
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
     }
 
     private var subtitle: String {
