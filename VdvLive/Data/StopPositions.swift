@@ -7,7 +7,8 @@ import Foundation
 /// ministry's NeTEx export leaves every stop's `<Location />` empty. Positions are matched
 /// from OpenStreetMap by name where they can be, and the village centre is used where they
 /// cannot - which is why every position says how it was found and how close it is likely
-/// to be. `docs/stops.md` has the measurements and `tools/stop_positions.py` builds the file.
+/// to be. `docs/stops.md` has the measurements and
+/// `.github/skills/stop-positions/SKILL.md` rebuilds the file.
 struct StopPosition: Equatable, Decodable, Sendable {
     /// How the position was arrived at. Lower accuracy means less trust.
     enum Match: String, Decodable, Sendable {
@@ -17,8 +18,13 @@ struct StopPosition: Equatable, Decodable, Sendable {
         case village = "osm-village"
         /// An OpenStreetMap stop named after the hamlet the stop is in, found by proximity.
         case near = "osm-near"
+        /// An OpenStreetMap stop whose name contains this stop's, near the line it is on.
+        case similar = "osm-similar"
         /// No stop of this name was found, so the village centre is the position.
         case place
+        /// Nothing nameable was found at all; the point sits between the stops either side
+        /// of this one on the line, so it is only good enough to draw somewhere to climb on.
+        case route
     }
 
     /// The stop name the position was matched for, as the app displays it.
@@ -34,8 +40,9 @@ struct StopPosition: Equatable, Decodable, Sendable {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    /// True when the position belongs to the stop itself rather than to its village.
-    var isExact: Bool { match != .place }
+    /// True when the position belongs to the stop itself rather than to its village or to
+    /// the gap between the stops either side of it on the line.
+    var isExact: Bool { match != .place && match != .route }
 }
 
 /// The shipped stop positions, looked up by the stop name the timetable shows.

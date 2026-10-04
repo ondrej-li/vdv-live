@@ -169,12 +169,13 @@ mapping:
 	python3 tools/jdf_lines_mapping.py "$(ARCHIVE)" VdvLive/Resources/jdf-lines.json
 
 ## Refresh the shipped stop positions. No timetable source carries coordinates, so they
-## are matched from OpenStreetMap by stop name and judged against the timetable's own
-## distances; see docs/stops.md for what that does and does not cover. Commit the result.
+## are matched from OpenStreetMap by stop name, and what a name cannot settle is placed by
+## rule or left for review; see docs/stops.md and .github/skills/stop-positions/SKILL.md.
+## Commit the bundle and docs/stop-review.md. Stages 1 and 2 are cached under build/stops/.
 stops:
 	@mkdir -p $(dir $(ARCHIVE))
 	@[ -f "$(ARCHIVE)" ] || curl -sS -L -o "$(ARCHIVE)" $(ARCHIVE_URL)
-	python3 tools/stop_positions.py "$(ARCHIVE)" VdvLive/Resources/stop-positions.json
+	JDF_ARCHIVE="$(ARCHIVE)" .github/skills/stop-positions/scripts/run_all.sh
 
 ## List the simulators available for SIMULATOR=....
 devices:
