@@ -1,6 +1,7 @@
 # Stops: where they are, and what it costs to find out
 
-Investigation and implementation record, checked against the live sources on 2026-10-03.
+Investigation and implementation record, checked against the live sources on 2026-10-03,
+with the pipeline reworked on 2026-10-04.
 The commands to reproduce each claim are at the end.
 
 ## Short version
@@ -20,12 +21,14 @@ The commands to reproduce each claim are at the end.
   depends on.
 - **So positions are matched, not looked up.** OpenStreetMap is the only source with
   positions for this region, and the only handle on a stop is its name. Of the region's
-  **3,521 stops, 2,184 (62%)** get a position from an actual OpenStreetMap stop; **1,762**
-  survive de-duplication of display names and are shipped.
-- **1,067 stops (30%) have only a village centre** and **270 (8%) have nothing**. The
-  village centres are deliberately *not* shipped: they are within a few hundred metres of
-  everything in that village, which for a dot with a stop name on a map is a guess, not a
-  position.
+  **3,521 stops, 2,527 (72%)** are shipped with a position; **1,944 of them (77% of the
+  shipped rows) come from an OpenStreetMap stop of the same or a very close name**, and the
+  rest are placed by a rule.
+- **371 positions were dropped by the guards** and **17 stops could not be placed at all**.
+  The guards run on the line's own evidence, and what survives them is what the app draws.
+- **The weakest shipped rows say so.** Every row carries the kind of match and how far out
+  it may be, so a village centre (600 m) is distinguishable from a stop found by name
+  (40 m), and `docs/stop-review.md` lists every row a rule rather than a name placed.
 
 ## What each source actually has
 
@@ -53,9 +56,11 @@ carries which rule matched and how close it is likely to be:
 | `osm-name` | the name in the forms a timetable prints it in | ~40 m |
 | `osm-village` | OSM name starts with the village and carries our local name | ~150 m |
 | `osm-near` | a hamlet stop, filed in OSM under the hamlet alone, within 5 km of the village | ~250 m |
-| `place` | the village centre - **not shipped** | ~600 m |
+| `osm-similar` | an OSM stop whose name contains ours, near the line ("Barum", "Husova", "KD Ostrov") | ~250 m |
+| `place` | the centre of the stops already placed in the village, or the village node | 300-600 m |
+| `route` | on the straight line between the two placed stops either side, at the fraction the timetable's own distances give | ~800 m |
 
-Three things keep this honest, and each of them was added because the join got it wrong:
+Four things keep this honest, and each of them was added because the join got it wrong:
 
 1. **Candidates come from inside the region, not a bounding box.** With a bounding box the
    neighbouring regions answered for our villages: "Kramolín", "Suchá", "Borovnice" and
@@ -67,6 +72,8 @@ Three things keep this honest, and each of them was added because the join got i
    calls at is wrong - a bus does not serve one stop twenty kilometres from the rest of its
    route - and, where a run's own distances are usable, two neighbouring calls cannot
    straight-line further than 1.6x their timetable distance plus 3 km.
+4. **A display name two places answer to is withheld**, not guessed at: the app looks a stop
+   up by name alone, so one position would have been shown for both of them.
 
 The second guard needs a caveat that cost some coverage to learn: **the distance column
 counts down to the end of the run**, so on a route that loops back it is not monotone and the
@@ -75,20 +82,27 @@ skipped (440 of 1,017) rather than used to reject correct positions.
 
 ## What is shipped, and what it costs
 
-`VdvLive/Resources/stop-positions.json`, 225 KB, keys washed down to letters and digits
+`VdvLive/Resources/stop-positions.json`, 318 KB, keys washed down to letters and digits
 (`Okříšky,aut.nádr.` → `okriskyautnadr`), values carrying the display name, the position, the
 match kind and the accuracy in metres. `StopPositions` in the app folds a stop name the same
-way and looks it up; `StopPosition.isExact` is false only for the village centres, which are
-not in the file by default.
+way and looks it up; `StopPosition.isExact` is false for the village centres and for the
+points guessed from the line, because those are not the stop itself.
 
-Red flags the generator prints, and what they should read:
+`docs/stop-review.md` is written by the same run and lists what deserves an eye: the stops
+nothing could place, the stops a rule rather than a name placed, the positions the guards
+dropped, and the names two different places answer to. Corrections go in
+`.github/skills/stop-positions/data/manual_matches.json`, which wins over every rule.
+
+Red flags the last stage prints, and what they should read:
 
 | Reading | Healthy |
 |---|---|
-| `osm-name` | ~52% |
-| `osm-name` + `osm-village` + `osm-near` | ~62% of the region's stops |
-| `positions rejected` | low hundreds, not thousands |
-| published entries | ~1,800 |
+| `osm-name` | the largest single group, ~1,500 rows |
+| name-based kinds together | ~1,950 rows |
+| `dropped by guards` | low hundreds, not thousands |
+| `unplaced` | tens |
+| `shipped rows` | ~2,500 |
+| names shared by more than one stop | hundreds; shipping none of them should be 0 or 1 |
 
 ## Drawing them
 
@@ -100,17 +114,25 @@ The marker is a flag (`StopAnnotationView`) rather than a dot: a stop is a fixed
 
 ## Known weaknesses
 
+- **17 stops have no position at all**, and about 580 rows are a village centre or a point
+  inferred from the line rather than a stop found by name. Both are itemised in
+  `docs/stop-review.md`; the rule-placed rows say which rule placed them.
+- **The hardest leftovers are real villages OSM has no stop for.** Five of the 17 are parts
+  of Velké Tresné, where the OpenStreetMap extract has neither a stop nor a place node of
+  that name (a `place=village` tag living only on a boundary relation would do it: the
+  Overpass query asks for nodes). `Havířská`, `Ledečská` and `Sekaninova` are street stops
+  whose line passes no other stop close enough to anchor them.
+- **Inflected abbreviations cannot be expanded.** `Nová Ves u N.Města na Mor.` would have to
+  become "Nového Města na Moravě", which is a different word, not a different spelling, so
+  it is left for review rather than guessed.
 - **Some matches are still out.** Judged by distance to a village centre of the same name,
-  about 4% of published rows look suspicious; that metric is itself unreliable where a
-  village name exists twice, so the honest statement is that a small minority is suspect and
-  the two guards are what remove the gross errors.
+  a small minority of published rows look suspicious; that metric is itself unreliable where
+  a village name exists twice, so the honest statement is that the guards remove the gross
+  errors and the review file shows the rest.
 - **District-scoped candidates do not work yet.** Asking Overpass for an okres with an area
-  selector returns nothing (and 504s) often enough that the script falls back to the region
-  bounding box. The district buckets are in the file format and the script, so this improves
-  by itself when Overpass answers.
-- **The remaining 1,067 stops are in villages where OSM has no stop** (about 500 of them are
-  places where OSM does have *some* stop, but named by hamlet or by roman numeral, which
-  name matching cannot resolve).
+  selector returns nothing (and 504s) often enough that stage 2 falls back to the region
+  bounding box. The district is carried in the stage files, so this improves by itself when
+  Overpass answers.
 
 ## Options not taken
 
@@ -136,8 +158,8 @@ and a stop table derived from it carries share-alike obligations.
 ## Reproducing
 
 ```sh
-make stops                      # downloads the JDF archive if needed, then regenerates the table
-python3 tools/stop_positions.py /tmp/jdf/JDF.zip VdvLive/Resources/stop-positions.json
+make stops                      # downloads the JDF archive if needed, then runs every stage
+JDF_ARCHIVE=/tmp/jdf/JDF.zip .github/skills/stop-positions/scripts/run_all.sh   # the same, offline
 
 # The claims about the sources
 unzip -l /tmp/jdf/JDF.zip | wc -l                       # 13,180 entries

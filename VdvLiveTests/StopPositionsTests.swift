@@ -23,7 +23,9 @@ final class StopPositionsTests: XCTestCase {
         for (kind, expected) in [("osm-name", StopPosition.Match.name),
                                  ("osm-village", .village),
                                  ("osm-near", .near),
-                                 ("place", .place)] {
+                                 ("osm-similar", .similar),
+                                 ("place", .place),
+                                 ("route", .route)] {
             let json = #"{"name":"X","latitude":49.0,"longitude":15.0,"match":"\#(kind)","accuracyMetres":600}"#
             let position = try JSONDecoder().decode(StopPosition.self, from: Data(json.utf8))
             XCTAssertEqual(position.match, expected)
@@ -33,6 +35,14 @@ final class StopPositionsTests: XCTestCase {
     /// A village centre is not a stop's position, so the app has to be able to tell.
     func testAVillageCentreIsNotAnExactPosition() throws {
         let json = #"{"name":"X","latitude":49.0,"longitude":15.0,"match":"place","accuracyMetres":600}"#
+        let position = try JSONDecoder().decode(StopPosition.self, from: Data(json.utf8))
+
+        XCTAssertFalse(position.isExact)
+    }
+
+    /// Neither is a point guessed from the stops either side of this one on the line.
+    func testAPointGuessedFromTheLineIsNotAnExactPosition() throws {
+        let json = #"{"name":"X","latitude":49.0,"longitude":15.0,"match":"route","accuracyMetres":800}"#
         let position = try JSONDecoder().decode(StopPosition.self, from: Data(json.utf8))
 
         XCTAssertFalse(position.isExact)
@@ -77,7 +87,11 @@ final class StopPositionsTests: XCTestCase {
         // Třešť is the next town along, well outside a 2 km box round Brtnice.
         XCTAssertFalse(around.contains { $0.name == "Třešť,nám." })
         XCTAssertEqual(around, around.sorted { $0.name < $1.name })
-        XCTAssertTrue(around.allSatisfy(\.isExact))
+        // Brtnice is a town with parts, so the box holds both a good handful of stops found
+        // by name and a few parts we only have the centre of. Only the latter may be
+        // flagged as not exact, and the former have to be there or the table gave up.
+        XCTAssertGreaterThan(around.filter(\.isExact).count, 5)
+        XCTAssertTrue(around.filter { !$0.isExact }.allSatisfy { $0.match == .place })
     }
 
     func testAnEmptyRectangleHasNoStops() {
