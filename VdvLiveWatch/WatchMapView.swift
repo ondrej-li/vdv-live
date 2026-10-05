@@ -88,7 +88,10 @@ struct WatchMapView: View {
                 .padding(6)
                 .background(.ultraThinMaterial, in: Capsule())
                 .padding(.bottom, 6)
-        } else if let message = model.errorMessage, model.vehicles.isEmpty {
+        } else if let message = model.errorMessage {
+            // Said even when the map has vehicles on it: those are the last
+            // positions the watch managed to fetch, and a marker that is stale but
+            // looks live is worse than one that is labelled.
             note(message)
         }
     }

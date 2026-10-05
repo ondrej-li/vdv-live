@@ -58,6 +58,10 @@ LOCKED_NOTE = echo "note: the iPhone is locked. Unlock it and run 'make launch' 
 
 XCODEBUILD := xcodebuild -project $(PROJECT) -scheme $(SCHEME) -derivedDataPath $(DERIVED_DATA)
 
+# The watch app is a second scheme in the same project, so it needs a base command
+# of its own: `xcodebuild` refuses to be told a scheme twice.
+WATCH_XCODEBUILD := xcodebuild -project $(PROJECT) -derivedDataPath $(DERIVED_DATA)
+
 # Fast type check without xcodebuild: the compiler is called directly, which
 # also works before the Xcode licence agreement has been accepted.
 SWIFTC := $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc
@@ -150,7 +154,7 @@ screenshot:
 ## Build the watch app on its own. A real watch gets it through the phone app,
 ## which carries it in its Watch folder.
 watch:
-	$(XCODEBUILD) -configuration $(CONFIGURATION) -scheme VdvLiveWatch \
+	$(WATCH_XCODEBUILD) -configuration $(CONFIGURATION) -scheme VdvLiveWatch \
 		-destination 'generic/platform=watchOS Simulator' build
 
 ## Run the watch app in a watch simulator, creating it if it is not there yet.

@@ -34,4 +34,16 @@ enum VehicleAPIError: Error, Equatable, LocalizedError {
             return String(localized: "Try again in a moment.")
         }
     }
+
+    /// Whether the feed never answered, as opposed to answering with something the
+    /// app could not read.
+    ///
+    /// The two are worded apart because only the first is a state the user is in:
+    /// a device with no network says so, while a feed that sent nonsense is a
+    /// mistake to retry. Both screens ask this one question, so neither can drift
+    /// into calling a readable failure "offline".
+    var isFeedUnreachable: Bool {
+        if case .transport = self { return true }
+        return false
+    }
 }

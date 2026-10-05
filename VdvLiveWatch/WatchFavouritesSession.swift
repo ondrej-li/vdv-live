@@ -3,10 +3,12 @@ import WatchConnectivity
 
 /// Keeps the lines pinned on the phone, by listening for them.
 ///
-/// The watch cannot read the phone's user defaults, so the phone sends the list as
-/// the session's application context. That suits a short list of line numbers: an
-/// application context survives the watch app not running and is handed over again
-/// the next time it launches.
+/// The watch cannot read the phone's user defaults, so the phone sends the list on
+/// both WatchConnectivity channels and this takes whichever arrives. The application
+/// context is the state: it survives the watch app not running and is handed over
+/// again the next time it launches, which is why activation reads it. A user info
+/// transfer is the guaranteed one, queued if the watch was unreachable when the list
+/// changed - including one queued before the watch app existed.
 ///
 /// Only the lines travel. Vehicles are fetched by the watch itself, so the phone
 /// does not have to be awake for the map to be current, and nothing here has to
@@ -77,6 +79,18 @@ final class WatchFavouritesSession: NSObject, WCSessionDelegate {
     ) {
         Task { @MainActor in
             absorb(applicationContext)
+        }
+    }
+
+    /// The same list, over the channel that queues what the watch could not be told
+    /// while it was unreachable. Absorbing it is idempotent, so a list that already
+    /// arrived as a context changes nothing here.
+    nonisolated func session(
+        _ session: WCSession,
+        didReceiveUserInfo userInfo: [String: Any]
+    ) {
+        Task { @MainActor in
+            absorb(userInfo)
         }
     }
 }
