@@ -1,7 +1,8 @@
 # VDV Live
 
 An iOS app that shows the live positions of buses and trains in the Vysočina
-Region (Czechia) on Apple Maps.
+Region (Czechia) on Apple Maps, and a small Apple Watch app that shows the same
+thing for the lines pinned on the phone.
 
 The data comes from the public map at
 `https://mapavdv.kr-vysocina.cz/`, which publishes every tracked vehicle as a
@@ -16,6 +17,12 @@ draws them on a map that is framed - and locked - to the region.
 
 - **Live map of the region.** Apple Maps, standard style, camera restricted to
   the Vysočina Region so the map cannot be panned into the sea.
+- **An Apple Watch app.** A map of the lines pinned on the phone and nothing
+  else: every vehicle those lines are running, as a dot coloured by how late it
+  is - green up to five minutes, amber from five to ten, red beyond, grey when
+  the feed does not say. The digital crown zooms and a finger pans. No menus, no
+  filters and no favourite stars, because the only vehicles on screen are
+  favourites by definition. See "Apple Watch" below.
 - **Your own position.** The map draws the system's blue dot, with its accuracy
   ring, where you are. It is on by default and switched off in the settings. It
   needs the same permission as opening the map at your location, so iOS is not
@@ -158,7 +165,11 @@ make deploy                    # build, install and launch on a plugged-in iPhon
 make launch                    # relaunch the app that is already installed
 make screenshot                # save one frame of the running app
 make live                      # mirror the running app into a browser tab, 1 fps
+make watch                     # build the watch app on its own
+make watchrun                  # build, install and launch it in a watch simulator
+make watchshot                 # save one frame of the watch simulator
 make devices                   # list simulators, then: make run SIMULATOR="iPhone 16"
+make watches                   # list watch simulators, then: make watchrun WATCH_SIMULATOR="..."
 make iphones                   # list the iPhones plugged into this Mac
 make mapping                   # refresh the shipped line to entry mapping
 ```
@@ -210,6 +221,46 @@ refuses to run with a licence message, accept it once:
 sudo xcodebuild -license accept
 ```
 
+## Apple Watch
+
+`VdvLiveWatch` is a companion app with one screen: the lines pinned on the phone,
+and how late they are. The phone sends the pinned lines over WatchConnectivity as
+the session's application context, and keeps them in the watch's own user
+defaults, so the map has content before the phone has said anything. The watch
+fetches the feed itself, so the phone does not have to be awake or nearby for the
+map to be current, and nothing about the vehicles travels between the two.
+
+The crown zooms geometrically - the same proportion per turn wherever you are -
+and the two stops either side of the range are the region's own span and about
+four hundred metres across. Panning is done with a finger, and the next turn of
+the crown starts from wherever that left the map.
+
+```sh
+make watch                     # build the watch app on its own
+make watchrun                  # build, install and launch it in a watch simulator
+make watchshot                 # save one frame of the watch
+make watches                   # list watch simulators, then: make watchrun WATCH_SIMULATOR="..."
+make watchrun WATCH_ARGS=-watchDelayBands   # one sample per delay colour
+```
+
+With nothing pinned the map is empty on purpose, so a simulator needs lines
+before there is anything to look at:
+
+```sh
+xcrun simctl spawn 'VDV Watch' defaults write cz.ondralinek.VdvLive.watchkitapp \
+    favouriteLines -array 358300 764330
+```
+
+`WATCH_ARGS=-watchDelayBands` swaps the live feed for one vehicle in each band, so
+the four colours can be looked at without waiting for a late bus to drive past.
+The simulator also needs the watchOS platform, which Xcode downloads on demand:
+`xcodebuild -downloadPlatform watchOS`.
+
+A real watch gets the app through the phone: `make deploy` installs the phone app
+with the watch app inside its `Watch` folder, and the phone offers it to the
+paired watch. Developer Mode has to be on for the watch as well as for the phone,
+and the watch has to be paired, unlocked and near the phone.
+
 ## Project layout
 
 ```
@@ -226,6 +277,8 @@ VdvLive/
   Resources/      asset catalog (app icon, accent colour)
   Support/        sample data used by SwiftUI previews (#if DEBUG)
   Localizable.xcstrings   English source strings with Czech translations
+VdvLiveWatch/      the watch app: the map, its model, and the session that
+                   receives the pinned lines from the phone
 VdvLiveTests/      unit tests plus JSON fixtures captured from the live feed
 tools/            the app icon generator, the live mirror page, and the JDF
                   investigation scripts (see docs/timetables.md)
@@ -282,6 +335,11 @@ a network.
 - the string catalogue: both languages ship, the Czech translations are the
   expected ones, and counted strings use Czech plural forms (`1 vozidlo`,
   `3 vozidla`, `12 vozidel`)
+- the watch's delay bands: the sentinel staying unknown rather than on time, the
+  five and ten minute edges, and every delay of a day landing in one band
+- the crown's zoom: the two ends of the range, the span only ever growing, the
+  same proportion per step, values outside the range being clamped, and the map
+  opening on the region it is about
 
 ## Out of scope for now
 
@@ -290,6 +348,7 @@ a network.
   arrive from the feed in Czech and are shown as they come
 - Showing the user's own location, and any location permission
 - Offline caching beyond what `URLCache` gives us
+- Watch complications, and any way to pin a line from the watch itself
 
 The `delay` field is displayed as reported. See `docs/api.md` for why its
 meaning for some vehicles is still an open question.

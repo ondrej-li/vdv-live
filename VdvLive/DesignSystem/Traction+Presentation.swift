@@ -26,15 +26,4 @@ extension Traction {
         case .unknown: return "questionmark"
         }
     }
-
-    var displayName: String {
-        switch self {
-        case .bus: return String(localized: "Bus")
-        case .trolleybus: return String(localized: "Trolleybus")
-        case .tram: return String(localized: "Tram")
-        case .train: return String(localized: "Train")
-        case .ferry: return String(localized: "Ferry")
-        case .unknown: return String(localized: "Unknown")
-        }
-    }
 }

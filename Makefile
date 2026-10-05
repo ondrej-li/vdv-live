@@ -14,6 +14,17 @@ DERIVED_DATA := build
 # Pick another simulator with: make run SIMULATOR="iPhone 16 Pro"
 SIMULATOR ?= iPhone 17
 APP_ID := cz.ondralinek.VdvLive
+
+# The watch app, and the watch simulator 'make watchrun' puts it in. The watch app
+# is a target of its own, but it reaches a real watch inside the phone app: see
+# 'make deploy'.
+WATCH_SIMULATOR ?= VDV Watch
+WATCH_ID := cz.ondralinek.VdvLive.watchkitapp
+WATCH_DEVICE_TYPE ?= com.apple.CoreSimulator.SimDeviceType.Apple-Watch-Series-11-46mm
+WATCH_RUNTIME ?= com.apple.CoreSimulator.SimRuntime.watchOS-27-0
+WATCH_APP := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-watchsimulator/VdvLive Watch.app
+# Extra launch arguments for 'make watchrun', e.g. WATCH_ARGS=-watchDelayBands.
+WATCH_ARGS ?=
 APP_BUNDLE := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphonesimulator/VdvLive.app
 DEVICE_APP := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-iphoneos/VdvLive.app
 SIMULATOR_APP := $(DEVELOPER_DIR)/Applications/Simulator.app
@@ -135,6 +146,35 @@ iphones:
 screenshot:
 	xcrun simctl io '$(SIMULATOR)' screenshot $(DERIVED_DATA)/screenshot.png
 	@echo "wrote $(DERIVED_DATA)/screenshot.png"
+
+## Build the watch app on its own. A real watch gets it through the phone app,
+## which carries it in its Watch folder.
+watch:
+	$(XCODEBUILD) -configuration $(CONFIGURATION) -scheme VdvLiveWatch \
+		-destination 'generic/platform=watchOS Simulator' build
+
+## Run the watch app in a watch simulator, creating it if it is not there yet.
+## Pin lines first: the watch shows only what the phone sends it, so with nothing
+## pinned the map is empty on purpose. Seeded lines can be set with, for example:
+##   xcrun simctl spawn '$(WATCH_SIMULATOR)' defaults write $(WATCH_ID) \
+##       favouriteLines -array 358300 764330
+watchrun: watch
+	@xcrun simctl list devices available | grep -q '$(WATCH_SIMULATOR) (' || \
+		xcrun simctl create '$(WATCH_SIMULATOR)' $(WATCH_DEVICE_TYPE) $(WATCH_RUNTIME)
+	@xcrun simctl boot '$(WATCH_SIMULATOR)' 2>/dev/null || true
+	@xcrun simctl bootstatus '$(WATCH_SIMULATOR)' -b >/dev/null 2>&1 || true
+	xcrun simctl install '$(WATCH_SIMULATOR)' '$(WATCH_APP)'
+	-xcrun simctl terminate '$(WATCH_SIMULATOR)' $(WATCH_ID) 2>/dev/null
+	xcrun simctl launch '$(WATCH_SIMULATOR)' $(WATCH_ID) $(WATCH_ARGS)
+
+## Save a screenshot of the watch simulator.
+watchshot:
+	xcrun simctl io '$(WATCH_SIMULATOR)' screenshot $(DERIVED_DATA)/watch.png
+	@echo "wrote $(DERIVED_DATA)/watch.png"
+
+## List the watch simulators available for WATCH_SIMULATOR=....
+watches:
+	@xcrun simctl list devices available | awk '/-- watchOS/{found=1; next} /^--/{found=0} found'
 
 ## Mirror the booted simulator into a browser tab at 1 fps. Ctrl-C stops it.
 ##

@@ -37,3 +37,21 @@ enum Traction: String, CaseIterable, Codable, Hashable, Sendable {
 extension Traction: Identifiable {
     var id: String { rawValue }
 }
+
+extension Traction {
+    /// What to call this traction in a line summary.
+    ///
+    /// Text rather than colour, so it belongs with the model: the phone's colours
+    /// and symbols live in the design system beside the views that use them, and
+    /// the watch draws none of them but still has to name a line's traction.
+    var displayName: String {
+        switch self {
+        case .bus: return String(localized: "Bus")
+        case .trolleybus: return String(localized: "Trolleybus")
+        case .tram: return String(localized: "Tram")
+        case .train: return String(localized: "Train")
+        case .ferry: return String(localized: "Ferry")
+        case .unknown: return String(localized: "Unknown")
+        }
+    }
+}
