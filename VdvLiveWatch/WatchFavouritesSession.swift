@@ -16,12 +16,15 @@ final class WatchFavouritesSession: NSObject, WCSessionDelegate {
     /// Called when the stored list has changed, so the map can reload.
     var onChange: (() -> Void)?
 
-    private let store: FavouriteLinesPersisting
-    private let session: WCSession?
+    private nonisolated let store: FavouriteLinesPersisting
+
+    /// Nil where WatchConnectivity cannot be used at all, which includes a watch
+    /// simulator with no paired phone. Read rather than stored, because
+    /// `WCSession` is not safe to hand around outside the main actor.
+    private var session: WCSession? { WCSession.isSupported() ? .default : nil }
 
     nonisolated init(store: FavouriteLinesPersisting = UserDefaultsFavouriteLinesStore()) {
         self.store = store
-        self.session = WCSession.isSupported() ? .default : nil
         super.init()
     }
 
