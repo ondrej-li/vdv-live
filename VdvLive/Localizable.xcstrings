@@ -31,6 +31,16 @@
         }
       }
     },
+    "Pin lines on the phone": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidejte si oblíbené linky v telefonu"
+          }
+        }
+      }
+    },
     "Pinned": {
       "localizations": {
         "cs": {

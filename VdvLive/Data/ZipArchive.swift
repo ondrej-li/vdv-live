@@ -43,17 +43,23 @@ enum ZipArchive {
     static func entries(inTail tail: Data, archiveSize: Int) throws -> [Entry] {
         guard archiveSize >= tail.count else { throw Failure.notAZip }
         guard let end = endOfCentralDirectory(in: tail) else { throw Failure.notAZip }
-        guard end.directoryOffset != 0xFFFF_FFFF,
-              end.directorySize != 0xFFFF_FFFF,
-              end.entryCount != 0xFFFF else {
+        guard end.directoryOffset != UInt32.max,
+              end.directorySize != UInt32.max,
+              end.entryCount != UInt16.max else {
             // The national archive is well under 4 GB with 13,259 entries, so
             // this only guards against the format changing under us.
             throw Failure.unsupported
         }
+        // The watch reports a 32 bit `Int`, so an offset that does not fit is a
+        // reason to give up rather than to trap.
+        guard let directoryOffset = Int(exactly: end.directoryOffset),
+              let directorySize = Int(exactly: end.directorySize) else {
+            throw Failure.unsupported
+        }
 
         let tailStart = archiveSize - tail.count
-        let directoryStart = end.directoryOffset - tailStart
-        guard directoryStart >= 0, directoryStart + end.directorySize <= tail.count else {
+        let directoryStart = directoryOffset - tailStart
+        guard directoryStart >= 0, directoryStart + directorySize <= tail.count else {
             throw Failure.centralDirectoryNotInTail
         }
 
@@ -175,8 +181,8 @@ enum ZipArchive {
 
     private struct EndOfCentralDirectory {
         let entryCount: Int
-        let directorySize: Int
-        let directoryOffset: Int
+        let directorySize: UInt32
+        let directoryOffset: UInt32
     }
 
     /// Scans backwards for the end of central directory record, which is the
@@ -193,8 +199,8 @@ enum ZipArchive {
             if uint32(data, cursor) == signature {
                 return EndOfCentralDirectory(
                     entryCount: uint16(data, cursor + 10),
-                    directorySize: Int(uint32(data, cursor + 12)),
-                    directoryOffset: Int(uint32(data, cursor + 16))
+                    directorySize: uint32(data, cursor + 12),
+                    directoryOffset: uint32(data, cursor + 16)
                 )
             }
             cursor -= 1

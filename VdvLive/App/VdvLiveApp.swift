@@ -2,6 +2,12 @@ import SwiftUI
 
 @main
 struct VdvLiveApp: App {
+    /// Keeps the watch's copy of the pinned lines current, wherever they are
+    /// pinned from. Started here rather than in a screen so the watch hears about
+    /// a change made anywhere in the app.
+    private let watchFavourites = WatchFavouritesPublisher()
+
+    @MainActor
     init() {
         // iOS decides which translation to use while the app starts, so the
         // stored choice is written before the first view is built. Changing the
@@ -14,6 +20,7 @@ struct VdvLiveApp: App {
             return
         }
         LanguageOverride.apply(UserDefaultsAppSettingsStore().load().language)
+        watchFavourites.start()
     }
 
     var body: some Scene {
