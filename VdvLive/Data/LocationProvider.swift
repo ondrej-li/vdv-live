@@ -20,6 +20,13 @@ protocol LocationProviding: Sendable {
     /// Returns whether the app is allowed to use the position afterwards.
     @discardableResult
     func requestAuthorization() async -> Bool
+
+    /// Positions as they arrive, for a map that draws the wearer's own dot.
+    ///
+    /// Starting this is what puts the permission prompt on screen the first time;
+    /// a refusal ends the stream. It also keeps location running, so whoever reads
+    /// it has to stop reading when the dot is no longer wanted.
+    func positions() -> AsyncStream<CLLocationCoordinate2D>
 }
 
 /// CoreLocation backed provider.
@@ -96,6 +103,30 @@ final class SystemLocationProvider: LocationProviding {
         }
 
         return Self.permitsLocation(manager.authorizationStatus)
+    }
+
+    func positions() -> AsyncStream<CLLocationCoordinate2D> {
+        AsyncStream { continuation in
+            let updates = Task {
+                do {
+                    for try await update in CLLocationUpdate.liveUpdates() {
+                        if let coordinate = update.location?.coordinate {
+                            continuation.yield(coordinate)
+                        }
+                        // A refusal is an answer, and so is the app going away.
+                        if update.authorizationDenied || update.authorizationDeniedGlobally
+                            || update.authorizationRestricted {
+                            break
+                        }
+                        if Task.isCancelled { break }
+                    }
+                } catch {
+                    // A stream that cannot start is the same as one that ended.
+                }
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in updates.cancel() }
+        }
     }
 
     private static func permitsLocation(_ status: CLAuthorizationStatus) -> Bool {

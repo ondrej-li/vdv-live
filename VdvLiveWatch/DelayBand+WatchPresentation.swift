@@ -18,4 +18,17 @@ extension DelayBand {
             return .gray
         }
     }
+
+    /// What to write on top of ``tint``.
+    ///
+    /// Black on the pale bands and white on the dark ones, because a line number
+    /// nobody can read is worse than no line number at all.
+    var onTint: Color {
+        switch self {
+        case .onTime, .late:
+            return .black
+        case .veryLate, .unknown:
+            return .white
+        }
+    }
 }

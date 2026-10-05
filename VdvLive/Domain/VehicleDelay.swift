@@ -40,3 +40,23 @@ enum VehicleDelay: Codable, Hashable, Sendable {
         return minutes >= Self.badlyLateMinutes
     }
 }
+
+extension VehicleDelay {
+    /// Compact label for a delay, e.g. `+5 min`, `-3 min`, `on time`.
+    ///
+    /// Text rather than colour, so it belongs with the model: the watch says the
+    /// same words as the phone's card, and the design system keeps only the
+    /// colours that belong beside a view.
+    var displayText: String {
+        switch self {
+        case .unknown:
+            return String(localized: "no data")
+        case .minutes(0):
+            return String(localized: "on time")
+        case .minutes(let minutes) where minutes > 0:
+            return String(format: String(localized: "+%lld min"), minutes)
+        case .minutes(let minutes):
+            return String(format: String(localized: "%lld min"), minutes)
+        }
+    }
+}

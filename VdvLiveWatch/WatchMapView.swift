@@ -12,13 +12,25 @@ struct WatchMapView: View {
     @State private var camera: MapCameraPosition = .region(RegionOfInterest.vysocina.region)
     @State private var region: MKCoordinateRegion = RegionOfInterest.vysocina.region
     @State private var zoom: Double = MapZoom.initialCrownValue
+    /// The vehicle whose destination is being shown, if any.
+    @State private var selected: Vehicle?
 
     var body: some View {
-        Map(position: $camera, interactionModes: [.pan, .zoom]) {
+        Map(position: $camera, interactionModes: [.pan, .zoom], selection: $selected) {
+            // Where the wearer is, drawn here rather than with SwiftUI's own
+            // `UserAnnotation`, which compiles for watchOS but puts nothing on the
+            // map. Always on: a bus two kilometres away is only useful next to it.
+            if let coordinate = model.userCoordinate {
+                Annotation("", coordinate: coordinate) {
+                    WatchUserDot()
+                }
+            }
+
             ForEach(model.vehicles) { vehicle in
                 Annotation("", coordinate: vehicle.coordinate) {
-                    WatchVehicleDot(band: DelayBand(vehicle.delay))
+                    WatchVehicleBadge(vehicle: vehicle)
                 }
+                .tag(vehicle)
             }
         }
         .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
@@ -37,9 +49,26 @@ struct WatchMapView: View {
             isHapticFeedbackEnabled: false
         )
         .onChange(of: zoom) { _, value in crownTurned(to: value) }
+        .sheet(item: $selected) { vehicle in
+            WatchVehicleDetailView(vehicle: vehicle)
+        }
         .overlay(alignment: .bottom) { status }
-        .task { await model.start() }
-        .onDisappear { model.stopAutoRefresh() }
+        .task {
+            await model.start()
+            if selectsFirstVehicle { selected = model.vehicles.first }
+        }
+        .onDisappear { model.stop() }
+    }
+
+    /// `-watchSelectFirst` opens the detail sheet on launch, which is otherwise
+    /// only reachable by tapping a marker and so cannot be photographed in a
+    /// simulator.
+    private var selectsFirstVehicle: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-watchSelectFirst")
+        #else
+        return false
+        #endif
     }
 
     private func crownTurned(to value: Double) {
@@ -75,14 +104,14 @@ struct WatchMapView: View {
     }
 }
 
-/// One vehicle: a dot whose colour is its delay band, and nothing else.
-struct WatchVehicleDot: View {
-    let band: DelayBand
-
+/// Where the wearer is: the same blue dot the phone's map draws for itself.
+struct WatchUserDot: View {
     var body: some View {
         Circle()
-            .fill(band.tint)
-            .frame(width: 15, height: 15)
-            .overlay(Circle().stroke(.black.opacity(0.35), lineWidth: 1))
+            .fill(.blue)
+            .frame(width: 12, height: 12)
+            .overlay(Circle().stroke(.white, lineWidth: 2))
+            .shadow(radius: 1)
+            .accessibilityLabel(String(localized: "My location"))
     }
 }

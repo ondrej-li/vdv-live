@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import Observation
 
@@ -19,20 +20,26 @@ final class WatchVehicleMapModel {
 
     private let fetcher: VehicleFetching
     private let favouritesSession: WatchFavouritesSession
+    private let locationProvider: LocationProviding
     private var refreshTask: Task<Void, Never>?
+    private var positionTask: Task<Void, Never>?
 
     private(set) var vehicles: [Vehicle] = []
     private(set) var favouriteLines = FavouriteLines()
+    /// Where the wearer is, once there is a fix. Drawn as a dot by the map.
+    private(set) var userCoordinate: CLLocationCoordinate2D?
     private(set) var lastUpdatedAt: Date?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
 
     nonisolated init(
         fetcher: VehicleFetching = VehicleAPIClient(),
-        favouritesSession: WatchFavouritesSession = WatchFavouritesSession()
+        favouritesSession: WatchFavouritesSession = WatchFavouritesSession(),
+        locationProvider: LocationProviding = SystemLocationProvider()
     ) {
         self.fetcher = fetcher
         self.favouritesSession = favouritesSession
+        self.locationProvider = locationProvider
     }
 
     /// Starts listening for the phone's pins, loads once, then keeps refreshing.
@@ -45,6 +52,10 @@ final class WatchVehicleMapModel {
         favouriteLines = favouritesSession.favouriteLines
         await load()
         startAutoRefresh()
+        // Started after the first load, so the vehicles are on screen while the
+        // permission prompt is being read. The stream is what asks: it reports a
+        // refusal, and a position once there is one.
+        startFollowingPosition()
     }
 
     /// Fetches the feed and keeps only the pinned lines.
@@ -67,9 +78,13 @@ final class WatchVehicleMapModel {
         }
     }
 
-    func stopAutoRefresh() {
+    /// Everything that should stop when the map goes away: the refresh timer and
+    /// the position, both of which cost battery while they run.
+    func stop() {
         refreshTask?.cancel()
         refreshTask = nil
+        positionTask?.cancel()
+        positionTask = nil
     }
 
     private func favouriteLinesChanged() async {
@@ -84,6 +99,17 @@ final class WatchVehicleMapModel {
                 try? await Task.sleep(for: .seconds(Self.refreshInterval))
                 guard !Task.isCancelled else { return }
                 await self?.load()
+            }
+        }
+    }
+
+    private func startFollowingPosition() {
+        positionTask?.cancel()
+        positionTask = Task { [weak self] in
+            guard let provider = self?.locationProvider else { return }
+            for await coordinate in provider.positions() {
+                guard !Task.isCancelled else { return }
+                self?.userCoordinate = coordinate
             }
         }
     }
