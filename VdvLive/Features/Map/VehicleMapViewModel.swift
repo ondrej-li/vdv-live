@@ -258,11 +258,11 @@ final class VehicleMapViewModel {
     /// saying something the app could not read.
     ///
     /// `VehicleAPIError.transport` is the request never making it to the server,
-    /// which is what a device without a network produces.
+    /// which is what a device without a network produces. The rule itself is on
+    /// the error, because the watch's map asks the same question about the same
+    /// failures.
     static func isFeedUnreachable(_ error: Error) -> Bool {
-        guard let apiError = error as? VehicleAPIError else { return false }
-        if case .transport = apiError { return true }
-        return false
+        (error as? VehicleAPIError)?.isFeedUnreachable ?? false
     }
 
     /// Keeps what is on screen for the next launch.

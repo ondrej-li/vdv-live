@@ -9,6 +9,10 @@ import Observation
 /// view and no clustering - the pins come from the phone, the vehicles come from
 /// the same public feed the phone uses, and a coloured dot per vehicle is all the
 /// map draws.
+///
+/// It does keep one thing: the payload the feed last produced. A wrist is looked at
+/// for a second, often somewhere without a network, and the positions from a few
+/// minutes ago are a better answer than an empty map.
 @MainActor
 @Observable
 final class WatchVehicleMapModel {
@@ -18,9 +22,18 @@ final class WatchVehicleMapModel {
     /// does not need that resolution, and a watch pays for it in battery.
     static let refreshInterval: TimeInterval = 60
 
+    /// How long the map has to have had a payload before it is written away.
+    ///
+    /// The file is read by one thing only - a launch that cannot reach the feed -
+    /// so there is nothing to gain from rewriting it every minute, and a watch
+    /// pays for every write.
+    static let cacheSaveInterval: TimeInterval = 5 * 60
+
     private let fetcher: VehicleFetching
     private let favouritesSession: WatchFavouritesSession
     private let locationProvider: LocationProviding
+    /// Where the last payload is kept between launches.
+    private let payloadStore: VehiclePayloadStoring
     private var refreshTask: Task<Void, Never>?
     private var positionTask: Task<Void, Never>?
 
@@ -31,15 +44,21 @@ final class WatchVehicleMapModel {
     private(set) var lastUpdatedAt: Date?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
+    /// Everything the feed last said, whole rather than already filtered, so that
+    /// a line pinned in the meantime can be drawn from it without a fetch.
+    private var lastPayload: VehiclePayload?
+    private var lastSavedAt: Date?
 
     nonisolated init(
         fetcher: VehicleFetching = VehicleAPIClient(),
         favouritesSession: WatchFavouritesSession = WatchFavouritesSession(),
-        locationProvider: LocationProviding = SystemLocationProvider()
+        locationProvider: LocationProviding = SystemLocationProvider(),
+        payloadStore: VehiclePayloadStoring = VehiclePayloadFiles()
     ) {
         self.fetcher = fetcher
         self.favouritesSession = favouritesSession
         self.locationProvider = locationProvider
+        self.payloadStore = payloadStore
     }
 
     /// Starts listening for the phone's pins, loads once, then keeps refreshing.
@@ -50,6 +69,10 @@ final class WatchVehicleMapModel {
         }
         favouritesSession.activate()
         favouriteLines = favouritesSession.favouriteLines
+        // What an earlier launch left behind goes on the map before the network is
+        // asked anything: an empty screen for as long as a fetch takes is worse
+        // than positions a few minutes old.
+        showStoredPayload()
         await load()
         startAutoRefresh()
         // Started after the first load, so the vehicles are on screen while the
@@ -66,11 +89,12 @@ final class WatchVehicleMapModel {
 
         do {
             let payload = try await fetcher.fetchVehicles()
-            vehicles = payload.vehicles.filter { vehicle in
-                vehicle.isLocatable && favouriteLines.contains(vehicle.line)
-            }
-            lastUpdatedAt = Date()
+            let fetchedAt = Date()
+            lastPayload = payload
+            lastUpdatedAt = fetchedAt
+            showVehicles(in: payload)
             errorMessage = nil
+            savePayloadIfStaleEnough(fetchedAt)
         } catch {
             // Whatever is already on the map stays: a missed refresh should not
             // blank a screen somebody is looking at.
@@ -81,6 +105,9 @@ final class WatchVehicleMapModel {
     /// Everything that should stop when the map goes away: the refresh timer and
     /// the position, both of which cost battery while they run.
     func stop() {
+        // Whatever arrived this session is the freshest thing the next launch could
+        // start from, so it goes away with it.
+        savePayload()
         refreshTask?.cancel()
         refreshTask = nil
         positionTask?.cancel()
@@ -89,7 +116,39 @@ final class WatchVehicleMapModel {
 
     private func favouriteLinesChanged() async {
         favouriteLines = favouritesSession.favouriteLines
+        // Redrawn from the payload already in hand, so a line pinned while the
+        // watch could not reach the feed appears straight away; the fetch that
+        // follows then corrects the positions.
+        showVehicles(in: lastPayload)
         await load()
+    }
+
+    /// Puts the vehicles of the pinned lines on the map, out of a payload.
+    private func showVehicles(in payload: VehiclePayload?) {
+        vehicles = payload?.vehicles(onPinnedLines: favouriteLines) ?? []
+    }
+
+    /// Shows what an earlier launch kept, if it kept anything.
+    private func showStoredPayload() {
+        guard let stored = payloadStore.load() else { return }
+        lastPayload = stored.payload
+        lastUpdatedAt = stored.fetchedAt
+        showVehicles(in: stored.payload)
+    }
+
+    /// Keeps what was fetched for the next launch.
+    private func savePayload() {
+        guard let lastPayload, let lastUpdatedAt else { return }
+        payloadStore.save(lastPayload, fetchedAt: lastUpdatedAt)
+        lastSavedAt = lastUpdatedAt
+    }
+
+    /// Keeps it, unless it was written recently enough.
+    private func savePayloadIfStaleEnough(_ fetchedAt: Date) {
+        if let lastSavedAt, fetchedAt.timeIntervalSince(lastSavedAt) < Self.cacheSaveInterval {
+            return
+        }
+        savePayload()
     }
 
     private func startAutoRefresh() {
@@ -117,11 +176,22 @@ final class WatchVehicleMapModel {
     /// One short line, because it has to fit on a watch. The wording is the app's
     /// own, so the two screens do not describe the same failure differently.
     private static func message(for error: Error) -> String {
-        if let urlError = error as? URLError,
-           [.notConnectedToInternet, .networkConnectionLost, .timedOut,
-            .cannotFindHost, .cannotConnectToHost, .dataNotAllowed].contains(urlError.code) {
+        if isUnreachable(error) {
             return String(localized: "Offline")
         }
         return String(localized: "The vehicle feed could not be loaded.")
+    }
+
+    /// Whether the feed never answered, as opposed to answering with something the
+    /// app could not read.
+    ///
+    /// The client wraps every transport failure, so the rule has to be asked of the
+    /// error itself; a bare `URLError` is still possible from anything that dials
+    /// out without the client, and means the same thing.
+    private static func isUnreachable(_ error: Error) -> Bool {
+        if (error as? VehicleAPIError)?.isFeedUnreachable == true { return true }
+        guard let urlError = error as? URLError else { return false }
+        return [.notConnectedToInternet, .networkConnectionLost, .timedOut,
+                .cannotFindHost, .cannotConnectToHost, .dataNotAllowed].contains(urlError.code)
     }
 }

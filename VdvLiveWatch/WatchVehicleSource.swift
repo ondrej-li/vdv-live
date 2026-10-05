@@ -10,10 +10,23 @@ enum WatchVehicleSource {
         if ProcessInfo.processInfo.arguments.contains("-watchDelayBands") {
             return DelayBandSampleFetcher()
         }
+        if ProcessInfo.processInfo.arguments.contains("-watchOffline") {
+            return OfflineFetcher()
+        }
         #endif
         return VehicleAPIClient()
     }
 }
+
+#if DEBUG
+/// A feed that never answers, so the map's behaviour with no network - which for a
+/// watch is an ordinary Tuesday - can be looked at without unplugging anything.
+private struct OfflineFetcher: VehicleFetching {
+    func fetchVehicles() async throws -> VehiclePayload {
+        throw VehicleAPIError.transport(String(localized: "There is no internet connection."))
+    }
+}
+#endif
 
 #if DEBUG
 /// Four vehicles in a loose square near Jihlava, one in each delay band.
