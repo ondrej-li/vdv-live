@@ -133,5 +133,17 @@ struct SampleLocationProvider: LocationProviding {
     }
 
     func requestAuthorization() async -> Bool { true }
+
+    /// Hands the preview position over once and ends, the same shape as the real
+    /// provider in a place that never moves.
+    func positions() -> AsyncStream<CLLocationCoordinate2D> {
+        guard let coordinate else {
+            return AsyncStream { $0.finish() }
+        }
+        return AsyncStream { continuation in
+            continuation.yield(coordinate)
+            continuation.finish()
+        }
+    }
 }
 #endif

@@ -13,6 +13,7 @@ final class StubLocationProvider: LocationProviding {
     var isAuthorized = true
     private(set) var requestCount = 0
     private(set) var authorizationRequestCount = 0
+    private(set) var positionRequestCount = 0
 
     init(coordinate: CLLocationCoordinate2D? = nil, isAuthorized: Bool = true) {
         self.coordinate = coordinate
@@ -27,5 +28,17 @@ final class StubLocationProvider: LocationProviding {
     func requestAuthorization() async -> Bool {
         authorizationRequestCount += 1
         return isAuthorized
+    }
+
+    func positions() -> AsyncStream<CLLocationCoordinate2D> {
+        positionRequestCount += 1
+        let coordinate = coordinate
+        let isAuthorized = isAuthorized
+        return AsyncStream { continuation in
+            if let coordinate, isAuthorized {
+                continuation.yield(coordinate)
+            }
+            continuation.finish()
+        }
     }
 }
