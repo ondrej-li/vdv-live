@@ -18,9 +18,12 @@ import Observation
 final class WatchVehicleMapModel {
     /// How often the feed is asked again while the map is on screen.
     ///
-    /// Slower than the phone's fifteen seconds on purpose: a glance at the wrist
-    /// does not need that resolution, and a watch pays for it in battery.
-    static let refreshInterval: TimeInterval = 60
+    /// The phone's own default rather than a number of the watch's own: a marker
+    /// that is a minute behind is indistinguishable from one that has stopped, and
+    /// a wrist is read at a glance. What keeps this affordable is the screen rather
+    /// than the interval - a watch sleeps within seconds of being lowered, and
+    /// nothing here runs while the map is not in front of somebody.
+    static let refreshInterval: TimeInterval = AppSettings.defaultAutoRefreshInterval
 
     /// How long the map has to have had a payload before it is written away.
     ///

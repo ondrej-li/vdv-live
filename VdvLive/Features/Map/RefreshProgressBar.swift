@@ -13,9 +13,11 @@ struct RefreshProgressBar: View {
     let lastUpdatedAt: Date?
 
     /// How much of the interval has passed, clamped to `0...1`.
+    ///
+    /// The arithmetic lives in `RefreshProgress`, beside the watch's copy of this
+    /// bar, so the two cannot disagree about what the bar means.
     static func progress(elapsed: TimeInterval, interval: TimeInterval) -> Double {
-        guard interval > 0, elapsed.isFinite else { return 1 }
-        return min(max(elapsed / interval, 0), 1)
+        RefreshProgress.fraction(elapsed: elapsed, interval: interval)
     }
 
     var body: some View {
