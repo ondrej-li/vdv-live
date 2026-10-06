@@ -53,6 +53,14 @@ struct WatchMapView: View {
             WatchVehicleDetailView(vehicle: vehicle)
         }
         .overlay(alignment: .bottom) { status }
+        .overlay(alignment: .top) {
+            // The phone's header carries the same hairline along its top edge; a
+            // wrist gets the bar without the card.
+            WatchRefreshProgressBar(
+                interval: WatchVehicleMapModel.refreshInterval,
+                lastUpdatedAt: model.lastUpdatedAt
+            )
+        }
         .task {
             await model.start()
             if selectsFirstVehicle { selected = model.vehicles.first }
