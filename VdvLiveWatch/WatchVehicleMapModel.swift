@@ -37,13 +37,28 @@ final class WatchVehicleMapModel {
     private let locationProvider: LocationProviding
     /// Where the last payload is kept between launches.
     private let payloadStore: VehiclePayloadStoring
+    /// Where the wearer's last position is kept between launches.
+    private let positionStore: LastKnownPositionStore
     private var refreshTask: Task<Void, Never>?
     private var positionTask: Task<Void, Never>?
+
+    /// Where the wearer was when the app last had a fix.
+    ///
+    /// Read once, so that the map can open there before the system has answered -
+    /// and so that the wearer's dot is on screen from the first frame rather than
+    /// appearing out of nowhere a second later.
+    let lastKnownPosition: CLLocationCoordinate2D?
 
     private(set) var vehicles: [Vehicle] = []
     private(set) var favouriteLines = FavouriteLines()
     /// Where the wearer is, once there is a fix. Drawn as a dot by the map.
     private(set) var userCoordinate: CLLocationCoordinate2D?
+    /// How many fixes have arrived this launch.
+    ///
+    /// The position itself cannot be watched for changes - `CLLocationCoordinate2D`
+    /// is not `Equatable` - so the map watches this and reads the position when it
+    /// moves on, which is what puts the map on the wearer once the system answers.
+    private(set) var fixesReceived = 0
     private(set) var lastUpdatedAt: Date?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
@@ -56,12 +71,15 @@ final class WatchVehicleMapModel {
         fetcher: VehicleFetching = VehicleAPIClient(),
         favouritesSession: WatchFavouritesSession = WatchFavouritesSession(),
         locationProvider: LocationProviding = SystemLocationProvider(),
-        payloadStore: VehiclePayloadStoring = VehiclePayloadFiles()
+        payloadStore: VehiclePayloadStoring = VehiclePayloadFiles(),
+        positionStore: LastKnownPositionStore = LastKnownPositionStore()
     ) {
         self.fetcher = fetcher
         self.favouritesSession = favouritesSession
         self.locationProvider = locationProvider
         self.payloadStore = payloadStore
+        self.positionStore = positionStore
+        self.lastKnownPosition = positionStore.load()
     }
 
     /// Starts listening for the phone's pins, loads once, then keeps refreshing.
@@ -72,6 +90,10 @@ final class WatchVehicleMapModel {
         }
         favouritesSession.activate()
         favouriteLines = favouritesSession.favouriteLines
+        // The dot stands where the wearer was until the system says where they are,
+        // which keeps the map honest about what it knows rather than leaving the
+        // position blank.
+        userCoordinate = lastKnownPosition
         // What an earlier launch left behind goes on the map before the network is
         // asked anything: an empty screen for as long as a fetch takes is worse
         // than positions a few minutes old.
@@ -172,6 +194,10 @@ final class WatchVehicleMapModel {
             for await coordinate in provider.positions() {
                 guard !Task.isCancelled else { return }
                 self?.userCoordinate = coordinate
+                self?.fixesReceived += 1
+                // Kept for the next launch, which has to open somewhere before the
+                // system has answered.
+                self?.positionStore.save(coordinate)
             }
         }
     }
