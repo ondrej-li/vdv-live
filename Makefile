@@ -199,9 +199,17 @@ live:
 		sleep 1; \
 	done
 
-## Regenerate the app icon PNG (only needed when the icon design changes).
-icon:
+## Regenerate the app icons, the phone app's and the watch app's, from one script so
+## the two cannot drift apart. The map behind the bus is the region's own roads and
+## rivers, which come from OpenStreetMap: the first run fetches them and caches them
+## under build/, so later runs are offline. Delete $(REGION_MAP) to refresh the map.
+REGION_MAP := build/icon/region-map.json
+icon: $(REGION_MAP)
 	swift tools/generate-app-icon.swift
+
+$(REGION_MAP):
+	@mkdir -p $(dir $@)
+	python3 tools/fetch-region-map.py "$@"
 
 ## Refresh the shipped line to entry mapping. The archive it is read from is
 ## republished a few times a week and reassigns its entry names, which leaves the

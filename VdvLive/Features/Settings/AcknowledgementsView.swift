@@ -38,6 +38,12 @@ struct AcknowledgementsView: View {
             }
 
             Section {
+                Text("Stop positions are matched from OpenStreetMap by stop name, and the app icon is drawn from its roads and rivers. The data is © OpenStreetMap contributors, published under the Open Database Licence 1.0 (openstreetmap.org/copyright).")
+            } header: {
+                Text("OpenStreetMap")
+            }
+
+            Section {
                 Text("The base map and its tiles are Apple Maps, drawn through MapKit.")
             } header: {
                 Text("Maps")

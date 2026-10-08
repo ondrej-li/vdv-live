@@ -109,6 +109,11 @@ final class LocalizationTests: XCTestCase {
             try czechString("Feedback, bug reports and feature requests are welcome there."),
             "Zpětná vazba, hlášení chyb a nápady na nové funkce jsou vítány právě tam."
         )
+        XCTAssertEqual(try czechString("OpenStreetMap"), "OpenStreetMap")
+        XCTAssertEqual(
+            try czechString("Stop positions are matched from OpenStreetMap by stop name, and the app icon is drawn from its roads and rivers. The data is © OpenStreetMap contributors, published under the Open Database Licence 1.0 (openstreetmap.org/copyright)."),
+            "Polohy zastávek se přiřazují z OpenStreetMap podle názvu zastávky a ikona aplikace je vykreslena z jejích silnic a řek. Data jsou © přispěvatelé OpenStreetMap, zveřejněná pod licencí Open Database Licence 1.0 (openstreetmap.org/copyright)."
+        )
     }
 
     func testTranslatesTheTimetableScreenIntoCzech() throws {
