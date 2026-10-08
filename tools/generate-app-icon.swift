@@ -142,6 +142,11 @@ func loadStops(from path: String) -> [Stop] {
               let longitude = record["longitude"] as? Double else { return nil }
         return Stop(latitude: latitude, longitude: longitude)
     }
+    // In a fixed order, because the grain is drawn as thousands of overlapping dots at
+    // alpha 0.12: eight-bit blending is not commutative, so a dictionary's per-process
+    // iteration order changes the last bit of the pixels and the committed PNG would be
+    // a different file after every run.
+    .sorted { ($0.latitude, $0.longitude) < ($1.latitude, $1.longitude) }
 }
 
 // MARK: - The bus, as a mask
