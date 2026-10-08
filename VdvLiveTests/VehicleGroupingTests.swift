@@ -71,6 +71,24 @@ final class VehicleGroupingTests: XCTestCase {
         XCTAssertEqual(viewModel.visibleVehicleCount, 3)
     }
 
+    // MARK: - A crowded map
+
+    /// A hundred and sixty-nine vehicles inside five kilometres: a busy town centre
+    /// at region zoom, and well past the point where the map draws a marker each.
+    private var crowd: [Vehicle] {
+        Fixture.grid(count: 13, spacing: 0.004, latitude: 49.40, longitude: 15.60)
+    }
+
+    func testACrowdIsGroupedEvenThoughTheSettingIsOff() async {
+        let (viewModel, _) = makeViewModel(settings: settings(clusterRadiusMetres: 0), vehicles: crowd)
+
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.visibleVehicleCount, 169, "every vehicle is still counted")
+        XCTAssertGreaterThan(viewModel.clusters.count, 1, "and the crowd is not one dot")
+        XCTAssertLessThan(viewModel.clusters.count, 40, "but it is not 169 markers either")
+    }
+
     func testChangingTheRadiusRebuildsTheMarkersAndIsRemembered() async {
         let (viewModel, store) = makeViewModel(settings: settings(clusterRadiusMetres: 0), vehicles: sampleVehicles)
         await viewModel.load()
