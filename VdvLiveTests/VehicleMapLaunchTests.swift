@@ -113,6 +113,48 @@ final class VehicleMapLaunchTests: XCTestCase {
         XCTAssertEqual(location.requestCount, 0, "a switched off option should not ask for a position")
     }
 
+    // MARK: - Showing the user on demand
+
+    func testAskingForTheUserShowsFiveKilometresAroundThem() async throws {
+        let (viewModel, _, location) = makeViewModel(settings: settings(), coordinate: jihlava)
+
+        let focused = await viewModel.focusedRegionOnCurrentLocation()
+        let region = try XCTUnwrap(focused)
+
+        XCTAssertEqual(region.center.latitude, 49.3960, accuracy: 1e-9)
+        XCTAssertEqual(region.center.longitude, 15.5910, accuracy: 1e-9)
+        XCTAssertEqual(
+            region.span.latitudeDelta * MapScale.metresPerDegreeLatitude,
+            MapRegion.focusMetres,
+            accuracy: 1
+        )
+        XCTAssertEqual(location.requestCount, 1)
+    }
+
+    /// Asking is an instruction rather than a preference, so the settings that
+    /// decide where the map is allowed to open do not apply to it.
+    func testAskingForTheUserAnswersEvenWhereTheMapWouldNotOpen() async {
+        let (viewModel, _, _) = makeViewModel(
+            settings: settings(
+                startsAtCurrentLocation: false,
+                savedMapView: SavedMapView(region: RegionOfInterest.vysocina.region)
+            ),
+            coordinate: jihlava
+        )
+
+        let focused = await viewModel.focusedRegionOnCurrentLocation()
+
+        XCTAssertNotNil(focused)
+    }
+
+    func testAskingForTheUserWithoutAPositionLeavesTheMapAlone() async {
+        let (viewModel, _, _) = makeViewModel(settings: settings(), coordinate: nil)
+
+        let focused = await viewModel.focusedRegionOnCurrentLocation()
+
+        XCTAssertNil(focused, "no position means no camera move, rather than the region")
+    }
+
     // MARK: - Showing the position
 
     func testThePositionIsShownByDefault() {

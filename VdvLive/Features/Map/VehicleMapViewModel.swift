@@ -524,6 +524,24 @@ final class VehicleMapViewModel {
         )
     }
 
+    /// Region around the user for a map that has been told to show them.
+    ///
+    /// Unlike ``currentLocationRegion()`` this answers whatever the settings say and
+    /// wherever the user happens to be: asking is an instruction rather than a
+    /// preference, so a saved viewport does not outrank it and a position outside
+    /// the region the feed covers is still where the user is standing. The window is
+    /// the closest of the two the app knows, because a map asked to show you should
+    /// show you something you recognise.
+    func focusedRegionOnCurrentLocation() async -> MKCoordinateRegion? {
+        guard let coordinate = await locationProvider.requestCurrentCoordinate() else { return nil }
+
+        return MapRegion.region(
+            around: coordinate,
+            widthMetres: MapRegion.focusMetres,
+            heightMetres: MapRegion.focusMetres
+        )
+    }
+
     /// Remembers the viewport on screen, or forgets it when the map already
     /// opens there.
     func toggleSavedMapView() {

@@ -25,4 +25,15 @@ enum MapZoom {
             longitudeDelta: latitudeDelta * 1.5
         )
     }
+
+    /// The crown value that shows a window `latitudeDelta` degrees tall.
+    ///
+    /// The inverse of ``span(forCrownValue:)``, for a camera moved by something
+    /// other than the crown - a double tap asking for a window of a known size. The
+    /// crown is then left where that move left the map instead of jumping back to
+    /// the zoom it was at before the next turn.
+    static func crownValue(forLatitudeDelta latitudeDelta: Double) -> Double {
+        let clamped = min(max(latitudeDelta, closestLatitudeDelta), widestLatitudeDelta)
+        return log(clamped / closestLatitudeDelta) / log(widestLatitudeDelta / closestLatitudeDelta)
+    }
 }

@@ -178,6 +178,11 @@ struct VehicleMapView: View {
         } action: { size in
             mapSize = size
         }
+        .simultaneousGesture(
+            TapGesture(count: 2).onEnded {
+                Task { await refocusOnUser() }
+            }
+        )
         .ignoresSafeArea()
     }
 
@@ -400,6 +405,19 @@ struct VehicleMapView: View {
         viewModel.setFollowsCurrentLocation(false)
         withAnimation(.easeInOut(duration: 0.4)) {
             camera = .region(RegionOfInterest.vysocina.region)
+        }
+    }
+
+    /// A double tap on the map puts it back on the user.
+    ///
+    /// The position is asked for rather than remembered: following is MapKit's own
+    /// camera on the blue dot, so nothing here has ever held a coordinate, and a
+    /// position from a minute ago is not what a double tap is asking for.
+    private func refocusOnUser() async {
+        guard let region = await viewModel.focusedRegionOnCurrentLocation() else { return }
+        viewModel.setFollowsCurrentLocation(false)
+        withAnimation(.easeInOut(duration: 0.4)) {
+            camera = .region(region)
         }
     }
 

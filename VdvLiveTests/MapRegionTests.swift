@@ -3,7 +3,8 @@ import Foundation
 import XCTest
 @testable import VdvLive
 
-/// The arithmetic behind "show me about ten kilometres around here".
+/// The arithmetic behind "show me about ten kilometres around here" at launch, and
+/// behind the five a double tap asks for.
 final class MapRegionTests: XCTestCase {
     private let jihlava = CLLocationCoordinate2D(latitude: 49.3960, longitude: 15.5910)
 
@@ -17,6 +18,31 @@ final class MapRegionTests: XCTestCase {
         XCTAssertEqual(region.span.latitudeDelta, 0.09, accuracy: 0.001)
         XCTAssertEqual(region.center.latitude, 49.3960, accuracy: 1e-9)
         XCTAssertEqual(region.center.longitude, 15.5910, accuracy: 1e-9)
+    }
+
+    /// The window a double tap asks for is square on the ground rather than in
+    /// degrees: five kilometres across, north to south and east to west.
+    func testTheFocusWindowIsFiveKilometresInBothDirections() {
+        let region = MapRegion.region(
+            around: jihlava,
+            widthMetres: MapRegion.focusMetres,
+            heightMetres: MapRegion.focusMetres
+        )
+        let northToSouth = region.span.latitudeDelta * MapScale.metresPerDegreeLatitude
+        let eastToWest = region.span.longitudeDelta
+            * MapRegion.metresPerDegreeLongitude(at: jihlava.latitude)
+
+        XCTAssertEqual(MapRegion.focusMetres, 5_000)
+        XCTAssertEqual(northToSouth, 5_000, accuracy: 1)
+        XCTAssertEqual(eastToWest, 5_000, accuracy: 1)
+        XCTAssertEqual(region.center.latitude, jihlava.latitude, accuracy: 1e-9)
+        XCTAssertEqual(region.center.longitude, jihlava.longitude, accuracy: 1e-9)
+    }
+
+    /// Closer than the map opens on, so that a double tap is a deliberate step in
+    /// rather than the view it already had.
+    func testTheFocusWindowIsCloserThanTheOneTheMapOpensOn() {
+        XCTAssertLessThan(MapRegion.focusMetres, MapRegion.currentLocationMetres)
     }
 
     func testTheSameDistanceNeedsWiderSpansOfLongitudeThisFarNorth() {

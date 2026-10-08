@@ -86,8 +86,20 @@ struct WatchMapView: View {
             // pan away from.
             guard let coordinate = model.userCoordinate, !hasCentredOnWearer else { return }
             hasCentredOnWearer = true
-            centre(on: coordinate)
+            if focusesOnStart {
+                focusOnWearer()
+            } else {
+                centre(on: coordinate)
+            }
         }
+        .simultaneousGesture(
+            TapGesture(count: 2).onEnded {
+                // A double tap is the whole of the chrome a wrist can afford: no
+                // button to find among the markers, and a gesture the map is
+                // already listening for.
+                focusOnWearer()
+            }
+        )
         .sheet(item: $selected) { vehicle in
             WatchVehicleDetailView(vehicle: vehicle)
         }
@@ -126,6 +138,38 @@ struct WatchMapView: View {
         let updated = MKCoordinateRegion(center: coordinate, span: region.span)
         region = updated
         camera = .region(updated)
+    }
+
+    /// Puts the map back on the wearer, five kilometres across: the answer to
+    /// "where am I" that a wrist can give without a menu to find it in.
+    ///
+    /// The position may be the one the system has just given or the one the last
+    /// launch left behind - both are where the wearer is, and the second is the only
+    /// answer there is indoors.
+    private func focusOnWearer() {
+        guard let coordinate = model.userCoordinate else { return }
+        let focused = MapRegion.region(
+            around: coordinate,
+            widthMetres: MapRegion.focusMetres,
+            heightMetres: MapRegion.focusMetres
+        )
+        hasCentredOnWearer = true
+        region = focused
+        camera = .region(focused)
+        // Kept in step with the crown, so that the next turn carries on from this
+        // window rather than jumping back to the zoom the map had before.
+        zoom = MapZoom.crownValue(forLatitudeDelta: focused.span.latitudeDelta)
+    }
+
+    /// `-watchFocus` puts the map back on the wearer as soon as the first fix
+    /// arrives. A double tap cannot be delivered to a simulator, so this stands in
+    /// for one and goes through the same path.
+    private var focusesOnStart: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-watchFocus")
+        #else
+        return false
+        #endif
     }
 
     /// How far the map is from its next refresh, along the bottom edge where it

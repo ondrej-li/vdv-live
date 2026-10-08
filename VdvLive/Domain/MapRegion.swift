@@ -12,6 +12,12 @@ enum MapRegion {
     /// the current location.
     static let currentLocationMetres: Double = 10_000
 
+    /// Width and height of the window a map shows when it is told to show the user:
+    /// five kilometres, close enough to read the streets and far enough to hold the
+    /// buses about to pass. A double tap asks for this on the phone and on the
+    /// watch, so both ask for the same window.
+    static let focusMetres: Double = 5_000
+
     /// Region showing `widthMetres` by `heightMetres` around `center`.
     static func region(
         around center: CLLocationCoordinate2D,
