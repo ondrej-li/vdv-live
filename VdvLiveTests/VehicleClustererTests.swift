@@ -55,6 +55,65 @@ final class VehicleClustererTests: XCTestCase {
         XCTAssertEqual(markers.first?.count, 3)
     }
 
+    // MARK: - A crowded map
+
+    /// The region as a desktop window shows it: 1.1 degrees of latitude, which is
+    /// 122 km.
+    private let regionSpan = MKCoordinateSpan(latitudeDelta: 1.1, longitudeDelta: 1.5)
+
+    /// A street: about 8 km across.
+    private let streetSpan = MKCoordinateSpan(latitudeDelta: 0.07, longitudeDelta: 0.1)
+
+    func testTheSettingIsUsedWhileTheMapIsNotCrowded() {
+        XCTAssertEqual(
+            VehicleClusterer.groupingRadiusMetres(setting: 250, vehicles: 40, span: regionSpan),
+            250
+        )
+        XCTAssertEqual(
+            VehicleClusterer.groupingRadiusMetres(setting: 250, vehicles: 100, span: regionSpan),
+            250,
+            "a hundred vehicles is not yet a crowd"
+        )
+    }
+
+    func testACrowdIsGroupedEvenWithTheSettingOff() {
+        let radius = VehicleClusterer.groupingRadiusMetres(setting: 0, vehicles: 610, span: regionSpan)
+
+        XCTAssertEqual(radius, 1.1 * MapScale.metresPerDegreeLatitude / 40, accuracy: 1)
+        XCTAssertEqual(radius, 3_056, accuracy: 2, "a fortieth of the region is about 3 km")
+    }
+
+    func testTheCrowdedRadiusIsTheSameSizeAtEveryZoom() {
+        let region = VehicleClusterer.groupingRadiusMetres(setting: 0, vehicles: 610, span: regionSpan)
+        let street = VehicleClusterer.groupingRadiusMetres(setting: 0, vehicles: 610, span: streetSpan)
+
+        XCTAssertEqual(street / region, 0.07 / 1.1, accuracy: 0.001)
+        XCTAssertEqual(street, 194, accuracy: 1)
+    }
+
+    func testARadiusTheUserChoseStillWinsWhenItIsWider() {
+        XCTAssertEqual(
+            VehicleClusterer.groupingRadiusMetres(setting: 5_000, vehicles: 610, span: regionSpan),
+            5_000
+        )
+    }
+
+    func testACrowdOfVehiclesIsDrawnAsFarFewerMarkers() {
+        // Four hundred vehicles about a kilometre apart, which is fifteen times
+        // what the test case draws elsewhere.
+        let vehicles = Fixture.grid(count: 20, spacing: 0.01)
+        let radius = VehicleClusterer.groupingRadiusMetres(
+            setting: 0,
+            vehicles: vehicles.count,
+            span: MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0)
+        )
+
+        let markers = markers(vehicles, radiusMetres: radius)
+
+        XCTAssertLessThan(markers.count, vehicles.count / 2)
+        XCTAssertGreaterThan(markers.count, 10, "the region is not one dot")
+    }
+
     // MARK: - The anchor
 
     func testAGroupIsNamedAfterItsAnchorSoItsIdentitySurvives() {

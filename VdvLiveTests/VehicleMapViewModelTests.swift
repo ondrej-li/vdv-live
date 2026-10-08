@@ -1021,6 +1021,53 @@ final class VehicleMapViewModelTests: XCTestCase {
         XCTAssertEqual(cluster.drawnCoordinate.longitude, 15.5810, accuracy: 0.000001)
     }
 
+    func testACrowdIsPlacedRatherThanGliding() async throws {
+        // A hundred and forty-four vehicles seven kilometres apart: past the hundred
+        // that makes a map crowded, and far enough apart that not one of them is
+        // grouped, since a tenth of a degree of longitude is only 7 km at this
+        // latitude and the crowding radius comes to about 3.5.
+        let parked = Fixture.grid(count: 12, spacing: 0.07)
+        let moved = parked.map { vehicle in
+            Fixture.vehicle(
+                id: vehicle.id,
+                latitude: vehicle.coordinate.latitude + 0.01,
+                longitude: vehicle.coordinate.longitude
+            )
+        }
+        let fetcher = StubVehicleFetcher(payloads: [
+            VehiclePayload(vehicles: parked, skippedRecordCount: 0, unlocatableRecordCount: 0),
+            VehiclePayload(vehicles: moved, skippedRecordCount: 0, unlocatableRecordCount: 0)
+        ])
+        let referenceDate = self.referenceDate
+        let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
+            fetcher: fetcher,
+            favouriteLinesStore: InMemoryFavouriteLinesStore(),
+            settingsStore: InMemoryAppSettingsStore(),
+            languageDefaults: TestDefaults.make(),
+            detailFetcher: StubVehicleDetailFetcher(),
+            markerMotionDuration: 5,
+            now: { referenceDate }
+        )
+
+        await viewModel.load()
+        await viewModel.load()
+
+        XCTAssertGreaterThan(viewModel.clusters.count, 100, "the map really is crowded")
+
+        // A five second glide would still be half way through, so a marker that is
+        // already where the new payload puts it is a marker that never travelled.
+        let singles = viewModel.clusters.filter { $0.singleVehicle != nil }
+        XCTAssertFalse(singles.isEmpty)
+        for cluster in singles {
+            XCTAssertEqual(
+                cluster.drawnCoordinate.latitude,
+                cluster.coordinate.latitude,
+                accuracy: 0.000001
+            )
+        }
+    }
+
     /// Waits for something another task is working towards, and fails the test if
     /// it never gets there. Used instead of a fixed sleep wherever the thing being
     /// waited for runs on its own task.

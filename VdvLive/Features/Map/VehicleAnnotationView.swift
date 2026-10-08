@@ -97,7 +97,6 @@ struct VehicleAnnotationView: View {
                     lineWidth: borderWidth
                 )
             )
-            .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
     }
 
     private var badgeText: String {

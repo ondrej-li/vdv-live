@@ -777,10 +777,17 @@ final class VehicleMapViewModel {
         // The header counts what the feed is reporting, not what is still on
         // screen from earlier.
         vehicleCount = view.live.count
+        // What to group with: the user's own setting, unless the map is carrying so
+        // many vehicles that a marker each is what makes it slow to draw.
+        let radiusMetres = VehicleClusterer.groupingRadiusMetres(
+            setting: settings.clusterRadiusMetres,
+            vehicles: view.tracked.count,
+            span: visibleRegion.span
+        )
         let markers = VehicleClusterer.markers(
             view.tracked,
             in: visibleBounds,
-            radiusMetres: settings.clusterRadiusMetres
+            radiusMetres: radiusMetres
         )
         clusters = markers.map { marker in
             var marker = marker
@@ -820,6 +827,14 @@ final class VehicleMapViewModel {
     /// standing for a group is not sent anywhere - it is a place on the map, and
     /// it has already been placed where its members are.
     private func moveMarkers() {
+        // A crowd is not something anyone reads one vehicle at a time. The glide is
+        // sixty re-layouts of every marker in two seconds, which is what the jolt
+        // after each refresh is, so above the threshold markers are simply placed.
+        guard clusters.count <= VehicleClusterer.crowdingThreshold else {
+            placeMarkers()
+            return
+        }
+
         let travelling = clusters.reduce(into: [String: CLLocationCoordinate2D]()) { starts, cluster in
             guard cluster.singleVehicle != nil else { return }
             guard MarkerMotion.hasMoved(from: cluster.drawnCoordinate, to: cluster.coordinate) else {

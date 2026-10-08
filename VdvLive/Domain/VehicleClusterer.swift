@@ -1,4 +1,5 @@
 import CoreLocation
+import MapKit
 
 /// Groups vehicles that are close together into one marker.
 ///
@@ -36,6 +37,41 @@ enum VehicleClusterer {
         }
 
         return groups.compactMap { VehicleCluster(group: $0.members) }
+    }
+
+    /// The number of vehicles on the map above which it stops drawing every one of
+    /// them as its own marker.
+    ///
+    /// Measured on a Mac showing the whole region: 610 vehicles cost 0.83 s of CPU in
+    /// the five seconds after launch, against 0.25 s for the ten markers of a
+    /// favourites-only map - and that was before any panning.
+    static let crowdingThreshold = 100
+
+    /// How far apart two vehicles have to be when the map is crowded, as a fraction
+    /// of the visible span.
+    ///
+    /// A fraction of the span rather than a distance in metres, so that it is the
+    /// same number of pixels at every zoom: a fortieth of the span is about 25 px on
+    /// a desktop window, which is the size of a marker. Markers that overlap are what
+    /// makes a crowd both expensive to draw and impossible to read.
+    static let crowdedSpanFraction = 1.0 / 40
+
+    /// The radius to group markers with.
+    ///
+    /// The setting - "Group buses within" - is in metres, and stops meaning anything
+    /// at region zoom: a hundred metres is well under a pixel there, so all 610
+    /// vehicles stay their own marker and the map lays every one of them out again
+    /// whenever it moves. Above ``crowdingThreshold`` vehicles the wider of the two is
+    /// used instead. Below it the setting is left exactly as it is, so a map of the
+    /// user's own lines behaves as it always has.
+    static func groupingRadiusMetres(
+        setting: Double,
+        vehicles: Int,
+        span: MKCoordinateSpan
+    ) -> Double {
+        guard vehicles > crowdingThreshold else { return setting }
+        let crowded = span.latitudeDelta * MapScale.metresPerDegreeLatitude * crowdedSpanFraction
+        return max(setting, crowded)
     }
 
     /// Distance between two coordinates, in metres.
