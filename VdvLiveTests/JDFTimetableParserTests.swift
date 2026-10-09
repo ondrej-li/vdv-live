@@ -2,7 +2,9 @@ import XCTest
 @testable import VdvLive
 
 /// Parses the fixture taken from the official export: line 764337, the pinned
-/// line 337, whose archive entry is `8354.zip` in the current publication.
+/// line 337, whose archive entry is the one the shipped mapping lists for it.
+/// That name is an opaque id - the archive reassigns them when it is republished,
+/// so refreshing the mapping means refreshing this fixture with it.
 final class JDFTimetableParserTests: XCTestCase {
     private func lineFiles() throws -> [String: Data] {
         let bundle = Bundle(for: Self.self)
