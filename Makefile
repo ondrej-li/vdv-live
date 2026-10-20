@@ -103,6 +103,13 @@ SHOT_IPHONE ?= iPhone 18 Pro Max
 SHOT_IPAD ?= iPad Pro 13-inch (M5)
 SHOT_WATCH ?= Apple Watch Ultra 4 (49mm)
 SHOT_DELAY ?= 12
+# The viewport the screenshots are taken in: the region itself, tightly enough that
+# the markers are readable. Seeded as the app's own saved map view, so the shot does
+# not depend on what the camera happens to fit on a given screen.
+SHOT_LATITUDE ?= 49.4
+SHOT_LONGITUDE ?= 15.6
+SHOT_LATITUDE_DELTA ?= 0.62
+SHOT_LONGITUDE_DELTA ?= 0.95
 # The watch's map takes longer to draw its first tiles than the phone's.
 SHOT_WATCH_DELAY ?= 30
 
@@ -263,6 +270,11 @@ mkdir -p "$$container/Library/Preferences"; \
 plutil -create xml1 "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert startsAtCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert showsCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView -dictionary "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.latitude -float $(SHOT_LATITUDE) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.longitude -float $(SHOT_LONGITUDE) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.latitudeDelta -float $(SHOT_LATITUDE_DELTA) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.longitudeDelta -float $(SHOT_LONGITUDE_DELTA) "$$container/Library/Preferences/$(APP_ID).plist"; \
 xcrun simctl launch '$(1)' $(APP_ID) >/dev/null; \
 sleep $(SHOT_DELAY); \
 xcrun simctl io '$(1)' screenshot '$(APPSTORE_SHOTS)/$(2).png'
