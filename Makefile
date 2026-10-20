@@ -112,8 +112,12 @@ SHOT_LATITUDE_DELTA ?= 0.62
 SHOT_LONGITUDE_DELTA ?= 0.95
 # The watch's map takes longer to draw its first tiles than the phone's.
 SHOT_WATCH_DELAY ?= 30
+# Rewrites a PNG with only the chunks App Store Connect accepts. `sips` and
+# ImageIO both stamp an eXIf chunk, and the uploader then refuses the file with
+# "File dimensions are invalid" about an image whose dimensions are correct.
+PNG_STRIP := python3 tools/strip-png-metadata.py
 
-.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch
+.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch creative
 
 all: build
 
@@ -277,7 +281,8 @@ plutil -insert savedMapView.latitudeDelta -float $(SHOT_LATITUDE_DELTA) "$$conta
 plutil -insert savedMapView.longitudeDelta -float $(SHOT_LONGITUDE_DELTA) "$$container/Library/Preferences/$(APP_ID).plist"; \
 xcrun simctl launch '$(1)' $(APP_ID) >/dev/null; \
 sleep $(SHOT_DELAY); \
-xcrun simctl io '$(1)' screenshot '$(APPSTORE_SHOTS)/$(2).png'
+xcrun simctl io '$(1)' screenshot '$(APPSTORE_SHOTS)/$(2).png'; \
+$(PNG_STRIP) '$(APPSTORE_SHOTS)/$(2).png'
 endef
 
 ## Capture the App Store screenshots at the two sizes Apple asks for: the largest
@@ -287,6 +292,24 @@ shots: build
 	$(call capture-shot,$(SHOT_IPHONE),iphone-6.9)
 	$(call capture-shot,$(SHOT_IPAD),ipad-13)
 	@echo "wrote $(APPSTORE_SHOTS) - upload them under App Store Connect > Screenshots"
+
+## Draw the App Store creative assets: the icon as a bare PNG, and the two wide
+## banners the App Store shows on the product page header and in search results.
+## Both are optional, and irrelevant to the app icon field, which is 1024 x 1024.
+creative:
+	@mkdir -p '$(APPSTORE_SHOTS)'
+	cp VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png \
+		'$(APPSTORE_SHOTS)/appicon-1024.png'
+	swift tools/make-appstore-banner.swift 5244 2950 \
+		VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png \
+		'$(APPSTORE_SHOTS)/creative-header-5244x2950.png'
+	swift tools/make-appstore-banner.swift 3840 1646 \
+		VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png \
+		'$(APPSTORE_SHOTS)/creative-header-3840x1646.png'
+	$(PNG_STRIP) '$(APPSTORE_SHOTS)/appicon-1024.png' \
+		'$(APPSTORE_SHOTS)/creative-header-5244x2950.png' \
+		'$(APPSTORE_SHOTS)/creative-header-3840x1646.png'
+	@echo "wrote $(APPSTORE_SHOTS) - the icon for the 1024 field, the two banners for the creative asset slots"
 
 ## Capture the watch screenshot too. The watch draws the pinned lines only, and it
 ## cannot read them from the phone on a Mac, so two are seeded first.
