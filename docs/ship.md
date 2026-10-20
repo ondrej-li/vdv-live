@@ -19,26 +19,44 @@ tested in `VdvLiveTests/AppStoreRequirementsTests.swift`:
 
 ## One-time setup
 
-1. **Enrolment** in the Apple Developer Program, with the same Apple ID Xcode uses.
-   Membership details gives a **Team ID**; the free personal team has none that can
-   sign for the App Store.
-2. Put that Team ID in `.team` (one line, git-ignored):
+1. **Enrolment** in the Apple Developer Program, with the Apple ID Xcode already
+   uses. That *upgrades the personal team in place*: the **Team ID usually does not
+   change**, and what does is the account behind it — it can now mint App Store
+   profiles, and Xcode adds an **Apple Distribution** certificate. Check with
+   `make check-release`, which lists both the team ids the Mac knows and whether a
+   distribution identity exists:
 
-   ```sh
-   echo ABCDE12345 > .team
-   make check-release          # says what will be uploaded, and with what
+   ```
+   team ids on this Mac:
+     B592D69P29
+   distribution identities:
+       2) 3E666E3E... "Apple Distribution: Ondrej Linek (B592D69P29)"
    ```
 
-3. **Xcode → Settings → Accounts** → the Apple ID → *Manage Certificates* →
-   `+` → **Apple Distribution**. Automatic signing does the rest per upload.
+2. Put the Team ID in `.team` (one line, git-ignored). If it is the one the project
+   already carries, this only makes `check-release` say so; if enrolment did issue a
+   new one, this is what points every target at it without touching the project:
+
+   ```sh
+   echo B592D69P29 > .team
+   make check-release
+   ```
+
+3. If there is no distribution identity, **Xcode → Settings → Accounts** → the Apple
+   ID → *Manage Certificates* → `+` → **Apple Distribution**. Automatic signing does
+   the rest per upload.
 4. **developer.apple.com → Identifiers**: `cz.ondralinek.VdvLive` and
-   `cz.ondralinek.VdvLive.watchkitapp`. If the bundle id is still held by the
-   personal team, delete it there first, then register it under the paid team.
+   `cz.ondralinek.VdvLive.watchkitapp`. An upgraded team keeps the app ids it had, so
+   they are normally already there; register any that are missing.
 5. **App Store Connect → Business**: accept the *Free Applications* agreement. A
    free app needs no banking or tax details.
 6. **App Store Connect → My Apps → +**: new app, platform iOS, primary language
    **Czech**, the bundle id above, a SKU (`vdvlive`), and a name. Names are unique
    across the store and at most 30 characters.
+
+Once steps 1-4 are done, `make ipa` succeeds and writes a build signed with an
+**iOS Team Store Provisioning Profile** good for a year — which is how you know the
+account, not just the project, is set up for the store.
 
 ## Building and uploading
 

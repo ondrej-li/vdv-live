@@ -353,7 +353,8 @@ An Apple Developer Program membership is what turns any of this into a submissio
 Then, once:
 
 ```sh
-echo ABCDE12345 > .team   # the paid Team ID from developer.apple.com; not committed
+echo B592D69P29 > .team   # the Team ID; not committed. Enrolling upgrades the
+                          # personal team in place, so this is often unchanged
 make check-release        # team, version, bundle ids, and the identities on this Mac
 ```
 
