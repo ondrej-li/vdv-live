@@ -198,7 +198,10 @@ gates them. See "What was built" below for how the delivery differs from the pla
 - Are archive entry names stable across the three-times-weekly republication?
   Two exports compared would answer it; only one is available today.
 - Which dates does each day-type code cover, and does it need a file outside the
-  per-line zip?
+  per-line zip? `Caskody.txt` does carry a validity period per run — read since
+  #94, which is what keeps a summer-only run out of an October map — but which
+  *weekdays* a code stands for is still not in the package, so a Monday-to-Friday
+  run and a Sunday run look alike to the app.
 - Meaning of the two unexplained numeric columns in `Zasspoje.txt`.
 - Does the NeTEx export carry route geometry (`RouteLink`) that JDF lacks? If it
   does, it is worth a separate look despite the size — it is the only route to
@@ -236,6 +239,31 @@ Two decisions differ from the plan, both in the app's favour:
 
 Still open: the day-type calendar, departures per stop, and the "how long until it
 reaches my stop" question, which needs the calendar plus a chosen stop.
+
+Implemented on 2026-10-20 (#94):
+
+| Piece | Where |
+|---|---|
+| Run validity periods, read from `Caskody.txt` | `ValidityPeriod`, `ServiceDay` in `VdvLive/Domain/LineTimetable.swift` |
+| Which lines should be out, and where | `ExpectedServices`, `ExpectedService` |
+| Reading the region's lines in the background | `LineTimetableStore.prefetchKnownLines` |
+| The setting, and the marker it draws | `AppSettings.showsCalculatedServices`, `CalculatedServiceAnnotationView` |
+
+The cross-check is deliberately conservative, because what it draws is not a
+measurement:
+
+- A run counts as out between its first and last call, with ten minutes of slack
+  either side, on a day its `Caskody` periods cover, and on the archive's own
+  midnight — a `24:10` call is still being made at 00:10.
+- One marker per line, at the call nearest the clock. A half-hourly line has two
+  runs on the road at once; drawing both would turn a gap into a crowd.
+- No marker for a stop the shipped positions cannot place. A run currently at a
+  stop outside the region is a real example: 31 of 59 lines that should be out at
+  a sampled moment have no position for the stop their nearest run is due at, and
+  drawing them anywhere else would be inventing a position.
+
+A weekday/Sunday blind spot remains, as above: the archive's period dates narrow
+it but do not close it, and on a Sunday the app can claim a school-day service.
 
 ## How these claims were checked
 

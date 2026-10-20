@@ -181,6 +181,12 @@ final class VehicleMapViewModel {
 
     /// Loads the first payload, once.
     func loadIfNeeded() async {
+        // Before the payload guard below: a launch that restored the last payload
+        // from disk has nothing to fetch, and the timetables still have to be read.
+        // A setting turned on in an earlier session brings them back without the
+        // user having to touch anything, and the entries are already on disk, so
+        // this reads them rather than downloading them again.
+        startTimetableCoverage()
         guard !hasLoadedOnce, !isRefreshing else { return }
         await load()
     }
@@ -415,6 +421,9 @@ final class VehicleMapViewModel {
     /// Picks the timetable up again for whatever is on screen, which is what the
     /// settings screen asks for once the index has been downloaded.
     func reloadTimetableForSelection() async {
+        // The index is the gate for the whole timetable feature, the calculated
+        // markers included: a download turns them on without another tap.
+        startTimetableCoverage()
         guard let detail = vehicleDetail else { return }
         await loadTimetable(forLine: detail.lineCode.fullText, serviceNumber: detail.serviceNumber)
     }
@@ -422,8 +431,13 @@ final class VehicleMapViewModel {
     /// Drops everything the timetable store had, including the entries cached on
     /// disk.
     func forgetTimetables() {
+        coverageTask?.cancel()
+        coverageTask = nil
         timetables.forgetIndex()
         clearTimetable()
+        // Without timetables nothing can be cross-checked, so the markers they
+        // produced go with them rather than staying on the map as a memory.
+        rebuildCalculatedServices()
     }
 
     private func clearTimetable() {
@@ -630,6 +644,147 @@ final class VehicleMapViewModel {
         settingsStore.save(settings)
     }
 
+    // MARK: - Services the timetable says are out
+
+    /// Services the timetables say are out that the feed is not reporting.
+    ///
+    /// Drawn where the run is due at the moment, and never moved: see
+    /// ``ExpectedService``.
+    private(set) var calculatedServices: [ExpectedService] = []
+
+    /// Whether the map fills in the lines the feed has gone quiet about.
+    var showsCalculatedServices: Bool { settings.showsCalculatedServices }
+
+    /// Whether the region's timetables are still being read in the background.
+    var isReadingTimetables: Bool { timetables.isPrefetching }
+
+    /// How many of the region's lines have a timetable, for the settings screen.
+    var coveredLineCount: Int { timetables.coveredLineCount }
+
+    /// Turns the calculated markers on or off, and remembers the choice.
+    ///
+    /// Turning them on is what starts reading the region's timetables: the
+    /// cross-check has nothing to work from without them, and a user who never
+    /// asks for this should never pay for the download.
+    func setShowsCalculatedServices(_ shows: Bool) {
+        guard settings.showsCalculatedServices != shows else { return }
+        settings.showsCalculatedServices = shows
+        settingsStore.save(settings)
+        if shows {
+            startTimetableCoverage()
+        } else {
+            coverageTask?.cancel()
+            coverageTask = nil
+            calculatedServices = []
+        }
+        rebuildCalculatedServices()
+    }
+
+    /// Reads every line's timetable in the background, one at a time.
+    ///
+    /// Cached on disk, so this is a one-off per publication: later launches read
+    /// what is already there. Nothing happens without the index, and nothing
+    /// happens twice.
+    private func startTimetableCoverage() {
+        guard settings.showsCalculatedServices, timetables.isReady, coverageTask == nil else {
+            return
+        }
+        // Identifies this pass, so that a pass cancelled halfway through cannot
+        // clear the handle of the one that replaced it.
+        coverageGeneration += 1
+        let generation = coverageGeneration
+        coverageTask = Task { [weak self] in
+            guard let self else { return }
+            await timetables.prefetchKnownLines { [weak self] in
+                self?.rebuildCalculatedServices()
+            }
+            if coverageGeneration == generation {
+                coverageTask = nil
+            }
+        }
+    }
+
+    /// Works out what the timetables expect, from the timetables already here.
+    ///
+    /// Runs on every payload rather than on a schedule of its own: the question it
+    /// answers - which lines is the feed quiet about - only changes when a payload
+    /// arrives or when another line's timetable lands.
+    private func rebuildCalculatedServices() {
+        guard settings.showsCalculatedServices, timetables.isReady else {
+            if !calculatedServices.isEmpty { calculatedServices = [] }
+            calculatedSchedule = nil
+            calculatedScheduleLineCount = 0
+            return
+        }
+
+        let services = ExpectedServices.services(
+            in: calculatedScheduleNow(),
+            reportingLines: reportingLineNumbers,
+            now: now(),
+            stopPositions: stopPositions
+        )
+        calculatedServices = services.filter(matchesCalculatedFilter)
+    }
+
+    /// The schedule the cross-check reads, rebuilt only when another line's
+    /// timetable has landed.
+    ///
+    /// Every payload asks the same question of the same data; reading the call
+    /// times out again would cost that on each refresh for an answer that has not
+    /// changed.
+    private func calculatedScheduleNow() -> ExpectedServices.Schedule {
+        let covered = timetables.coveredLineCount
+        if let calculatedSchedule, covered == calculatedScheduleLineCount {
+            return calculatedSchedule
+        }
+        let schedule = ExpectedServices.schedule(for: timetables.cachedTimetables)
+        calculatedSchedule = schedule
+        calculatedScheduleLineCount = covered
+        return schedule
+    }
+
+    /// The schedule the cross-check last read, and how many lines it was built
+    /// from, which is what says whether it is still current.
+    private var calculatedSchedule: ExpectedServices.Schedule?
+    private var calculatedScheduleLineCount = 0
+
+    /// Lines the feed reported in the payload or in the one before it.
+    ///
+    /// A vehicle held on after going quiet is still drawn, so its line is not
+    /// missing and does not get a calculated marker on top of it.
+    private var reportingLineNumbers: Set<String> {
+        Set(trackedVehicles().map(\.line))
+    }
+
+    private func matchesCalculatedFilter(_ service: ExpectedService) -> Bool {
+        switch filter {
+        case .all:
+            return true
+        case .favourites:
+            return favouriteLines.contains(service.lineNumber)
+        case .traction:
+            // The archive says nothing about how a line is worked - no traction,
+            // no vehicle type - so a calculated service cannot be matched against
+            // a traction filter. Drawing it under every traction would be worse
+            // than leaving the filter to the vehicles the feed actually reports.
+            return false
+        }
+    }
+
+    /// Task reading the region's timetables, kept so that turning the setting off
+    /// stops it rather than leaving it running.
+    private var coverageTask: Task<Void, Never>?
+    /// Which pass ``coverageTask`` belongs to.
+    private var coverageGeneration = 0
+
+    /// Where the stops are, read once the first time something needs them.
+    private var stopPositions: StopPositions {
+        if loadedStopPositions == nil {
+            loadedStopPositions = StopPositions.bundled()
+        }
+        return loadedStopPositions ?? .empty
+    }
+
     /// How far in the map has to be before the stops are worth drawing.
     ///
     /// The region holds over a thousand stops we know the position of, and at
@@ -647,16 +802,12 @@ final class VehicleMapViewModel {
         guard visibleLatitudeDelta * MapScale.metresPerDegreeLatitude <= Self.stopFlagsSpanMetres
         else { return [] }
 
-        if loadedStopPositions == nil {
-            loadedStopPositions = StopPositions.bundled()
-        }
         let region = visibleRegion
         let latitudeRange = (region.center.latitude - region.span.latitudeDelta / 2)
             ... (region.center.latitude + region.span.latitudeDelta / 2)
         let longitudeRange = (region.center.longitude - region.span.longitudeDelta / 2)
             ... (region.center.longitude + region.span.longitudeDelta / 2)
-        return loadedStopPositions?.positions(latitude: latitudeRange,
-                                             longitude: longitudeRange) ?? []
+        return stopPositions.positions(latitude: latitudeRange, longitude: longitudeRange)
     }
 
     /// Read once, the first time the stops are drawn.
@@ -816,6 +967,7 @@ final class VehicleMapViewModel {
             clearVehicleDetail()
         }
 
+        rebuildCalculatedServices()
         moveMarkers()
     }
 

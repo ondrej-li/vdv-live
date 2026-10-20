@@ -35,6 +35,12 @@ enum JDFTimetableParser {
             static let departure = 11
         }
 
+        enum Validity {
+            static let serviceNumber = 1
+            static let from = 5
+            static let to = 6
+        }
+
         enum Stop {
             static let name = 0
             static let municipality = 1
@@ -103,8 +109,29 @@ enum JDFTimetableParser {
             )
         }
 
+        // Periods each run is published for. A line's package carries one row per
+        // period, so a run that changes with the school year has several.
+        var validityByRun: [String: [ValidityPeriod]] = [:]
+        if let validityData = files["Caskody.txt"] {
+            for row in try rows(in: validityData, name: "Caskody.txt") {
+                guard let serviceNumber = row[safe: Column.Validity.serviceNumber],
+                      let from = row[safe: Column.Validity.from]
+                        .flatMap(ServiceDay.init(archiveText:)) else { continue }
+                // An empty end is an open period, not a missing row: the archive
+                // writes it for a run that continues until the next republication.
+                let to = row[safe: Column.Validity.to].flatMap(ServiceDay.init(archiveText:))
+                validityByRun[serviceNumber, default: []].append(ValidityPeriod(from: from, to: to))
+            }
+        }
+
         let runs = callsByRun
-            .map { ScheduledRun(serviceNumber: $0.key, calls: ScheduledRun.inTravelOrder($0.value)) }
+            .map {
+                ScheduledRun(
+                    serviceNumber: $0.key,
+                    calls: ScheduledRun.inTravelOrder($0.value),
+                    validity: validityByRun[$0.key] ?? []
+                )
+            }
             .sorted { $0.serviceNumber.compare($1.serviceNumber, options: .numeric) == .orderedAscending }
 
         let line = try rows(in: files["Linky.txt"] ?? Data(), name: "Linky.txt").first

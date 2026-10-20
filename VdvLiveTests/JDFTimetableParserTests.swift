@@ -274,6 +274,43 @@ final class JDFTimetableParserTests: XCTestCase {
         XCTAssertEqual(timetable.runs.first?.calls.first?.stopName, "")
     }
 
+    // MARK: - Validity of a run
+
+    /// `Caskody.txt` says which periods a run is published for. Two runs of this
+    /// line carry periods and the rest are published without any, which has to mean
+    /// "runs whenever its times fit" rather than "never".
+    func testReadsTheValidityPeriodsOfARun() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+        let run = try XCTUnwrap(timetable.run(serviceNumber: "50"))
+
+        XCTAssertEqual(run.validity.count, 6)
+        XCTAssertEqual(run.validity.first?.from, ServiceDay(archiveText: "22122025"))
+        XCTAssertEqual(run.validity.first?.to, ServiceDay(archiveText: "02012026"))
+        // The second period is left open by the archive: it runs until the next one
+        // starts rather than until a stated day.
+        XCTAssertNil(run.validity[1].to)
+        XCTAssertEqual(run.validity[1].from, ServiceDay(archiveText: "30012026"))
+    }
+
+    func testARunWithoutPeriodsOperatesOnAnyDay() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+        let run = try XCTUnwrap(timetable.run(serviceNumber: "1"))
+
+        XCTAssertTrue(run.validity.isEmpty)
+        XCTAssertTrue(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "20102026"))))
+    }
+
+    func testARunOperatesOnlyInsideItsPeriods() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+        let run = try XCTUnwrap(timetable.run(serviceNumber: "50"))
+
+        // 20 October falls in the period that opened on 2 April and was never closed.
+        XCTAssertTrue(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "20102026"))))
+        // Nothing is published for 1 December: the first period only opens on the
+        // 22nd.
+        XCTAssertFalse(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "01122025"))))
+    }
+
     // MARK: - Time of day
 
     func testParsesClockStrings() {

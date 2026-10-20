@@ -190,9 +190,7 @@ final class LineTimetableStore {
         return fallback
     }
 
-    private func timetable(of entry: ZipArchive.Entry) async throws -> LineTimetable {
-        let inner = try await files.entryArchive(entry) {
-            try await client.contents(of: entry)
+    private func timetable(of entry: ZipArchive.Entry) async throws -> LineTimetable {        let inner = try await files.entryArchive(entry) {            try await client.contents(of: entry)
         }
         let contents = try ZipArchive.entries(in: inner)
         var files: [String: Data] = [:]
@@ -200,6 +198,67 @@ final class LineTimetableStore {
             files[file.name] = try? ZipArchive.contents(of: file, in: inner)
         }
         return try JDFTimetableParser.parse(files: files)
+    }
+
+    // MARK: - Coverage of the region
+
+    /// Every line the shipped mapping knows about, in the order a person reads.
+    ///
+    /// This is what "cross-check the whole region" means: 381 lines, once the index
+    /// has been downloaded.
+    var knownLines: [String] {
+        mapping.keys.sorted { $0.compare($1, options: .numeric) == .orderedAscending }
+    }
+
+    /// Timetables already fetched this session, which is everything a cross-check
+    /// can work from without asking the network.
+    var cachedTimetables: [LineTimetable] {
+        timetables.values.sorted { $0.lineNumber < $1.lineNumber }
+    }
+
+    /// How many of the mapping's lines have a timetable in memory.
+    var coveredLineCount: Int { timetables.count }
+
+    /// True while the region's lines are being fetched in the background.
+    private(set) var isPrefetching = false
+
+    /// Fetches the timetable of every line the mapping knows.
+    ///
+    /// One range request per line, a few kilobytes each, cached on disk and reused
+    /// by every launch after this one - so a phone that has done this once works
+    /// offline from then on. Deliberately sequential: the archive is a ministry
+    /// portal, and the point of this pass is coverage rather than speed.
+    ///
+    /// - Parameter onLineCached: called on the main actor after each line, so the
+    ///   map can show what it has while the rest is still arriving.
+    func prefetchKnownLines(onLineCached: (() -> Void)? = nil) async {
+        guard isReady, !isPrefetching else { return }
+        isPrefetching = true
+        defer { isPrefetching = false }
+
+        var consecutiveFailures = 0
+        for line in knownLines {
+            if Task.isCancelled { return }
+            guard timetables[line] == nil else { continue }
+            do {
+                _ = try await timetable(forLine: line)
+                consecutiveFailures = 0
+                onLineCached?()
+            } catch TimetableError.lineNotInArchive(_) {
+                // The mapping is a snapshot and the archive is rebuilt three times
+                // a week, so a line that has moved is expected rather than a sign
+                // that the portal is unreachable.
+                consecutiveFailures = 0
+            } catch {
+                consecutiveFailures += 1
+                // Something is wrong with the connection rather than with a line:
+                // three hundred more failures would only cost battery.
+                if consecutiveFailures >= 3 { return }
+            }
+            // Between two fetches the map gets a frame, and so does the next
+            // refresh: this pass must not be something the user can feel.
+            await Task.yield()
+        }
     }
 
     // MARK: - The shipped mapping
