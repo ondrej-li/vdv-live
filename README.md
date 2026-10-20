@@ -135,17 +135,6 @@ along with the date it was published. When it is not, **update** reads the index
 again. **Remove** deletes it, and with it the record of which archive it came
 from. `docs/timetables.md` has the whole investigation, including why the 106 MB
 archive is never downloaded.
-- **Lines the feed has gone quiet about.** The regional feed drops whole lines for
-stretches of the day, and the map then shows a town with nothing running while the
-buses are out. With **fill in lines the feed leaves out** switched on - off by
-default, on the timetables screen - the app reads every regional line's timetable
-in the background, a few kilobytes at a time and cached on disk, and after each
-payload compares what the timetables expect with what the feed reports. A line
-that should be running and reports nothing gets one marker, at the stop its run
-is due at: the call nearest the clock, placed with the shipped stop positions.
-It is drawn as a dashed amber badge with an exclamation triangle, it never moves,
-and it cannot be selected - it is a published stop, not a measurement, and
-`docs/timetables.md` records what the archive cannot tell the app about it.
 - **Acknowledgements, and who to complain to.** The same screen names every source
 the app depends on - the region's live feed, the Ministry of Transport's timetable
 dataset with its licence and database right, and Apple Maps - and says who wrote
@@ -351,6 +340,48 @@ a network.
 - the crown's zoom: the two ends of the range, the span only ever growing, the
   same proportion per step, values outside the range being clamped, and the map
   opening on the region it is about
+
+## Ship it
+
+The app is in the App Store's shape: a privacy manifest declaring the one required
+reason API it uses and no tracking, export compliance answered in the bundle,
+single-size icons for the phone and the watch with no alpha channel, and a purpose
+string for the position. `VdvLiveTests/AppStoreRequirementsTests.swift` fails if
+any of that goes missing, because the upload is the worst place to find out.
+
+An Apple Developer Program membership is what turns any of this into a submission.
+Then, once:
+
+```sh
+echo ABCDE12345 > .team   # the paid Team ID from developer.apple.com; not committed
+make check-release        # team, version, bundle ids, and the identities on this Mac
+```
+
+and, for every release:
+
+```sh
+make archive              # build/VdvLive.xcarchive, Release, stamped yyMMddHHmm
+make upload               # ...and to App Store Connect, into TestFlight first
+make shots                # iPhone 6.9" and iPad 13" screenshots
+make shots-watch          # and the watch one
+```
+
+`docs/ship.md` walks the rest: the app record, the free-app agreement, the privacy
+answers, what to write in the review notes, and how `docs/privacy.md` and
+`docs/support.md` become the two URLs App Store Connect insists on (GitHub Pages,
+`main` / `/docs`).
+
+Three things specific to this app are worth knowing before review:
+
+- **iPad is declared** (`TARGETED_DEVICE_FAMILY = "1,2"`), so iPad screenshots are
+  required and review will look at the map on a tablet. Drop to `"1"` if that is
+  not wanted.
+- **The data is third-party.** The app calls the region's own map endpoint and the
+  Ministry's timetable archive; it is not affiliated with either. The review notes
+  should say so, and the Acknowledgements screen is what answers the content-rights
+  question.
+- **The watch app is reviewed with the phone app** and has to stand on its own —
+  it fetches its vehicles itself, so it does.
 
 ## Out of scope for now
 
