@@ -352,6 +352,49 @@ a network.
   same proportion per step, values outside the range being clamped, and the map
   opening on the region it is about
 
+## Ship it
+
+The app is in the App Store's shape: a privacy manifest declaring the one required
+reason API it uses and no tracking, export compliance answered in the bundle,
+single-size icons for the phone and the watch with no alpha channel, and a purpose
+string for the position. `VdvLiveTests/AppStoreRequirementsTests.swift` fails if
+any of that goes missing, because the upload is the worst place to find out.
+
+An Apple Developer Program membership is what turns any of this into a submission.
+Then, once:
+
+```sh
+echo B592D69P29 > .team   # the Team ID; not committed. Enrolling upgrades the
+                          # personal team in place, so this is often unchanged
+make check-release        # team, version, bundle ids, and the identities on this Mac
+```
+
+and, for every release:
+
+```sh
+make archive              # build/VdvLive.xcarchive, Release, stamped yyMMddHHmm
+make upload               # ...and to App Store Connect, into TestFlight first
+make shots                # iPhone 6.9" and iPad 13" screenshots
+make shots-watch          # and the watch one
+```
+
+`docs/ship.md` walks the rest: the app record, the free-app agreement, the privacy
+answers, what to write in the review notes, and how `docs/privacy.md` and
+`docs/support.md` become the two URLs App Store Connect insists on (GitHub Pages,
+`main` / `/docs`).
+
+Three things specific to this app are worth knowing before review:
+
+- **iPad is declared** (`TARGETED_DEVICE_FAMILY = "1,2"`), so iPad screenshots are
+  required and review will look at the map on a tablet. Drop to `"1"` if that is
+  not wanted.
+- **The data is third-party.** The app calls the region's own map endpoint and the
+  Ministry's timetable archive; it is not affiliated with either. The review notes
+  should say so, and the Acknowledgements screen is what answers the content-rights
+  question.
+- **The watch app is reviewed with the phone app** and has to stand on its own —
+  it fetches its vehicles itself, so it does.
+
 ## Out of scope for now
 
 - Route and line detail, stop timetables, vehicle history
