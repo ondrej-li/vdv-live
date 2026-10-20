@@ -138,6 +138,17 @@ struct VehicleMapView: View {
                 }
             }
 
+            // Services the timetable says are out but the feed is not reporting.
+            // Drawn under the vehicles and never animated: the position is a stop
+            // the run is due at, so there is nothing to glide towards.
+            ForEach(viewModel.calculatedServices) { service in
+                Annotation(coordinate: service.coordinate) {
+                    CalculatedServiceAnnotationView(service: service)
+                } label: {
+                    EmptyView()
+                }
+            }
+
             ForEach(viewModel.clusters) { cluster in
                 Annotation(coordinate: cluster.drawnCoordinate) {
                     VehicleAnnotationView(
@@ -317,6 +328,9 @@ struct VehicleMapView: View {
             timetableUpdate: viewModel.timetables.update,
             timetableErrorMessage: viewModel.timetables.errorMessage,
             knownLineCount: viewModel.timetables.knownLineCount,
+            showsCalculatedServices: viewModel.showsCalculatedServices,
+            coveredLineCount: viewModel.coveredLineCount,
+            isReadingTimetableLines: viewModel.isReadingTimetables,
             onDownloadTimetables: {
                 Task {
                     await viewModel.timetables.downloadIndex()
@@ -328,7 +342,8 @@ struct VehicleMapView: View {
             onCheckTimetables: {
                 Task { await viewModel.timetables.checkForUpdates() }
             },
-            onForgetTimetables: { viewModel.forgetTimetables() }
+            onForgetTimetables: { viewModel.forgetTimetables() },
+            onSetShowsCalculatedServices: { viewModel.setShowsCalculatedServices($0) }
         )
     }
 

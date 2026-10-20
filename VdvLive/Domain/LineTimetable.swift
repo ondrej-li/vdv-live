@@ -36,6 +36,83 @@ struct TimeOfDay: Hashable, Comparable, Sendable {
     }
 }
 
+/// A day in the archive's calendar, counted as days since 1 January 1970.
+///
+/// A plain number rather than a `Date`: the archive only ever says which calendar
+/// day a service runs on, and a `Date` would drag a time of day - and with it a
+/// time zone - into a question that has neither.
+struct ServiceDay: Hashable, Comparable, Sendable {
+    /// Days since 1 January 1970, in the proleptic Gregorian calendar.
+    let number: Int
+
+    init(number: Int) {
+        self.number = number
+    }
+
+    /// The day `date` falls on where the timetables are published, which is the
+    /// only calendar their dates are written in.
+    init(date: Date, in timeZone: TimeZone) {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        self.init(year: parts.year ?? 1970, month: parts.month ?? 1, day: parts.day ?? 1)
+    }
+
+    /// `22122025` as `Caskody.txt` writes a date, or `nil` when it is empty.
+    init?(archiveText text: String) {
+        let digits = text.trimmingCharacters(in: .whitespaces)
+        guard digits.count == 8, digits.allSatisfy(\.isNumber), let value = Int(digits) else {
+            return nil
+        }
+        let day = value / 1_000_000
+        let month = (value / 10_000) % 100
+        let year = value % 10_000
+        guard (1...12).contains(month), (1...31).contains(day) else { return nil }
+        self.init(year: year, month: month, day: day)
+    }
+
+    private init(year: Int, month: Int, day: Int) {
+        var calendar = Calendar(identifier: .gregorian)
+        // Midnight UTC, so the division below lands exactly on a day boundary.
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+        let date = calendar.date(from: DateComponents(year: year, month: month, day: day))
+            ?? Date(timeIntervalSince1970: 0)
+        number = Int((date.timeIntervalSince1970 / 86_400).rounded(.down))
+    }
+
+    static func < (lhs: ServiceDay, rhs: ServiceDay) -> Bool {
+        lhs.number < rhs.number
+    }
+}
+
+/// A span of days a run operates on.
+///
+/// The archive does not say which weekdays a service runs on - that calendar lives
+/// outside the per-line package (see `docs/timetables.md`) - but it does say when
+/// each period starts and ends, which is enough to keep a summer-only run out of
+/// an October map.
+struct ValidityPeriod: Hashable, Sendable {
+    let from: ServiceDay
+    /// `nil` when the archive left the end open, which it does for a period that
+    /// runs until the timetable is next republished.
+    let to: ServiceDay?
+
+    func contains(_ day: ServiceDay) -> Bool {
+        day >= from && (to.map { day <= $0 } ?? true)
+    }
+}
+
+extension Array where Element == ValidityPeriod {
+    /// Whether a run published for these periods is out on `day`.
+    ///
+    /// No periods means the archive said nothing about it, which is read as "runs
+    /// whenever its times fit": assuming a run is running is the only answer that
+    /// does not invent a silence the archive never stated.
+    func covers(_ day: ServiceDay) -> Bool {
+        isEmpty || contains { $0.contains(day) }
+    }
+}
+
 /// One scheduled call of a run.
 struct ScheduledCall: Hashable, Identifiable, Sendable {
     /// Place in the run, as published.
@@ -76,10 +153,33 @@ struct ScheduledRun: Hashable, Identifiable, Sendable {
     let serviceNumber: String
     /// Calls in travel order.
     let calls: [ScheduledCall]
+    /// The periods the archive says this run operates in.
+    ///
+    /// Empty when the package said nothing, which is read as "runs whenever its
+    /// times fit": assuming a run is running is the only answer that does not
+    /// invent a silence the archive never stated.
+    let validity: [ValidityPeriod]
+
+    init(serviceNumber: String, calls: [ScheduledCall], validity: [ValidityPeriod] = []) {
+        self.serviceNumber = serviceNumber
+        self.calls = calls
+        self.validity = validity
+    }
 
     var id: String { serviceNumber }
 
+    /// Whether the run is published for `day`.
+    func operates(on day: ServiceDay) -> Bool {
+        validity.covers(day)
+    }
+
     var lastCall: ScheduledCall? { calls.last }
+
+    /// The calls that carry a time, in travel order. A request stop prints no
+    /// time at all and so cannot be placed in the day.
+    var timedCalls: [(call: ScheduledCall, time: TimeOfDay)] {
+        calls.compactMap { call in call.time.map { (call, $0) } }
+    }
 
     /// The calls of one run, in the order the vehicle calls at them.
     ///

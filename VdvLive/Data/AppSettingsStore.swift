@@ -21,6 +21,7 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
     static let showsCurrentLocationKey = "showsCurrentLocation"
     static let followsCurrentLocationKey = "followsCurrentLocation"
     static let showsStopsKey = "showsStops"
+    static let showsCalculatedServicesKey = "showsCalculatedServices"
 
     private let defaults: UserDefaults
 
@@ -54,7 +55,10 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
                 followsCurrentLocation: defaults.object(forKey: Self.followsCurrentLocationKey) as? Bool
                     ?? AppSettings.default.followsCurrentLocation,
                 showsStops: defaults.object(forKey: Self.showsStopsKey) as? Bool
-                    ?? AppSettings.default.showsStops
+                    ?? AppSettings.default.showsStops,
+                showsCalculatedServices: defaults
+                    .object(forKey: Self.showsCalculatedServicesKey) as? Bool
+                    ?? AppSettings.default.showsCalculatedServices
             )
         )
     }
@@ -69,6 +73,7 @@ struct UserDefaultsAppSettingsStore: AppSettingsStoring, @unchecked Sendable {
         defaults.set(settings.showsCurrentLocation, forKey: Self.showsCurrentLocationKey)
         defaults.set(settings.followsCurrentLocation, forKey: Self.followsCurrentLocationKey)
         defaults.set(settings.showsStops, forKey: Self.showsStopsKey)
+        defaults.set(settings.showsCalculatedServices, forKey: Self.showsCalculatedServicesKey)
         if let savedMapView = settings.savedMapView {
             defaults.set(savedMapView.storedValues, forKey: Self.savedMapViewKey)
         } else {

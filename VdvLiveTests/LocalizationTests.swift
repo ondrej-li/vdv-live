@@ -133,6 +133,19 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Remove"), "Odebrat")
     }
 
+    func testTranslatesTheCalculatedMarkersIntoCzech() throws {
+        XCTAssertEqual(
+            try czechString("Fill in lines the feed leaves out"),
+            "Doplnit linky, které zdroj vynechává"
+        )
+        XCTAssertEqual(try czechString("Lines read"), "Načtené linky")
+        XCTAssertEqual(try czechString("The map"), "Mapa")
+        XCTAssertEqual(
+            String(format: try czechString("Line %@, calculated position"), "337"),
+            "Linka 337, vypočítaná poloha"
+        )
+    }
+
     func testTranslatesTheOfflineStateIntoCzech() throws {
         XCTAssertEqual(try czechString("Offline"), "Bez připojení")
         XCTAssertEqual(try czechString("last %@"), "naposledy %@")

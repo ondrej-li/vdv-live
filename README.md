@@ -135,6 +135,17 @@ along with the date it was published. When it is not, **update** reads the index
 again. **Remove** deletes it, and with it the record of which archive it came
 from. `docs/timetables.md` has the whole investigation, including why the 106 MB
 archive is never downloaded.
+- **Lines the feed has gone quiet about.** The regional feed drops whole lines for
+stretches of the day, and the map then shows a town with nothing running while the
+buses are out. With **fill in lines the feed leaves out** switched on - off by
+default, on the timetables screen - the app reads every regional line's timetable
+in the background, a few kilobytes at a time and cached on disk, and after each
+payload compares what the timetables expect with what the feed reports. A line
+that should be running and reports nothing gets one marker, at the stop its run
+is due at: the call nearest the clock, placed with the shipped stop positions.
+It is drawn as a dashed amber badge with an exclamation triangle, it never moves,
+and it cannot be selected - it is a published stop, not a measurement, and
+`docs/timetables.md` records what the archive cannot tell the app about it.
 - **Acknowledgements, and who to complain to.** The same screen names every source
 the app depends on - the region's live feed, the Ministry of Transport's timetable
 dataset with its licence and database right, and Apple Maps - and says who wrote

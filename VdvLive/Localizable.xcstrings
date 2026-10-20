@@ -1,1525 +1,114 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "VDV": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VDV"
-          }
-        }
-      }
-    },
-    "Veřejná doprava Vysočiny": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veřejná doprava Vysočiny"
-          }
-        }
-      }
-    },
-    "All": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vše"
-          }
-        }
-      }
-    },
-    "Pin lines on the phone": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přidejte si oblíbené linky v telefonu"
-          }
-        }
-      }
-    },
-    "Pinned": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oblíbené"
-          }
-        }
-      }
-    },
-    "Bus": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Autobus"
-          }
-        }
-      }
-    },
-    "Trolleybus": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trolejbus"
-          }
-        }
-      }
-    },
-    "Tram": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tramvaj"
-          }
-        }
-      }
-    },
-    "Train": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vlak"
-          }
-        }
-      }
-    },
-    "Ferry": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přívoz"
-          }
-        }
-      }
-    },
-    "Unknown": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neznámé"
-          }
-        }
-      }
-    },
-    "no data": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "bez dat"
-          }
-        }
-      }
-    },
-    "on time": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "včas"
-          }
-        }
-      }
-    },
-    "+%lld min": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "+%lld min"
-          }
-        }
-      }
-    },
-    "%lld min": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld min"
-          }
-        }
-      }
-    },
-    "updated %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "aktualizováno %@"
-          }
-        }
-      }
-    },
-    "Offline": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bez připojení"
-          }
-        }
-      }
-    },
-    "last %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "naposledy %@"
-          }
-        }
-      }
-    },
-    "No connection to the feed.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Není připojení ke zdroji dat."
-          }
-        }
-      }
-    },
-    "No connection to the feed. Showing the last positions from %@.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Není připojení ke zdroji dat. Zobrazuji poslední polohy z %@."
-          }
-        }
-      }
-    },
-    "loading": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "načítání"
-          }
-        }
-      }
-    },
-    "Map scale": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Měřítko mapy"
-          }
-        }
-      }
-    },
-    "%lld m": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld m"
-          }
-        }
-      }
-    },
-    "%lld km": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld km"
-          }
-        }
-      }
-    },
-    "Pinned lines": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oblíbené linky"
-          }
-        }
-      }
-    },
-    "Pinned lines, %lld pinned": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oblíbené linky, %lld přidáno"
-          }
-        }
-      }
-    },
-    "Refresh vehicles": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktualizovat vozidla"
-          }
-        }
-      }
-    },
-    "Turn automatic refresh off": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vypnout automatickou aktualizaci"
-          }
-        }
-      }
-    },
-    "Turn automatic refresh on": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zapnout automatickou aktualizaci"
-          }
-        }
-      }
-    },
-    "Back to Vysočina": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zpět na Vysočinu"
-          }
-        }
-      }
-    },
-    "Open the map here from now on": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otevírat mapu vždy tady"
-          }
-        }
-      }
-    },
-    "Stop opening the map here": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neotvírat mapu tady"
-          }
-        }
-      }
-    },
-    "Settings": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nastavení"
-          }
-        }
-      }
-    },
-    "Retry": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zkusit znovu"
-          }
-        }
-      }
-    },
-    "No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zatím žádné oblíbené linky. Přidejte číslo linky v Nastavení, nebo klepněte na vozidlo na mapě a použijte jeho hvězdičku."
-          }
-        }
-      }
-    },
-    "Your pinned lines are not in this part of the map.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vaše oblíbené linky nejsou v této části mapy."
-          }
-        }
-      }
-    },
-    "None of your pinned lines are running right now.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Z vašich oblíbených linek momentálně nic nejede."
-          }
-        }
-      }
-    },
-    "No vehicles in this part of the map.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "V této části mapy nejsou žádná vozidla."
-          }
-        }
-      }
-    },
-    "The feed is not reporting any vehicles at the moment.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zdroj dat momentálně nehlásí žádná vozidla."
-          }
-        }
-      }
-    },
-    "Line %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Linka %@"
-          }
-        }
-      }
-    },
-    "licence area %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "licenční oblast %@"
-          }
-        }
-      }
-    },
-    "delay %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "zpoždění %@"
-          }
-        }
-      }
-    },
-    "Destination not reported": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cíl není uveden"
-          }
-        }
-      }
-    },
-    "Tap one to centre the map on it": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Klepnutím vycentrujete mapu na vozidlo"
-          }
-        }
-      }
-    },
-    "Close details": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zavřít detail"
-          }
-        }
-      }
-    },
-    "Pin line %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přidat linku %@"
-          }
-        }
-      }
-    },
-    "Unpin line %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Odebrat linku %@"
-          }
-        }
-      }
-    },
-    "Looking up this run…": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zjišťuji spoj…"
-          }
-        }
-      }
-    },
-    "Service": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spoj"
-          }
-        }
-      }
-    },
-    "Last stop": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Poslední zastávka"
-          }
-        }
-      }
-    },
-    "Next stop": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Další zastávka"
-          }
-        }
-      }
-    },
-    "Timetable for this service is not available.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jízdní řád pro tento spoj není k dispozici."
-          }
-        }
-      }
-    },
-    "Barrier-free": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bezbariérový"
-          }
-        }
-      }
-    },
-    "Pinned lines (%lld)": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oblíbené linky (%lld)"
-          }
-        }
-      }
-    },
-    "Pinned (%lld)": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Oblíbené (%lld)"
-          }
-        }
-      }
-    },
-    "Unpin": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Odebrat"
-          }
-        }
-      }
-    },
-    "Pin a line": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přidat linku"
-          }
-        }
-      }
-    },
-    "Line number": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Číslo linky"
-          }
-        }
-      }
-    },
-    "Pin": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přidat"
-          }
-        }
-      }
-    },
-    "Cancel": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zrušit"
-          }
-        }
-      }
-    },
-    "Done": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hotovo"
-          }
-        }
-      }
-    },
-    "Running now": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Právě jede"
-          }
-        }
-      }
-    },
-    "Find a line that is running": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Najít linku, která právě jede"
-          }
-        }
-      }
-    },
-    "Follow this vehicle": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sledovat toto vozidlo"
-          }
-        }
-      }
-    },
-    "Point north up": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otočit na sever"
-          }
-        }
-      }
-    },
-    "Stop following this vehicle": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přestat sledovat toto vozidlo"
-          }
-        }
-      }
-    },
-    "not running": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "nejede"
-          }
-        }
-      }
-    },
-    "no vehicles right now": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "momentálně žádná vozidla"
-          }
-        }
-      }
-    },
-    "Show only pinned lines on the map": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zobrazit na mapě jen oblíbené linky"
-          }
-        }
-      }
-    },
-    "Everything else stays hidden, which is easier on the eye when all you care about is one line. This is remembered for the next launch.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vše ostatní zůstane skryté, což je přehlednější, když vás zajímá jediná linka. Volba se pamatuje i pro příští spuštění."
-          }
-        }
-      }
-    },
-    "No pinned lines yet. Pin one here, or tap a vehicle on the map and use the star.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zatím žádné oblíbené linky. Přidejte je tady, nebo klepněte na vozidlo na mapě a použijte hvězdičku."
-          }
-        }
-      }
-    },
-    "Use the number the map shows, for example 420. A pinned line stays in the list even when it is not running.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Použijte číslo, které ukazuje mapa, například 420. Oblíbená linka zůstane v seznamu, i když právě nejede."
-          }
-        }
-      }
-    },
-    "No running line matches “%@”.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Žádná jedoucí linka neodpovídá „%@“."
-          }
-        }
-      }
-    },
-    "Refresh": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktualizace"
-          }
-        }
-      }
-    },
-    "Automatic refresh": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Automatická aktualizace"
-          }
-        }
-      }
-    },
-    "Refresh interval": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Interval aktualizace"
-          }
-        }
-      }
-    },
-    "The feed reports new positions every few seconds. Asking for them more often than every %lld s only costs battery.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zdroj dat hlásí nové polohy každých pár sekund. Častější dotazy než každých %lld s jen spotřebovávají baterii."
-          }
-        }
-      }
-    },
-    "Language": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jazyk"
-          }
-        }
-      }
-    },
-    "System": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Systémové"
-          }
-        }
-      }
-    },
-    "Czech is the default. A language change takes effect the next time the app starts.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Výchozí je čeština. Změna jazyka se projeví při příštím spuštění aplikace."
-          }
-        }
-      }
-    },
-    "Open at my location": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otevřít na mé poloze"
-          }
-        }
-      }
-    },
-    "Show my position on the map": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zobrazit moji polohu na mapě"
-          }
-        }
-      }
-    },
-    "Show stops on the map": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zobrazit zastávky na mapě"
-          }
-        }
-      }
-    },
-    "Stops": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zastávky"
-          }
-        }
-      }
-    },
-    "Stops are drawn as a flag once the map is zoomed in far enough to read them. The positions are matched from OpenStreetMap by name, so most of the region's stops are there and some are not.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zastávky se kreslí jako vlaječka, jakmile je mapa dostatečně přiblížená. Polohy jsou párované z OpenStreetMap podle názvu, takže většina zastávek regionu tam je a některé ne."
-          }
-        }
-      }
-    },
-    "My location": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Moje poloha"
-          }
-        }
-      }
-    },
-    "Clear saved view": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zrušit uložený výřez"
-          }
-        }
-      }
-    },
-    "Follow my position": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sledovat moji polohu"
-          }
-        }
-      }
-    },
-    "Stop following my position": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přestat sledovat moji polohu"
-          }
-        }
-      }
-    },
-    "The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the bookmark button remembers the view you are looking at instead.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Poloha se načítá v zařízení a nikam se neposílá. Modrá tečka je systémová; sledování drží mapu vycentrovanou na poloze, když se pohybujete, a tlačítkem se záložkou si místo toho uložíte právě zobrazený výřez."
-          }
-        }
-      }
-    },
-    "Vehicles": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vozidla"
-          }
-        }
-      }
-    },
-    "Group buses within": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seskupovat autobusy blíž než"
-          }
-        }
-      }
-    },
-    "Off": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vypnuto"
-          }
-        }
-      }
-    },
-    "Buses closer together than this share one marker, which keeps a busy region readable when it is zoomed out. Off, every vehicle is drawn on its own.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Autobusy blíž k sobě než tato vzdálenost sdílejí jeden marker, takže zůstane přeplněný kraj čitelný i při oddálení. Po vypnutí se každé vozidlo kreslí zvlášť."
-          }
-        }
-      }
-    },
-    "Timetables": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jízdní řády"
-          }
-        }
-      }
-    },
-    "Download timetables": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stáhnout jízdní řády"
-          }
-        }
-      }
-    },
-    "Download again": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stáhnout znovu"
-          }
-        }
-      }
-    },
-    "Published": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zveřejněno"
-          }
-        }
-      }
-    },
-    "Update now": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktualizovat"
-          }
-        }
-      }
-    },
-    "Check for updates": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zkontrolovat aktualizace"
-          }
-        }
-      }
-    },
-    "Checking for updates…": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kontroluji aktualizace…"
-          }
-        }
-      }
-    },
-    "Up to date.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktuální."
-          }
-        }
-      }
-    },
-    "A newer archive is published.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Je zveřejněn novější archiv."
-          }
-        }
-      }
-    },
-    "This index does not record which archive it came from.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Index neuvádí, ze kterého archivu pochází."
-          }
-        }
-      }
-    },
-    "Remove": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Odebrat"
-          }
-        }
-      }
-    },
-    "Downloaded": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Staženo"
-          }
-        }
-      }
-    },
-    "Lines": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Linek"
-          }
-        }
-      }
-    },
-    "%lld": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld"
-          }
-        }
-      }
-    },
-    "Reading the timetable index…": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Načítám index jízdních řádů…"
-          }
-        }
-      }
-    },
-    "Downloads the index of the official timetable archive (a couple of megabytes), so the selected vehicle can list all of its stops with the times they are actually expected. Each line's timetable is then fetched on its own, a few kilobytes at a time. Checking for updates asks the archive which version it is, which costs about a kilobyte and nothing else.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stáhne index oficiálního archivu jízdních řádů (několik megabajtů), díky kterému umí vybrané vozidlo vypsat všechny své zastávky s časy, které se skutečně očekávají. Jízdní řád jednotlivé linky se pak stahuje zvlášť, po několika kilobajtech. Kontrola aktualizací se archivu zeptá, kterou verzi nabízí, což stojí přibližně kilobajt a nic víc."
-          }
-        }
-      }
-    },
-    "All stops": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Všechny zastávky"
-          }
-        }
-      }
-    },
-    "not served": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "nezastavuje"
-          }
-        }
-      }
-    },
-    "no recent data": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "bez čerstvých dat"
-          }
-        }
-      }
-    },
-    "No recent data for this vehicle.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O tomto vozidle nemáme čerstvá data."
-          }
-        }
-      }
-    },
-    "Looking up the timetable…": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zjišťuji jízdní řád…"
-          }
-        }
-      }
-    },
-    "Timetables have not been downloaded yet.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jízdní řády ještě nejsou stažené."
-          }
-        }
-      }
-    },
-    "The timetable server refused a partial download.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server jízdních řádů odmítl částečné stažení."
-          }
-        }
-      }
-    },
-    "The timetable server sent an unexpected response.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server jízdních řádů poslal neočekávanou odpověď."
-          }
-        }
-      }
-    },
-    "Line %@ is not in the published timetable.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Linka %@ není ve zveřejněném jízdním řádu."
-          }
-        }
-      }
-    },
-    "%lld s": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld s"
-          }
-        }
-      }
-    },
-    "Preferences": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Předvolby"
-          }
-        }
-      }
-    },
-    "Acknowledgements": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Poděkování"
-          }
-        }
-      }
-    },
-    "The app": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aplikace"
-          }
-        }
-      }
-    },
-    "VDV Live is written and maintained by Ondrej Linek.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "VDV Live vyvíjí a spravuje Ondrej Linek."
-          }
-        }
-      }
-    },
-    "Feedback, bug reports and feature requests are welcome there.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zpětná vazba, hlášení chyb a nápady na nové funkce jsou vítány právě tam."
-          }
-        }
-      }
-    },
-    "Refresh, language, appearance and the map": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aktualizace, jazyk, vzhled a mapa"
-          }
-        }
-      }
-    },
-    "Appearance": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vzhled"
-          }
-        }
-      }
-    },
-    "Light": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Světlý"
-          }
-        }
-      }
-    },
-    "Dark": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tmavý"
-          }
-        }
-      }
-    },
-    "The app follows the device until you pick one here. The choice applies to this app only and is on screen straight away.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aplikace se řídí nastavením zařízení, dokud zde nezvolíte jinak. Volba platí jen pro tuto aplikaci a projeví se okamžitě."
-          }
-        }
-      }
-    },
-    "Pin and unpin bus lines": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přidávání a odebírání linek"
-          }
-        }
-      }
-    },
-    "Download or remove the official timetables": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stažení a odebrání oficiálních jízdních řádů"
-          }
-        }
-      }
-    },
-    "Where the data comes from": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Odkud pocházejí data"
-          }
-        }
-      }
-    },
-    "Live vehicle positions": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Polohy vozidel v reálném čase"
-          }
-        }
-      }
-    },
-    "Positions come from the regional map of the Vysočina Region at mapavdv.kr-vysocina.cz. This app is not affiliated with the region or with the transport operators.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Polohy pocházejí z regionální mapy Kraje Vysočina na mapavdv.kr-vysocina.cz. Tato aplikace není nijak spojena s krajem ani s dopravci."
-          }
-        }
-      }
-    },
-    "Maps": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mapy"
-          }
-        }
-      }
-    },
-    "Stop positions are matched from OpenStreetMap by stop name, and the app icon is drawn from its roads and rivers. The data is © OpenStreetMap contributors, published under the Open Database Licence 1.0 (openstreetmap.org/copyright).": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Polohy zastávek se přiřazují z OpenStreetMap podle názvu zastávky a ikona aplikace je vykreslena z jejích silnic a řek. Data jsou © přispěvatelé OpenStreetMap, zveřejněná pod licencí Open Database Licence 1.0 (openstreetmap.org/copyright)."
-          }
-        }
-      }
-    },
-    "OpenStreetMap": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "OpenStreetMap"
-          }
-        }
-      }
-    },
-    "The base map and its tiles are Apple Maps, drawn through MapKit.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Podkladová mapa a její dlaždice jsou Apple Maps, vykreslované přes MapKit."
-          }
-        }
-      }
-    },
-    "Timetables come from “Jízdní řády veřejné linkové dopravy”, published by the Ministry of Transport of the Czech Republic (IČO 66003008) on the CIS JŘ portal at portal.cisjr.cz, under the Creative Commons Attribution 4.0 licence (creativecommons.org/licenses/by/4.0/) and the sui generis database right.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Jízdní řády pocházejí z datové sady „Jízdní řády veřejné linkové dopravy“, kterou vydává Ministerstvo dopravy ČR (IČO 66003008) na portálu CIS JŘ na portal.cisjr.cz, pod licencí Creative Commons Attribution 4.0 (creativecommons.org/licenses/by/4.0/) a s právy sui generis k databázi."
-          }
-        }
-      }
+  "sourceLanguage" : "en",
+  "strings" : {
+    " " : {
+
     },
-    "There is no internet connection.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Chybí připojení k internetu."
-          }
-        }
-      }
+    "·" : {
+
     },
-    "The map server did not respond in time.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server mapy včas neodpověděl."
-          }
-        }
-      }
+    "(%@)" : {
+
     },
-    "The map server could not be reached.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server mapy se nepodařilo kontaktovat."
+    "%lld" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
           }
         }
       }
     },
-    "The map server answered with HTTP %lld.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server mapy odpověděl HTTP %lld."
+    "%lld km" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld km"
           }
         }
       }
     },
-    "The map server sent an unexpected response. %@": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server mapy poslal neočekávanou odpověď. %@"
+    "%lld m" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld m"
           }
         }
       }
     },
-    "The vehicle feed could not be loaded.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zdroj dat se nepodařilo načíst."
+    "%lld min" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
           }
         }
       }
     },
-    "Check your connection and try again.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zkontrolujte připojení a zkuste to znovu."
+    "%lld of %lld" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld z %lld"
           }
         }
       }
     },
-    "Try again in a moment.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zkuste to za chvíli znovu."
+    "%lld s" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld s"
           }
         }
       }
     },
-    "%lld vehicles": {
-      "localizations": {
-        "cs": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vozidlo"
+    "%lld stops" : {
+      "localizations" : {
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld zastávky"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vozidla"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld zastávka"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vozidel"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld zastávek"
                 }
               }
             }
           }
         },
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vehicle"
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld stop"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vehicles"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld stops"
                 }
               }
             }
@@ -1527,45 +116,45 @@
         }
       }
     },
-    "%lld vehicles here": {
-      "localizations": {
-        "cs": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vozidlo zde"
+    "%lld vehicles" : {
+      "localizations" : {
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vozidla"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vozidla zde"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vozidlo"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vozidel zde"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vozidel"
                 }
               }
             }
           }
         },
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vehicle here"
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vehicle"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld vehicles here"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vehicles"
                 }
               }
             }
@@ -1573,52 +162,1550 @@
         }
       }
     },
-    "%lld stops": {
-      "localizations": {
-        "cs": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zastávka"
+    "%lld vehicles here" : {
+      "localizations" : {
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vozidla zde"
                 }
               },
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zastávky"
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vozidlo zde"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld zastávek"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vozidel zde"
                 }
               }
             }
           }
         },
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld stop"
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vehicle here"
                 }
               },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld stops"
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld vehicles here"
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "+%lld min" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+%lld min"
+          }
+        }
+      }
+    },
+    "|" : {
+
+    },
+    "A newer archive is published." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je zveřejněn novější archiv."
+          }
+        }
+      }
+    },
+    "Acknowledgements" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poděkování"
+          }
+        }
+      }
+    },
+    "All" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vše"
+          }
+        }
+      }
+    },
+    "All stops" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Všechny zastávky"
+          }
+        }
+      }
+    },
+    "Appearance" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vzhled"
+          }
+        }
+      }
+    },
+    "Automatic refresh" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatická aktualizace"
+          }
+        }
+      }
+    },
+    "Back to Vysočina" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zpět na Vysočinu"
+          }
+        }
+      }
+    },
+    "Barrier-free" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bezbariérový"
+          }
+        }
+      }
+    },
+    "Bus" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autobus"
+          }
+        }
+      }
+    },
+    "Buses closer together than this share one marker, which keeps a busy region readable when it is zoomed out. Off, every vehicle is drawn on its own." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autobusy blíž k sobě než tato vzdálenost sdílejí jeden marker, takže zůstane přeplněný kraj čitelný i při oddálení. Po vypnutí se každé vozidlo kreslí zvlášť."
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrušit"
+          }
+        }
+      }
+    },
+    "Check for updates" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkontrolovat aktualizace"
+          }
+        }
+      }
+    },
+    "Check your connection and try again." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkontrolujte připojení a zkuste to znovu."
+          }
+        }
+      }
+    },
+    "Checking for updates…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontroluji aktualizace…"
+          }
+        }
+      }
+    },
+    "Clear saved view" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrušit uložený výřez"
+          }
+        }
+      }
+    },
+    "Close details" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zavřít detail"
+          }
+        }
+      }
+    },
+    "Czech is the default. A language change takes effect the next time the app starts." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Výchozí je čeština. Změna jazyka se projeví při příštím spuštění aplikace."
+          }
+        }
+      }
+    },
+    "Dark" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tmavý"
+          }
+        }
+      }
+    },
+    "delay %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "zpoždění %@"
+          }
+        }
+      }
+    },
+    "Destination not reported" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cíl není uveden"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hotovo"
+          }
+        }
+      }
+    },
+    "Download again" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stáhnout znovu"
+          }
+        }
+      }
+    },
+    "Download or remove the official timetables" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stažení a odebrání oficiálních jízdních řádů"
+          }
+        }
+      }
+    },
+    "Download timetables" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stáhnout jízdní řády"
+          }
+        }
+      }
+    },
+    "Downloaded" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Staženo"
+          }
+        }
+      }
+    },
+    "Downloads the index of the official timetable archive (a couple of megabytes), so the selected vehicle can list all of its stops with the times they are actually expected. Each line's timetable is then fetched on its own, a few kilobytes at a time. Checking for updates asks the archive which version it is, which costs about a kilobyte and nothing else." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stáhne index oficiálního archivu jízdních řádů (několik megabajtů), díky kterému umí vybrané vozidlo vypsat všechny své zastávky s časy, které se skutečně očekávají. Jízdní řád jednotlivé linky se pak stahuje zvlášť, po několika kilobajtech. Kontrola aktualizací se archivu zeptá, kterou verzi nabízí, což stojí přibližně kilobajt a nic víc."
+          }
+        }
+      }
+    },
+    "Everything else stays hidden, which is easier on the eye when all you care about is one line. This is remembered for the next launch." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vše ostatní zůstane skryté, což je přehlednější, když vás zajímá jediná linka. Volba se pamatuje i pro příští spuštění."
+          }
+        }
+      }
+    },
+    "Feedback, bug reports and feature requests are welcome there." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zpětná vazba, hlášení chyb a nápady na nové funkce jsou vítány právě tam."
+          }
+        }
+      }
+    },
+    "Ferry" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přívoz"
+          }
+        }
+      }
+    },
+    "Fill in lines the feed leaves out" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doplnit linky, které zdroj vynechává"
+          }
+        }
+      }
+    },
+    "Find a line that is running" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Najít linku, která právě jede"
+          }
+        }
+      }
+    },
+    "Follow my position" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sledovat moji polohu"
+          }
+        }
+      }
+    },
+    "Follow this vehicle" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sledovat toto vozidlo"
+          }
+        }
+      }
+    },
+    "Group buses within" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seskupovat autobusy blíž než"
+          }
+        }
+      }
+    },
+    "Language" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jazyk"
+          }
+        }
+      }
+    },
+    "last %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "naposledy %@"
+          }
+        }
+      }
+    },
+    "Last stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poslední zastávka"
+          }
+        }
+      }
+    },
+    "licence area %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "licenční oblast %@"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Světlý"
+          }
+        }
+      }
+    },
+    "Line %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka %@"
+          }
+        }
+      }
+    },
+    "Line %@ is not in the published timetable." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka %@ není ve zveřejněném jízdním řádu."
+          }
+        }
+      }
+    },
+    "Line %@, calculated position" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka %@, vypočítaná poloha"
+          }
+        }
+      }
+    },
+    "Line number" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Číslo linky"
+          }
+        }
+      }
+    },
+    "Lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linek"
+          }
+        }
+      }
+    },
+    "Lines read" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Načtené linky"
+          }
+        }
+      }
+    },
+    "Live vehicle positions" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polohy vozidel v reálném čase"
+          }
+        }
+      }
+    },
+    "loading" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "načítání"
+          }
+        }
+      }
+    },
+    "Looking up the timetable…" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zjišťuji jízdní řád…"
+          }
+        }
+      }
+    },
+    "Looking up this run…" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zjišťuji spoj…"
+          }
+        }
+      }
+    },
+    "Map scale" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Měřítko mapy"
+          }
+        }
+      }
+    },
+    "Maps" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapy"
+          }
+        }
+      }
+    },
+    "My location" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moje poloha"
+          }
+        }
+      }
+    },
+    "Next stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Další zastávka"
+          }
+        }
+      }
+    },
+    "No connection to the feed." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Není připojení ke zdroji dat."
+          }
+        }
+      }
+    },
+    "No connection to the feed. Showing the last positions from %@." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Není připojení ke zdroji dat. Zobrazuji poslední polohy z %@."
+          }
+        }
+      }
+    },
+    "no data" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bez dat"
+          }
+        }
+      }
+    },
+    "No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatím žádné oblíbené linky. Přidejte číslo linky v Nastavení, nebo klepněte na vozidlo na mapě a použijte jeho hvězdičku."
+          }
+        }
+      }
+    },
+    "No pinned lines yet. Pin one here, or tap a vehicle on the map and use the star." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatím žádné oblíbené linky. Přidejte je tady, nebo klepněte na vozidlo na mapě a použijte hvězdičku."
+          }
+        }
+      }
+    },
+    "no recent data" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bez čerstvých dat"
+          }
+        }
+      }
+    },
+    "No recent data for this vehicle." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tomto vozidle nemáme čerstvá data."
+          }
+        }
+      }
+    },
+    "No running line matches “%@”." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žádná jedoucí linka neodpovídá „%@“."
+          }
+        }
+      }
+    },
+    "No vehicles in this part of the map." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V této části mapy nejsou žádná vozidla."
+          }
+        }
+      }
+    },
+    "no vehicles right now" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "momentálně žádná vozidla"
+          }
+        }
+      }
+    },
+    "None of your pinned lines are running right now." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Z vašich oblíbených linek momentálně nic nejede."
+          }
+        }
+      }
+    },
+    "not running" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nejede"
+          }
+        }
+      }
+    },
+    "not served" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nezastavuje"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vypnuto"
+          }
+        }
+      }
+    },
+    "Offline" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez připojení"
+          }
+        }
+      }
+    },
+    "on time" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "včas"
+          }
+        }
+      }
+    },
+    "Open at my location" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřít na mé poloze"
+          }
+        }
+      }
+    },
+    "Open the map here from now on" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevírat mapu vždy tady"
+          }
+        }
+      }
+    },
+    "OpenStreetMap" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenStreetMap"
+          }
+        }
+      }
+    },
+    "Pin" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat"
+          }
+        }
+      }
+    },
+    "Pin a line" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat linku"
+          }
+        }
+      }
+    },
+    "Pin and unpin bus lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidávání a odebírání linek"
+          }
+        }
+      }
+    },
+    "Pin line %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat linku %@"
+          }
+        }
+      }
+    },
+    "Pin lines on the phone" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidejte si oblíbené linky v telefonu"
+          }
+        }
+      }
+    },
+    "Pinned" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené"
+          }
+        }
+      }
+    },
+    "Pinned (%lld)" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené (%lld)"
+          }
+        }
+      }
+    },
+    "Pinned lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené linky"
+          }
+        }
+      }
+    },
+    "Pinned lines (%lld)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené linky (%lld)"
+          }
+        }
+      }
+    },
+    "Pinned lines, %lld pinned" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené linky, %lld přidáno"
+          }
+        }
+      }
+    },
+    "Point north up" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otočit na sever"
+          }
+        }
+      }
+    },
+    "Positions come from the regional map of the Vysočina Region at mapavdv.kr-vysocina.cz. This app is not affiliated with the region or with the transport operators." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polohy pocházejí z regionální mapy Kraje Vysočina na mapavdv.kr-vysocina.cz. Tato aplikace není nijak spojena s krajem ani s dopravci."
+          }
+        }
+      }
+    },
+    "Preferences" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Předvolby"
+          }
+        }
+      }
+    },
+    "Published" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zveřejněno"
+          }
+        }
+      }
+    },
+    "Reading the region's timetables…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Načítám jízdní řády kraje…"
+          }
+        }
+      }
+    },
+    "Reading the timetable index…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Načítám index jízdních řádů…"
+          }
+        }
+      }
+    },
+    "Refresh" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizace"
+          }
+        }
+      }
+    },
+    "Refresh interval" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interval aktualizace"
+          }
+        }
+      }
+    },
+    "Refresh vehicles" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizovat vozidla"
+          }
+        }
+      }
+    },
+    "Refresh, language, appearance and the map" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizace, jazyk, vzhled a mapa"
+          }
+        }
+      }
+    },
+    "Remove" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrat"
+          }
+        }
+      }
+    },
+    "Retry" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkusit znovu"
+          }
+        }
+      }
+    },
+    "Running now" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Právě jede"
+          }
+        }
+      }
+    },
+    "Service" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spoj"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavení"
+          }
+        }
+      }
+    },
+    "Show my position on the map" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit moji polohu na mapě"
+          }
+        }
+      }
+    },
+    "Show only pinned lines on the map" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit na mapě jen oblíbené linky"
+          }
+        }
+      }
+    },
+    "Show stops on the map" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit zastávky na mapě"
+          }
+        }
+      }
+    },
+    "Stop following my position" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přestat sledovat moji polohu"
+          }
+        }
+      }
+    },
+    "Stop following this vehicle" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přestat sledovat toto vozidlo"
+          }
+        }
+      }
+    },
+    "Stop opening the map here" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neotvírat mapu tady"
+          }
+        }
+      }
+    },
+    "Stop positions are matched from OpenStreetMap by stop name, and the app icon is drawn from its roads and rivers. The data is © OpenStreetMap contributors, published under the Open Database Licence 1.0 (openstreetmap.org/copyright)." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polohy zastávek se přiřazují z OpenStreetMap podle názvu zastávky a ikona aplikace je vykreslena z jejích silnic a řek. Data jsou © přispěvatelé OpenStreetMap, zveřejněná pod licencí Open Database Licence 1.0 (openstreetmap.org/copyright)."
+          }
+        }
+      }
+    },
+    "Stops" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávky"
+          }
+        }
+      }
+    },
+    "Stops are drawn as a flag once the map is zoomed in far enough to read them. The positions are matched from OpenStreetMap by name, so most of the region's stops are there and some are not." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávky se kreslí jako vlaječka, jakmile je mapa dostatečně přiblížená. Polohy jsou párované z OpenStreetMap podle názvu, takže většina zastávek regionu tam je a některé ne."
+          }
+        }
+      }
+    },
+    "System" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systémové"
+          }
+        }
+      }
+    },
+    "Tap one to centre the map on it" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klepnutím vycentrujete mapu na vozidlo"
+          }
+        }
+      }
+    },
+    "The app" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikace"
+          }
+        }
+      }
+    },
+    "The app follows the device until you pick one here. The choice applies to this app only and is on screen straight away." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikace se řídí nastavením zařízení, dokud zde nezvolíte jinak. Volba platí jen pro tuto aplikaci a projeví se okamžitě."
+          }
+        }
+      }
+    },
+    "The base map and its tiles are Apple Maps, drawn through MapKit." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podkladová mapa a její dlaždice jsou Apple Maps, vykreslované přes MapKit."
+          }
+        }
+      }
+    },
+    "The feed goes quiet about whole lines for stretches of the day. With this on, the map draws a line the timetable says should be running at the stop its service is due at, marked with an exclamation triangle. It is the published stop, not a measured position, and it does not move. Needs every line's timetable, which is fetched a few kilobytes at a time and kept on the phone; nothing is sent anywhere." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdroj dat občas na část dne přestane hlásit celé linky. Když je tato volba zapnutá, mapa dokreslí linku, která má podle jízdního řádu jet, na zastávku, kde má spoj právě být, a označí ji trojúhelníkem s vykřičníkem. Je to zveřejněná zastávka, ne změřená poloha, a značka se neposouvá. Potřebuje jízdní řády všech linek, které se stahují po několika kilobajtech a zůstávají v telefonu; nic se nikam neposílá."
+          }
+        }
+      }
+    },
+    "The feed is not reporting any vehicles at the moment." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdroj dat momentálně nehlásí žádná vozidla."
+          }
+        }
+      }
+    },
+    "The feed reports new positions every few seconds. Asking for them more often than every %lld s only costs battery." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdroj dat hlásí nové polohy každých pár sekund. Častější dotazy než každých %lld s jen spotřebovávají baterii."
+          }
+        }
+      }
+    },
+    "The map" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa"
+          }
+        }
+      }
+    },
+    "The map server answered with HTTP %lld." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server mapy odpověděl HTTP %lld."
+          }
+        }
+      }
+    },
+    "The map server could not be reached." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server mapy se nepodařilo kontaktovat."
+          }
+        }
+      }
+    },
+    "The map server did not respond in time." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server mapy včas neodpověděl."
+          }
+        }
+      }
+    },
+    "The map server sent an unexpected response. %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server mapy poslal neočekávanou odpověď. %@"
+          }
+        }
+      }
+    },
+    "The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the bookmark button remembers the view you are looking at instead." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poloha se načítá v zařízení a nikam se neposílá. Modrá tečka je systémová; sledování drží mapu vycentrovanou na poloze, když se pohybujete, a tlačítkem se záložkou si místo toho uložíte právě zobrazený výřez."
+          }
+        }
+      }
+    },
+    "The timetable server refused a partial download." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server jízdních řádů odmítl částečné stažení."
+          }
+        }
+      }
+    },
+    "The timetable server sent an unexpected response." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server jízdních řádů poslal neočekávanou odpověď."
+          }
+        }
+      }
+    },
+    "The vehicle feed could not be loaded." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdroj dat se nepodařilo načíst."
+          }
+        }
+      }
+    },
+    "There is no internet connection." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chybí připojení k internetu."
+          }
+        }
+      }
+    },
+    "This index does not record which archive it came from." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Index neuvádí, ze kterého archivu pochází."
+          }
+        }
+      }
+    },
+    "Timetable for this service is not available." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řád pro tento spoj není k dispozici."
+          }
+        }
+      }
+    },
+    "Timetables" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řády"
+          }
+        }
+      }
+    },
+    "Timetables come from “Jízdní řády veřejné linkové dopravy”, published by the Ministry of Transport of the Czech Republic (IČO 66003008) on the CIS JŘ portal at portal.cisjr.cz, under the Creative Commons Attribution 4.0 licence (creativecommons.org/licenses/by/4.0/) and the sui generis database right." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řády pocházejí z datové sady „Jízdní řády veřejné linkové dopravy“, kterou vydává Ministerstvo dopravy ČR (IČO 66003008) na portálu CIS JŘ na portal.cisjr.cz, pod licencí Creative Commons Attribution 4.0 (creativecommons.org/licenses/by/4.0/) a s právy sui generis k databázi."
+          }
+        }
+      }
+    },
+    "Timetables have not been downloaded yet." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řády ještě nejsou stažené."
+          }
+        }
+      }
+    },
+    "Train" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vlak"
+          }
+        }
+      }
+    },
+    "Tram" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tramvaj"
+          }
+        }
+      }
+    },
+    "Trolleybus" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trolejbus"
+          }
+        }
+      }
+    },
+    "Try again in a moment." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zkuste to za chvíli znovu."
+          }
+        }
+      }
+    },
+    "Turn automatic refresh off" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vypnout automatickou aktualizaci"
+          }
+        }
+      }
+    },
+    "Turn automatic refresh on" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapnout automatickou aktualizaci"
+          }
+        }
+      }
+    },
+    "Unknown" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neznámé"
+          }
+        }
+      }
+    },
+    "Unpin" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrat"
+          }
+        }
+      }
+    },
+    "Unpin line %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrat linku %@"
+          }
+        }
+      }
+    },
+    "Up to date." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuální."
+          }
+        }
+      }
+    },
+    "Update now" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualizovat"
+          }
+        }
+      }
+    },
+    "updated %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aktualizováno %@"
+          }
+        }
+      }
+    },
+    "Use the number the map shows, for example 420. A pinned line stays in the list even when it is not running." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Použijte číslo, které ukazuje mapa, například 420. Oblíbená linka zůstane v seznamu, i když právě nejede."
+          }
+        }
+      }
+    },
+    "VDV" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VDV"
+          }
+        }
+      }
+    },
+    "VDV Live is written and maintained by Ondrej Linek." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VDV Live vyvíjí a spravuje Ondrej Linek."
+          }
+        }
+      }
+    },
+    "Vehicles" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vozidla"
+          }
+        }
+      }
+    },
+    "Veřejná doprava Vysočiny" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veřejná doprava Vysočiny"
+          }
+        }
+      }
+    },
+    "Where the data comes from" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odkud pocházejí data"
+          }
+        }
+      }
+    },
+    "Your pinned lines are not in this part of the map." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaše oblíbené linky nejsou v této části mapy."
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

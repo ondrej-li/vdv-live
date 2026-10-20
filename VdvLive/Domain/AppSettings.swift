@@ -35,6 +35,13 @@ struct AppSettings: Equatable, Sendable {
     /// of the stops without saying so would look like a map that had gone wrong.
     /// `docs/stops.md` has the measurements.
     var showsStops: Bool = false
+    /// Whether the map fills in the lines the feed has gone quiet about.
+    ///
+    /// Off by default: it needs every regional timetable on the phone (a few
+    /// megabytes, fetched a line at a time) and what it draws is a stop the run is
+    /// due at rather than a measured position, so it is something to ask for
+    /// rather than something to be surprised by.
+    var showsCalculatedServices: Bool = false
 
     /// The feed updates continuously, but not that fast: asking more often than
     /// every five seconds only costs battery.
