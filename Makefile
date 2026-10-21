@@ -99,14 +99,34 @@ BUILD ?= $(shell date +%y%m%d%H%M)
 # Where 'make shots' puts the App Store screenshots, and the devices it takes them
 # on: the two sizes Apple asks for, plus the watch.
 APPSTORE_SHOTS := $(DERIVED_DATA)/appstore
-SHOT_IPHONE ?= iPhone 18 Pro Max
+# App Store Connect sorts screenshots by display class, not by model: the iPhone
+# tab that has to be filled is the 6.1"/6.3" one ("iPhone with Dynamic Island,
+# medium display"), which takes 1179x2556 or 1206x2622. A 6.9" phone produces
+# 1320x2868, which that tab refuses.
+SHOT_IPHONE ?= Shot iPhone 6.3
+SHOT_IPHONE_TYPE ?= com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
+SHOT_IPHONE_RUNTIME ?= com.apple.CoreSimulator.SimRuntime.iOS-27-0
 SHOT_IPAD ?= iPad Pro 13-inch (M5)
 SHOT_WATCH ?= Apple Watch Ultra 4 (49mm)
 SHOT_DELAY ?= 12
+# The viewport the screenshots are taken in: the region itself, tightly enough that
+# the markers are readable. Seeded as the app's own saved map view, so the shot does
+# not depend on what the camera happens to fit on a given screen.
+SHOT_LATITUDE ?= 49.4
+SHOT_LONGITUDE ?= 15.6
+SHOT_LATITUDE_DELTA ?= 0.62
+SHOT_LONGITUDE_DELTA ?= 0.95
 # The watch's map takes longer to draw its first tiles than the phone's.
 SHOT_WATCH_DELAY ?= 30
+# Rewrites a PNG with only the chunks App Store Connect accepts. `sips` and
+# ImageIO both stamp an eXIf chunk, and the uploader then refuses the file with
+# "File dimensions are invalid" about an image whose dimensions are correct.
+PNG_STRIP := python3 tools/strip-png-metadata.py
+# Screenshots come out of the simulator with an alpha channel, which App Store
+# artwork must not have; this draws them opaque before the strip below.
+PNG_FLATTEN := swift tools/flatten-png.swift
 
-.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch
+.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch creative
 
 all: build
 
@@ -263,18 +283,46 @@ mkdir -p "$$container/Library/Preferences"; \
 plutil -create xml1 "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert startsAtCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert showsCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView -dictionary "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.latitude -float $(SHOT_LATITUDE) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.longitude -float $(SHOT_LONGITUDE) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.latitudeDelta -float $(SHOT_LATITUDE_DELTA) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.longitudeDelta -float $(SHOT_LONGITUDE_DELTA) "$$container/Library/Preferences/$(APP_ID).plist"; \
 xcrun simctl launch '$(1)' $(APP_ID) >/dev/null; \
 sleep $(SHOT_DELAY); \
-xcrun simctl io '$(1)' screenshot '$(APPSTORE_SHOTS)/$(2).png'
+xcrun simctl io '$(1)' screenshot '$(APPSTORE_SHOTS)/$(2).raw.png'; \
+$(PNG_FLATTEN) '$(APPSTORE_SHOTS)/$(2).raw.png' '$(APPSTORE_SHOTS)/$(2).png'; \
+rm -f '$(APPSTORE_SHOTS)/$(2).raw.png'; \
+$(PNG_STRIP) '$(APPSTORE_SHOTS)/$(2).png'
 endef
 
 ## Capture the App Store screenshots at the two sizes Apple asks for: the largest
 ## iPhone and the 13-inch iPad. Override the devices with SHOT_IPHONE=/SHOT_IPAD=.
 shots: build
 	@mkdir -p '$(APPSTORE_SHOTS)'
-	$(call capture-shot,$(SHOT_IPHONE),iphone-6.9)
+	@xcrun simctl list devices available | grep -q '$(SHOT_IPHONE) (' || \
+		xcrun simctl create '$(SHOT_IPHONE)' $(SHOT_IPHONE_TYPE) $(SHOT_IPHONE_RUNTIME)
+	$(call capture-shot,$(SHOT_IPHONE),iphone-6.3)
 	$(call capture-shot,$(SHOT_IPAD),ipad-13)
-	@echo "wrote $(APPSTORE_SHOTS) - upload them under App Store Connect > Screenshots"
+	@echo "wrote $(APPSTORE_SHOTS) - iphone-6.3 is 1206x2622, ipad-13 is 2064x2752"
+
+## Draw the App Store creative assets: the icon as a bare PNG, and the two wide
+## banners the App Store shows on the product page header and in search results.
+## Both are optional, and irrelevant to the app icon field, which is 1024 x 1024.
+creative:
+	@mkdir -p '$(APPSTORE_SHOTS)'
+	cp VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png \
+		'$(APPSTORE_SHOTS)/appicon-1024.png'
+	swift tools/make-appstore-banner.swift 5244 2950 \
+		VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png \
+		'$(APPSTORE_SHOTS)/creative-header-5244x2950.png'
+	swift tools/make-appstore-banner.swift 3840 1646 \
+		VdvLive/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png \
+		'$(APPSTORE_SHOTS)/creative-header-3840x1646.png'
+	$(PNG_STRIP) '$(APPSTORE_SHOTS)/appicon-1024.png' \
+		'$(APPSTORE_SHOTS)/creative-header-5244x2950.png' \
+		'$(APPSTORE_SHOTS)/creative-header-3840x1646.png'
+	@echo "wrote $(APPSTORE_SHOTS) - the icon for the 1024 field, the two banners for the creative asset slots"
 
 ## Capture the watch screenshot too. The watch draws the pinned lines only, and it
 ## cannot read them from the phone on a Mac, so two are seeded first.
@@ -288,7 +336,10 @@ shots-watch: watch
 	-@xcrun simctl terminate '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null 2>&1
 	xcrun simctl launch '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null
 	@sleep $(SHOT_WATCH_DELAY)
-	xcrun simctl io '$(SHOT_WATCH)' screenshot '$(APPSTORE_SHOTS)/watch-49mm.png'
+	xcrun simctl io '$(SHOT_WATCH)' screenshot '$(APPSTORE_SHOTS)/watch-49mm.raw.png'
+	$(PNG_FLATTEN) '$(APPSTORE_SHOTS)/watch-49mm.raw.png' '$(APPSTORE_SHOTS)/watch-49mm.png'
+	@rm -f '$(APPSTORE_SHOTS)/watch-49mm.raw.png'
+	$(PNG_STRIP) '$(APPSTORE_SHOTS)/watch-49mm.png'
 	@echo "wrote $(APPSTORE_SHOTS)/watch-49mm.png"
 
 ## Save a screenshot of the running app from the booted simulator.
