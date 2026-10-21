@@ -18,6 +18,7 @@ struct MapHeaderBar: View {
     /// state rather than the current one.
     let isOffline: Bool
     let onSelectFilter: (VehicleFilter) -> Void
+    let onShowStopBoards: () -> Void
     let onRefresh: () -> Void
     let onRecenter: () -> Void
     let onToggleAutoRefresh: () -> Void
@@ -29,6 +30,13 @@ struct MapHeaderBar: View {
             HStack(spacing: 10) {
                 title
                 Spacer(minLength: 8)
+                // The stop board is the one thing here that is not about the traffic on
+                // screen, so it leads the row: a rider looks up a departure, not a bus.
+                iconButton(
+                    emoji: "\u{1F68F}",
+                    label: String(localized: "Stop departure boards"),
+                    action: onShowStopBoards
+                )
                 iconButton(
                     systemName: isAutoRefreshEnabled ? "pause.fill" : "play.fill",
                     label: isAutoRefreshEnabled
@@ -187,9 +195,34 @@ struct MapHeaderBar: View {
         tint: Color? = nil,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        iconButton(label: label, isEnabled: isEnabled, tint: tint, action: action) {
             Image(systemName: systemName)
                 .font(.footnote.weight(.semibold))
+        }
+    }
+
+    /// A symbol from outside SF Symbols - the bus stop pictogram, which says
+    /// "departures from here" in a way no system symbol does.
+    private func iconButton(
+        emoji: String,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        iconButton(label: label, action: action) {
+            Text(verbatim: emoji)
+                .font(.system(size: 15))
+        }
+    }
+
+    private func iconButton<Glyph: View>(
+        label: String,
+        isEnabled: Bool = true,
+        tint: Color? = nil,
+        action: @escaping () -> Void,
+        @ViewBuilder glyph: () -> Glyph
+    ) -> some View {
+        Button(action: action) {
+            glyph()
                 .foregroundStyle(tint ?? Color.primary)
                 .frame(width: 28, height: 28)
                 .background(.quaternary, in: Circle())
