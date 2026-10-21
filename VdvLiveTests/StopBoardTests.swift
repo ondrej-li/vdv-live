@@ -20,7 +20,11 @@ final class StopBoardTests: XCTestCase {
     }
 
     /// One run of a line that calls at the stop once and ends somewhere else.
-    private func line(_ code: String, runs: [(service: String, minutes: Int)]) -> LineTimetable {
+    /// - Parameter startMinutesBefore: how long the run has been going by the time it
+    ///   reaches this stop, which is what decides whether a vehicle can be on it.
+    private func line(_ code: String,
+                      runs: [(service: String, minutes: Int)],
+                      startMinutesBefore: Int = 5) -> LineTimetable {
         LineTimetable(
             lineNumber: code,
             displayNumber: LineCode(raw: code).number,
@@ -28,7 +32,7 @@ final class StopBoardTests: XCTestCase {
             operatorName: nil,
             runs: runs.map { run in
                 ScheduledRun(serviceNumber: run.service, calls: [
-                    call(1, at: elsewhere, departing: run.minutes - 5),
+                    call(1, at: elsewhere, departing: run.minutes - startMinutesBefore),
                     call(2, departing: run.minutes)
                 ])
             }
@@ -160,6 +164,46 @@ final class StopBoardTests: XCTestCase {
         )
 
         XCTAssertEqual(board.first?.expected?.text, "15:03")
+    }
+
+    /// The bug in #107: the vehicle out there now is ten minutes late, and every later
+    /// service of the same line wore that delay on a departure that had not left yet.
+    func testAServiceThatHasNotLeftDoesNotInheritTheLinesDelay() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [line("764410", runs: [("1", 14 * 60), ("2", 18 * 60)], startMinutesBefore: 60)],
+            delays: ["764410": 10],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.map { $0.expected?.text ?? "—" }, ["14:10", "—"])
+    }
+
+    /// Only one vehicle per line is being reported, so only one row of that line may
+    /// claim the delay - the one nearest the reader.
+    func testOnlyTheNearestRowOfALineTakesTheLinesDelay() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [line("764410", runs: [("1", 15 * 60 + 20), ("2", 16 * 60 + 40)],
+                      startMinutesBefore: 120)],
+            delays: ["764410": 5],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.map { $0.expected?.text ?? "—" }, ["15:25", "—"])
+    }
+
+    /// A run that ended hours ago is not the vehicle reporting a delay, so its row keeps
+    /// the timetable's time - and falls off the board, where it belongs.
+    func testARunThatEndedLongAgoTakesNoDelay() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [line("764410", runs: [("1", 12 * 60)])],
+            delays: ["764410": 240],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertTrue(board.isEmpty, "12:00 with no delay of its own is outside the hour")
     }
 
     /// The board opens where the reader is standing, so the clock has to be readable

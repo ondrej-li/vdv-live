@@ -1953,6 +1953,46 @@
           }
         }
       }
+    },
+    "Show all lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit všechny linky"
+          }
+        }
+      }
+    },
+    "Show only pinned lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit jen oblíbené linky"
+          }
+        }
+      }
+    },
+    "No pinned lines here" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žádné oblíbené linky"
+          }
+        }
+      }
+    },
+    "None of the lines that call at this stop is one you pinned." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touto zastávkou neprojíždí žádná z vašich oblíbených linek."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

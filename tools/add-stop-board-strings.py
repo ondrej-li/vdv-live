@@ -45,6 +45,11 @@ TRANSLATIONS = {
     "expected %@": "očekáváno %@",
     "not departed yet": "ještě neodjelo",
     "Line %@, scheduled %@, %@, %@": "Linka %@, podle řádu %@, %@, %@",
+    "Show all lines": "Zobrazit všechny linky",
+    "Show only pinned lines": "Zobrazit jen oblíbené linky",
+    "No pinned lines here": "Žádné oblíbené linky",
+    "None of the lines that call at this stop is one you pinned.":
+        "Touto zastávkou neprojíždí žádná z vašich oblíbených linek.",
 }
 
 
