@@ -48,6 +48,9 @@ struct SettingsSheet: View {
     let onForgetTimetables: () -> Void
     let onSetShowsCalculatedServices: (Bool) -> Void
 
+    /// Needed only by the starred stops screen, which has to load a stop's board.
+    var viewModel: VehicleMapViewModel? = nil
+
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -95,6 +98,20 @@ struct SettingsSheet: View {
                             systemImage: "star",
                             subtitle: "Pin and unpin bus lines"
                         )
+                    }
+
+                    if let viewModel {
+                        NavigationLink {
+                            StarredStopsView(viewModel: viewModel)
+                                .navigationTitle("Starred stops")
+                                .navigationBarTitleDisplayMode(.inline)
+                        } label: {
+                            SettingsRow(
+                                title: "Starred stops",
+                                systemImage: "mappin.and.ellipse",
+                                subtitle: "Departure boards for the stops you watch"
+                            )
+                        }
                     }
 
                     NavigationLink {

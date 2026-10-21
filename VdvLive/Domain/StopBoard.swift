@@ -67,7 +67,10 @@ enum StopBoard {
                 guard let call = run.call(matchingStopName: stopName),
                       let scheduled = call.time else { continue }
 
+                // A run's own delay when the feed names the run, and the line's delay
+                // otherwise: the positions feed reports vehicles by line, not by run.
                 let late = delays[delayKey(line: timetable.lineNumber, service: run.serviceNumber)]
+                    ?? delays[timetable.lineNumber]
                 let expected = late.flatMap { call.time(lateByMinutes: $0) }
                 let readAt = (expected ?? scheduled).minutes
 

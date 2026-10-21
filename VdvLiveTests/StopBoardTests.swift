@@ -136,4 +136,43 @@ final class StopBoardTests: XCTestCase {
         XCTAssertEqual(LineCode(raw: board.first?.lineNumber ?? "").number, "410")
         XCTAssertEqual(StopBoard.delayKey(line: "764410", service: "1"), "764410/1")
     }
+
+    /// The feed reports vehicles by line, not by run, so a board falls back to the
+    /// line's delay - but a run's own delay wins when there is one.
+    func testALineWideDelayIsUsedWhenTheRunItselfIsNotNamed() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [line("764410", runs: [("7", 15 * 60)])],
+            delays: ["764410": 12],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.first?.expected?.text, "15:12")
+        XCTAssertEqual(board.first?.delayMinutes, 12)
+    }
+
+    func testARunsOwnDelayOutranksItsLine() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [line("764410", runs: [("7", 15 * 60)])],
+            delays: ["764410": 12, "764410/7": 3],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.first?.expected?.text, "15:03")
+    }
+
+    /// The board opens where the reader is standing, so the clock has to be readable
+    /// off the device's own time zone.
+    func testReadsTheClockOffADate() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        let zone = try XCTUnwrap(TimeZone(identifier: "Europe/Prague"))
+        calendar.timeZone = zone
+        let date = try XCTUnwrap(calendar.date(from: DateComponents(
+            year: 2026, month: 10, day: 21, hour: 15, minute: 7
+        )))
+
+        XCTAssertEqual(TimeOfDay(date, calendar: calendar).text, "15:07")
+        XCTAssertEqual(TimeOfDay(date, calendar: calendar).minutes, 15 * 60 + 7)
+    }
 }
