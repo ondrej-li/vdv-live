@@ -7,6 +7,8 @@ struct VehicleMapView: View {
     @State private var camera: MapCameraPosition
     @Environment(\.scenePhase) private var scenePhase
     @State private var isShowingSettings = false
+    /// The stop whose board is open, if any.
+    @State private var boardStop: StopPosition?
     /// Size of the map, needed to turn a zoom level into a distance.
     @State private var mapSize: CGSize = .zero
     /// Where the map is pointing. Kept from the last camera change, because a
@@ -47,6 +49,9 @@ struct VehicleMapView: View {
         .overlay(alignment: .bottom) { bottomOverlay }
         .animation(.easeOut(duration: 0.2), value: viewModel.selectedClusterID)
         .sheet(isPresented: $isShowingSettings) { settingsSheet }
+        .sheet(item: $boardStop) { stop in
+            StopBoardSheet(stop: stop, viewModel: viewModel)
+        }
         // The appearance is a property of the window rather than of a view, so
         // handing it over here is what makes a change visible at once and keeps
         // the sheets in the same scheme.
@@ -129,10 +134,14 @@ struct VehicleMapView: View {
             }
 
             // Fixed points rather than traffic, so they are drawn under the
-            // vehicles, and only when the user has asked for them.
+            // vehicles, and only when the user has asked for them. A flag opens
+            // the stop's board.
             ForEach(viewModel.stopFlags, id: \.name) { stop in
                 Annotation(coordinate: stop.coordinate) {
-                    StopAnnotationView(stop: stop)
+                    Button { boardStop = stop } label: {
+                        StopAnnotationView(stop: stop)
+                    }
+                    .buttonStyle(.plain)
                 } label: {
                     EmptyView()
                 }
@@ -343,7 +352,8 @@ struct VehicleMapView: View {
                 Task { await viewModel.timetables.checkForUpdates() }
             },
             onForgetTimetables: { viewModel.forgetTimetables() },
-            onSetShowsCalculatedServices: { viewModel.setShowsCalculatedServices($0) }
+            onSetShowsCalculatedServices: { viewModel.setShowsCalculatedServices($0) },
+            viewModel: viewModel
         )
     }
 

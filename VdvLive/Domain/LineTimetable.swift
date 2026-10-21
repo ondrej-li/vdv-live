@@ -26,6 +26,12 @@ struct TimeOfDay: Hashable, Comparable, Sendable {
         String(format: "%02d:%02d", (minutes / 60) % 24, minutes % 60)
     }
 
+    /// The time it is now, for a board that has to open where the reader is standing.
+    init(_ date: Date, calendar: Calendar = .current) {
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        self.init(minutes: (parts.hour ?? 0) * 60 + (parts.minute ?? 0))
+    }
+
     /// The same time shifted by a delay, which can be negative on an early bus.
     func shifted(byMinutes delay: Int) -> TimeOfDay {
         TimeOfDay(minutes: max(minutes + delay, 0))

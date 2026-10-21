@@ -58,6 +58,7 @@ final class VehicleMapViewModel {
 
     private let fetcher: VehicleFetching
     private let favouriteLinesStore: FavouriteLinesPersisting
+    private let starredStopsStore: StarredStopsPersisting
     private let settingsStore: AppSettingsStoring
     private let locationProvider: LocationProviding
     /// Defaults the language override is written to; injected so that tests do
@@ -105,6 +106,7 @@ final class VehicleMapViewModel {
         payloadStore: VehiclePayloadStoring,
         fetcher: VehicleFetching,
         favouriteLinesStore: FavouriteLinesPersisting = UserDefaultsFavouriteLinesStore(),
+        starredStopsStore: StarredStopsPersisting = UserDefaultsStarredStopsStore(),
         settingsStore: AppSettingsStoring = UserDefaultsAppSettingsStore(),
         locationProvider: LocationProviding = SystemLocationProvider(),
         languageDefaults: UserDefaults = .standard,
@@ -117,6 +119,7 @@ final class VehicleMapViewModel {
         self.payloadStore = payloadStore
         self.fetcher = fetcher
         self.favouriteLinesStore = favouriteLinesStore
+        self.starredStopsStore = starredStopsStore
         self.settingsStore = settingsStore
         self.locationProvider = locationProvider
         self.languageDefaults = languageDefaults
@@ -129,6 +132,7 @@ final class VehicleMapViewModel {
         // has already applied the minimum interval to what it read from disk.
         self.settings = settingsStore.load()
         self.favouriteLines = favouriteLinesStore.load()
+        self.starredStops = starredStopsStore.load()
         // Restore the quiet map straight away, so that a user who only wants
         // their own lines does not have to filter again on every launch.
         self.filter = favouriteLinesStore.loadShowsOnlyFavourites() ? .favourites : .all
@@ -808,6 +812,47 @@ final class VehicleMapViewModel {
         let longitudeRange = (region.center.longitude - region.span.longitudeDelta / 2)
             ... (region.center.longitude + region.span.longitudeDelta / 2)
         return stopPositions.positions(latitude: latitudeRange, longitude: longitudeRange)
+    }
+
+    /// The lines that call at a stop, by the code their timetables are filed under.
+    func lines(atStopNamed name: String) -> [String] {
+        stopPositions.lines(atStopNamed: name)
+    }
+
+    /// The stops the user starred. Kept apart from whether stops are drawn: a starred
+    /// stop is reachable from settings with the flags turned off.
+    private(set) var starredStops: StarredStops = StarredStops()
+
+    /// Where a stop is, by the name the user starred or searched for.
+    func position(forStopNamed name: String) -> StopPosition? {
+        stopPositions.position(forStopNamed: name)
+    }
+
+    /// Every stop a search field can offer.
+    var allStopNames: [String] { stopPositions.allNames }
+
+    /// Whether the user starred this stop.
+    func isStarred(stopNamed name: String) -> Bool { starredStops.contains(name) }
+
+    /// Stars the stop, or unstars it, and writes the list away.
+    /// - Returns: whether the stop is starred after the change.
+    @discardableResult
+    func toggleStarredStop(named name: String) -> Bool {
+        let isStarred = starredStops.toggle(name)
+        starredStopsStore.save(starredStops)
+        return isStarred
+    }
+
+    /// The delay each vehicle is reporting, by line code.
+    ///
+    /// The positions feed names the line but not the run, so a board cannot tell which
+    /// vehicle belongs to which row. A line's worst reported delay is the honest answer:
+    /// a rider is better warned than reassured.
+    var liveDelays: [String: Int] {
+        vehicles.reduce(into: [:]) { delays, vehicle in
+            guard let minutes = vehicle.delay.minutes else { return }
+            delays[vehicle.line] = max(minutes, delays[vehicle.line] ?? minutes)
+        }
     }
 
     /// Read once, the first time the stops are drawn.

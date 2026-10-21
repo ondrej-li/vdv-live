@@ -100,6 +100,11 @@ struct StopPositions: Sendable {
 
     var count: Int { positions.count }
 
+    /// Every stop name the table can place, sorted, which is what a search field offers.
+    var allNames: [String] {
+        positions.values.map(\.name).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    }
+
     /// Case, diacritics, spaces and punctuation washed out, matching how the file is keyed.
     static func lookupKey(for name: String) -> String {
         let folded = name.folding(options: [.diacriticInsensitive, .caseInsensitive],
