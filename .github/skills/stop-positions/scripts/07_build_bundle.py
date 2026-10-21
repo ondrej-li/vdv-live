@@ -31,6 +31,10 @@ from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common  # noqa: E402
 
+# Which line each archive entry turned out to be. The app's own mapping, because the
+# board looks lines up by the code the app uses rather than by the archive's file name.
+MAPPING = os.path.join(common.REPO_ROOT, "VdvLive", "Resources", "jdf-lines.json")
+
 ISOLATION_KM = 12.0
 DISTANCE_SLACK, DISTANCE_FLOOR_KM = 1.6, 3.0
 # Kinds that are placements rather than name matches, and so always worth a look.
@@ -114,6 +118,24 @@ def main():
         table[lookup] = entry
         kinds[row["match"]] += 1
 
+    # Which lines call at a stop. Filed by the same folded display name as the positions,
+    # because the app knows a stop by its name alone, and covering every stop the
+    # timetables name rather than only the placed ones: a stop can be starred from a
+    # search without being on the map.
+    with open(MAPPING) as fh:
+        entry_to_code = {}
+        for code, entries in json.load(fh)["lines"].items():
+            for entry in entries:
+                entry_to_code.setdefault(entry, code)
+    lines_by_stop = defaultdict(set)
+    for entry, names in timetable.get("lineStops", {}).items():
+        code = entry_to_code.get(entry)
+        if not code:
+            continue
+        for name in names:
+            lines_by_stop[name].add(code)
+    stop_lines = {key: sorted(lines) for key, lines in sorted(lines_by_stop.items())}
+
     document = {
         "version": 1,
         "note": "Stop positions for the region's timetables, from OpenStreetMap by name "
@@ -121,6 +143,7 @@ def main():
         "sources": [{"name": "OpenStreetMap", "licence": "ODbL 1.0",
                      "url": "https://www.openstreetmap.org/copyright"}],
         "stops": dict(sorted(table.items())),
+        "stopLines": stop_lines,
     }
     os.makedirs(os.path.dirname(common.BUNDLE), exist_ok=True)
     with open(common.BUNDLE, "w") as fh:

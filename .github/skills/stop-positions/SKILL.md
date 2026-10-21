@@ -101,7 +101,11 @@ a factory (`Barum`, `Husova`, `KD Ostrov`, `Psych.nemocnice`): the name picks ou
 and the line says which town, which is the only handle those stops have.
 
 **7. The bundle and the review.** The guards run, the rows are keyed by display name and
-written out, and `docs/stop-review.md` is generated. Four guards, each added because the
+written out, and `docs/stop-review.md` is generated. The same file also carries
+`stopLines`: for every stop the timetables name, the lines that call there, by the code
+`VdvLive/Resources/jdf-lines.json` uses. That is what a departure board is built from -
+the timetables are per line, so a stop needs to know which lines to load. Four guards,
+each added because the
 join got it wrong:
 
 - *Isolation*: a position more than 12 km from every other stop its line calls at is
