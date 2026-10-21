@@ -109,6 +109,37 @@ struct StopPositions: Sendable {
         positions.values.map(\.name).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
 
+    /// Stop names matching what was typed, the way people type: `nova brnice` finds
+    /// `Zašovice,Nová Brtnice`, and `zasovice` finds `Zašovice`.
+    ///
+    /// Both sides are washed down to the key the file is already keyed by, which drops
+    /// case, diacritics, spaces and punctuation - the same fold the positions and the
+    /// lines are looked up by, so the search cannot disagree with the rest of the app.
+    func names(matching text: String,
+               excluding isExcluded: (String) -> Bool = { _ in false },
+               limit: Int = 20) -> [String] {
+        let query = Self.lookupKey(for: text)
+        guard !query.isEmpty else { return [] }
+
+        let found = positions.values
+            .map(\.name)
+            .filter { !isExcluded($0) && Self.lookupKey(for: $0).contains(query) }
+
+        // Names that begin with what was typed come first: typing `telc` should put
+        // Telč's own stops above every other stop that merely mentions the town.
+        return found
+            .sorted { lhs, rhs in
+                let left = Self.lookupKey(for: lhs)
+                let right = Self.lookupKey(for: rhs)
+                let leftStarts = left.hasPrefix(query)
+                let rightStarts = right.hasPrefix(query)
+                if leftStarts != rightStarts { return leftStarts }
+                return left.localizedStandardCompare(right) == .orderedAscending
+            }
+            .prefix(limit)
+            .map { $0 }
+    }
+
     /// Case, diacritics, spaces and punctuation washed out, matching how the file is keyed.
     static func lookupKey(for name: String) -> String {
         let folded = name.folding(options: [.diacriticInsensitive, .caseInsensitive],

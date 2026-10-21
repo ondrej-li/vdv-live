@@ -11,13 +11,12 @@ struct StarredStopsView: View {
     @State private var search = ""
     @State private var boardStop: StopPosition?
 
+    /// Stops matching the search, with the ones already starred left out - a stop that is
+    /// already on the list has nothing to offer here.
     private var matches: [String] {
-        let query = search.trimmingCharacters(in: .whitespaces)
-        guard !query.isEmpty else { return [] }
-        return StopPositions.shipped.allNames
-            .filter { $0.localizedCaseInsensitiveContains(query) && !viewModel.isStarred(stopNamed: $0) }
-            .prefix(20)
-            .map { $0 }
+        StopPositions.shipped.names(matching: search) {
+            viewModel.isStarred(stopNamed: $0)
+        }
     }
 
     var body: some View {
