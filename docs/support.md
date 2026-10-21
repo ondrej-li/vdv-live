@@ -33,7 +33,8 @@ Settings → Timetables downloads an index (a couple of megabytes) and then each
 line's timetable on demand, a few kilobytes at a time; everything is kept on the
 phone afterwards, so it works offline. If a line still says its timetable is not
 available, the published archive has been rebuilt and the app's line list is out
-of date — the update appears with the next release.
+of date: tap **Check for updates**, and if that does not help, the fix comes with
+the next release of the app.
 
 ### The map goes grey
 
@@ -78,7 +79,8 @@ Nastavení → Jízdní řády stáhne index (několik megabajtů) a potom jízd
 každé linky zvlášť, po několika kilobajtech; vše zůstává v telefonu, takže to pak
 funguje i bez sítě. Pokud u linky i tak stojí, že jízdní řád není k dispozici,
 znamená to, že zveřejněný archiv byl přestavěn a seznam linek v aplikaci je
-zastaralý — oprava přijde s dalším vydáním.
+zastaralý: klepněte na **Zkontrolovat aktualizace**, a pokud to nepomůže, oprava
+přijde s dalším vydáním aplikace.
 
 ### Mapa zešedne
 
