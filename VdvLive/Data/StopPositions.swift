@@ -52,11 +52,13 @@ struct StopPosition: Equatable, Decodable, Sendable {
 /// are the same key.
 struct StopPositions: Sendable {
     private let positions: [String: StopPosition]
+    private let lines: [String: [String]]
 
-    static let empty = StopPositions(positions: [:])
+    static let empty = StopPositions(positions: [:], lines: [:])
 
-    init(positions: [String: StopPosition]) {
+    init(positions: [String: StopPosition], lines: [String: [String]] = [:]) {
         self.positions = positions
+        self.lines = lines
     }
 
     /// The table that ships with the app, or an empty one if it cannot be read.
@@ -66,12 +68,23 @@ struct StopPositions: Sendable {
               let document = try? JSONDecoder().decode(Document.self, from: data) else {
             return .empty
         }
-        return StopPositions(positions: document.stops)
+        return StopPositions(positions: document.stops, lines: document.stopLines ?? [:])
     }
 
     /// The position of a stop, given the name the app shows for it.
     func position(forStopNamed name: String) -> StopPosition? {
         positions[Self.lookupKey(for: name)]
+    }
+
+    /// The lines that call at a stop, by the archive's own code - `764350`, the number the
+    /// line's timetable and the mapping are filed under.
+    ///
+    /// This is what a board needs before it can have rows: the timetables are per line, so
+    /// a stop's departures are the departures of the lines that stop here, and nothing else.
+    /// Empty for a stop the table does not name, which is a stop with no rows rather than
+    /// an error.
+    func lines(atStopNamed name: String) -> [String] {
+        lines[Self.lookupKey(for: name)] ?? []
     }
 
     /// The stops inside a rectangle, which is what a map layer needs.
@@ -100,5 +113,7 @@ struct StopPositions: Sendable {
 
     private struct Document: Decodable {
         let stops: [String: StopPosition]
+        /// Missing in a bundle built before the board needed it, which is why it is optional.
+        let stopLines: [String: [String]]?
     }
 }

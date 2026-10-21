@@ -2,13 +2,15 @@
 """Stage 1: every stop the timetables mention, and how each line calls at them.
 
 Reads the national JDF archive and keeps the stops whose district is one of the
-Vysocina Region's five. Writes three things:
+Vysocina Region's five. Writes four things:
 
 * `stops`  - the region's stops, keyed by municipality/part/local name.
 * `orders` - for each line, the order it calls at its stops.
 * `runs`   - for each line, one representative run: stop by stop, with the distance
              column the timetable carries. That column counts down to the end of the
              run, which matters in stage 7 (see `SKILL.md`).
+* `lineStops` - for each line, every stop any of its runs calls at, which stage 7 turns
+             into the stop-to-lines table the app's departure boards are built from.
 
 Usage: 01_stops_from_timetables.py [archive]
 
@@ -39,7 +41,7 @@ def main():
                   file=sys.stderr)
             return 0
 
-    stops, orders, runs = {}, {}, {}
+    stops, orders, runs, line_stops = {}, {}, {}, {}
     with zipfile.ZipFile(archive_path) as outer:
         names = [n for n in outer.namelist() if n.lower().endswith(".zip")]
         for index, entry in enumerate(names):
@@ -60,6 +62,15 @@ def main():
                                  for row in common.read_rows(inner, "Zaslinky.txt")
                                  if len(row) > 3 and row[3] in table]
 
+                # Every stop that any run of this line calls at. The board needs the
+                # other direction - stop to lines - and the runs are where a line's
+                # stops really come from: `Zaslinky.txt` only names a route's stops.
+                line_stops[entry] = sorted({
+                    common.key_of(common.display_name(*table[row[common.COL_STOP]]))
+                    for row in common.read_rows(inner, "Zasspoje.txt")
+                    if len(row) > common.COL_STOP and row[common.COL_STOP] in table
+                })
+
                 # One run per line is enough to judge whether two positions could be
                 # reached from one another: take the run the timetable is most complete for.
                 collected = defaultdict(list)
@@ -77,9 +88,12 @@ def main():
                 print("  archive %d/%d" % (index, len(names)), file=sys.stderr)
 
     common.save_stage("01_timetable-stops.json",
-                      {"stops": stops, "orders": orders, "runs": runs})
-    print("stage 1: %d stops, %d lines, %d runs with distances"
-          % (len(stops), len(orders), len(runs)), file=sys.stderr)
+                      {"stops": stops, "orders": orders, "runs": runs,
+                       "lineStops": line_stops})
+    print("stage 1: %d stops, %d lines, %d runs with distances, %d stops named by lines"
+          % (len(stops), len(orders), len(runs),
+             len({name for names in line_stops.values() for name in names})),
+          file=sys.stderr)
     return 0
 
 

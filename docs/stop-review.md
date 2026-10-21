@@ -2,7 +2,7 @@
 
 Written by `.github/skills/stop-positions/scripts/07_build_bundle.py`; regenerate with `make stops`. Everything here is either not placed at all or placed by a rule rather than by a name, so it is the part of the table that deserves an eye. Corrections go in `.github/skills/stop-positions/data/manual_matches.json`, which wins over every rule.
 
-Placed by name and left alone: 1943 of 2527 rows.
+Placed by name and left alone: 1956 of 2542 rows.
 
 ## Not placed at all (17)
 
@@ -26,7 +26,7 @@ Placed by name and left alone: 1943 of 2527 rows.
 | Velké Tresné,rozc. | ZR | - | stops placed in the village: 0 |
 | Velké Tresné,záv. | ZR | - | stops placed in the village: 0 |
 
-## Placed by a rule, not by a name match (747)
+## Placed by a rule, not by a name match (751)
 
 | Stop | Kind | Position | Why |
 |---|---|---|---|
@@ -416,6 +416,8 @@ Placed by name and left alone: 1943 of 2527 rows.
 | Olšany | place | 49.18612, 15.56599 | village-centre: OpenStreetMap's node for Olšany, no stop of this name found |
 | Onšov | place | 48.90235, 15.83760 | village-centroid: centre of the 1 stops already placed in Onšov |
 | Onšov,Těškovice | place | 48.90235, 15.83760 | village-centroid: centre of the 1 stops already placed in Onšov |
+| Opatov | place | 49.42903, 15.39374 | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
+| Opatov | place | 49.42903, 15.39374 | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
 | Opatov,rozc. | place | 49.42903, 15.39374 | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
 | Opatov,rozc.I | place | 49.42903, 15.39374 | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
 | Opatov,rozc.I | place | 49.42903, 15.39374 | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
@@ -424,6 +426,8 @@ Placed by name and left alone: 1943 of 2527 rows.
 | Oponešice | place | 49.03774, 15.65205 | village-centre: OpenStreetMap's node for Oponešice, no stop of this name found |
 | Ostašov | place | 49.15555, 15.91799 | village-centre: OpenStreetMap's node for Ostašov, no stop of this name found |
 | Ostrov | place | 49.69289, 15.30083 | village-centroid: centre of the 2 stops already placed in Ostrov |
+| Otín | place | 49.13828, 15.04548 | village-centroid: centre of the 1 stops already placed in Otín |
+| Otín | place | 49.13828, 15.04548 | village-centroid: centre of the 1 stops already placed in Otín |
 | Otín,Geršov | place | 49.13828, 15.04548 | village-centroid: centre of the 1 stops already placed in Otín |
 | Otín,Pohořílky | place | 49.13828, 15.04548 | village-centroid: centre of the 1 stops already placed in Otín |
 | Oudoleň,váha | place | 49.65819, 15.75498 | village-centroid: centre of the 4 stops already placed in Oudoleň |
@@ -778,7 +782,7 @@ Placed by name and left alone: 1943 of 2527 rows.
 | Žižkovo Pole,Samotín,rozc.0.8 | place | 49.61063, 15.73513 | village-centre: OpenStreetMap's node for Žižkovo Pole, no stop of this name found |
 | Žižkovo Pole,rozc.Železné Horky | place | 49.61063, 15.73513 | village-centre: OpenStreetMap's node for Žižkovo Pole, no stop of this name found |
 
-## Dropped by the guards (329)
+## Dropped by the guards (303)
 
 A position the timetable says cannot be right: too far from every other stop of its line, or further from its neighbour than the route between them allows.
 
@@ -876,8 +880,6 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Jilem,samota | osm-name | direct: OpenStreetMap has "Jilem, samota" |
 | Jimramov,Ubušín | osm-village | osm-village: "Jimramov, GAMA" scored 0.80 against Jimramov |
 | Jitkov | osm-name | direct: OpenStreetMap has "Jitkov" |
-| Jámy | osm-name | direct: OpenStreetMap has "Jámy" |
-| Jámy | osm-name | direct: OpenStreetMap has "Jámy" |
 | Kaliště | place | village-centroid: centre of the 1 stops already placed in Kaliště |
 | Karlovo náměstí | osm-name | direct: OpenStreetMap has "Karlovo náměstí" |
 | Kaufland | osm-name | direct: OpenStreetMap has "Kaufland" |
@@ -888,7 +890,6 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Kostelní Myslová | osm-similar | named-near: OpenStreetMap has "Telč, rozcestí Kostelní Myslová", 0.0 km from Telč,rozc.Kostelní Myslová on line 3878.zip |
 | Kozlov,rozc.0.5 | osm-village | osm-village: "Kozlov" scored 1.00 against Kozlov |
 | Krasíkovice | osm-name | direct: OpenStreetMap has "Krasíkovice" |
-| Krasíkovice,Rožkov,rozc.0.5 | osm-name | direct: OpenStreetMap has "Krasíkovice" |
 | Krásné | place | village-centre: OpenStreetMap's node for Krásné, no stop of this name found |
 | Kuklík | osm-name | direct: OpenStreetMap has "Kuklík" |
 | Kyjov,rozc.2.4 | osm-name | direct: OpenStreetMap has "Kyjov, rozc. 2.4" |
@@ -915,17 +916,13 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Nemocnice | osm-name | direct: OpenStreetMap has "Nemocnice" |
 | Netín | osm-name | direct: OpenStreetMap has "Netín" |
 | Netín | osm-name | direct: OpenStreetMap has "Netín" |
-| Nevcehle | osm-name | direct: OpenStreetMap has "Nevcehle" |
-| Nevcehle | osm-name | direct: OpenStreetMap has "Nevcehle" |
 | Nová | osm-name | direct: OpenStreetMap has "Nová" |
 | Nové Město na Mor.,Pohledecká skála | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nové Město na Mor.,rozc.Veselíčko | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
-| Nové Město na Mor.,Hlinné | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nové Město na Mor.,Olešná | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nové Město na Mor.,Rokytno | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nové Město na Mor.,Studnice,Kuklík dvůr | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nové Město na Mor.,rozc.Veselíčko | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
-| Nové Město na Mor.,Hlinné | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nové Město na Mor.,Olešná | osm-village | osm-village: "Nové Město na Moravě, KD" scored 0.85 against Nové Město na Moravě |
 | Nový Rychnov,Chaloupky,rozc. | osm-name | direct: OpenStreetMap has "Nový Rychnov" |
 | Nový Rychnov,Řeženčice | osm-name | direct: OpenStreetMap has "Nový Rychnov" |
@@ -940,18 +937,12 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Olešná,Plevnice,rozc. | osm-similar | osm-similar: "Olešná, obec" scored 0.75 against Olešná |
 | Olešná,Řemenov | osm-similar | osm-similar: "Olešná, obec" scored 0.75 against Olešná |
 | Olší | place | village-centre: OpenStreetMap's node for Olší, no stop of this name found |
-| Opatov | place | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
-| Opatov | place | village-centre: OpenStreetMap's node for Opatov, no stop of this name found |
 | Osová Bítýška,Osová | osm-name | direct: OpenStreetMap has "Osová Bítýška" |
 | Ostrov n.Osl.,Suky,rozc.0.5 | osm-name | direct: OpenStreetMap has "Ostrov nad Oslavou" |
-| Otín | place | village-centroid: centre of the 1 stops already placed in Otín |
-| Otín | place | village-centroid: centre of the 1 stops already placed in Otín |
 | Palackého | osm-name | direct: OpenStreetMap has "Palackého" |
 | Pavlov,II | osm-village | osm-village: "Pavlov" scored 1.00 against Pavlov |
 | Pavlov,hájenka | osm-village | osm-village: "Pavlov" scored 1.00 against Pavlov |
 | Pavlov,rozc.Znětínek | osm-village | osm-village: "Pavlov" scored 1.00 against Pavlov |
-| Pavlov,samoty | osm-name | direct: OpenStreetMap has "Pavlov, samoty" |
-| Pavlov,samoty | osm-name | direct: OpenStreetMap has "Pavlov, samoty" |
 | Pavlov,II | osm-village | osm-village: "Pavlov" scored 1.00 against Pavlov |
 | Pavlov,rozc.Znětínek | osm-village | osm-village: "Pavlov" scored 1.00 against Pavlov |
 | Pelhřimov,chaty | osm-name | direct: OpenStreetMap has "Pelhřimov, chaty" |
@@ -959,7 +950,6 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Pelhřimov,Drbohlavy,rozc.Mezná | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
 | Pelhřimov,Hodějovice | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
 | Pelhřimov,Lipice,Farma | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
-| Pelhřimov,Pobistrýce | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
 | Pelhřimov,Radětín | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
 | Pelhřimov,Rybníček,rozc.1.5 | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
 | Pelhřimov,Strměchy | osm-village | osm-village: "Pelhřimov, SBD" scored 0.86 against Pelhřimov |
@@ -997,11 +987,10 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Radostín n.Osl.,Zahradiště | osm-name | direct: OpenStreetMap has "Radostín nad Oslavou" |
 | Radostín n.Osl.,rozc.Zadní Zhořec | osm-name | direct: OpenStreetMap has "Radostín nad Oslavou" |
 | Radostín n.Osl.,Zahradiště | osm-name | direct: OpenStreetMap has "Radostín nad Oslavou" |
-| Rančířov | osm-similar | osm-similar: "Dešná, Rancířov" scored 0.76 against Rancířov |
-| Rančířov | osm-similar | osm-similar: "Dešná, Rancířov" scored 0.76 against Rancířov |
 | Rosička | osm-name | direct: OpenStreetMap has "Rosička" |
 | Rousměrov,Laštovičky | osm-name | direct: OpenStreetMap has "Rousměrov,Laštovičky," |
 | Rozsochy,rozc.u nádr. | osm-name | direct: OpenStreetMap has "Rozsochy" |
+| Rozsochy,Kundratice | osm-name | direct: OpenStreetMap has "Rozsochy" |
 | Rozsochy,rozc.u nádr. | osm-name | direct: OpenStreetMap has "Rozsochy" |
 | Rožná,Zlatkov,u rybníka | osm-name | direct: OpenStreetMap has "Rožná, Zlatkov, u rybníka" |
 | Sedlec,ADW | osm-name | direct: OpenStreetMap has "Sedlec" |
@@ -1017,16 +1006,10 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Střítež | place | village-centroid: centre of the 3 stops already placed in Střítež |
 | Střítež,rozc. | place | village-centroid: centre of the 3 stops already placed in Střítež |
 | Střítež p.Křemešníkem,Kamenicko | osm-name | direct: OpenStreetMap has "Střítež pod Křemešníkem, Kamenicko" |
-| Svojkovice,U anděla | osm-name | direct: OpenStreetMap has "Svojkovice, U anděla" |
-| Svojkovice,U anděla | osm-name | direct: OpenStreetMap has "Svojkovice, U anděla" |
-| Svépravice,Prasatka | osm-name | direct: OpenStreetMap has "Svépravice" |
-| Svépravice,samoty | osm-name | direct: OpenStreetMap has "Svépravice" |
 | Světlá n.Sáz.,Kochánov,lesní školka | osm-village | osm-village: "Světlá nad Sázavou, pila" scored 0.89 against Světlá nad Sázavou |
 | Světlá n.Sáz.,Leštinka | osm-village | osm-village: "Světlá nad Sázavou, pila" scored 0.89 against Světlá nad Sázavou |
 | Světlá n.Sáz.,Mrzkovice | osm-similar | osm-similar: "Mrzkovice" scored 1.00 against Světlá nad Sázavou |
-| Světlá n.Sáz.,Opatovice | osm-village | osm-village: "Světlá nad Sázavou, pila" scored 0.89 against Světlá nad Sázavou |
 | Světlá n.Sáz.,Radostovice | osm-village | osm-village: "Světlá nad Sázavou, pila" scored 0.89 against Světlá nad Sázavou |
-| Světlá n.Sáz.,Opatovice | osm-village | osm-village: "Světlá nad Sázavou, pila" scored 0.89 against Světlá nad Sázavou |
 | Sázava,Kopaniny | osm-name | direct: OpenStreetMap has "Sázava" |
 | Sázava,Česká Mez | osm-name | direct: OpenStreetMap has "Sázava" |
 | Sázava,Kopaniny | osm-name | direct: OpenStreetMap has "Sázava" |
@@ -1060,8 +1043,6 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Veselá | place | village-centroid: centre of the 1 stops already placed in Veselá |
 | Vilémovice,Pavlíkov | osm-name | direct: OpenStreetMap has "Vilémovice, Pavlíkov" |
 | Vlachovice,autokemp | osm-name | direct: OpenStreetMap has "Vlachovice, autokemp" |
-| Vlkanov | osm-name | direct: OpenStreetMap has "Vlkanov" |
-| Vlkanov | osm-name | direct: OpenStreetMap has "Vlkanov" |
 | Vojnův Městec,křiž.0.8 | osm-name | direct: OpenStreetMap has "Vojnův Městec, křižovatka 0.8" |
 | Vojnův Městec,pošta | osm-name | direct: OpenStreetMap has "Vojnův Městec, pošta" |
 | Volevčice,rozc. | osm-village | osm-village: "Volevčice, obec" scored 0.82 against Volevčice |
@@ -1095,11 +1076,8 @@ A position the timetable says cannot be right: too far from every other stop of 
 | Černá,Milíkov | osm-name | direct: OpenStreetMap has "Černá" |
 | Červená Řečice,rozc.Mašovice | osm-name | direct: OpenStreetMap has "Červená Řečice" |
 | Červená Řečice,Milotičky | osm-name | direct: OpenStreetMap has "Červená Řečice" |
-| Červená Řečice,Popelištná,rozc. | osm-name | direct: OpenStreetMap has "Červená Řečice" |
 | Čikov | osm-name | direct: OpenStreetMap has "Čikov" |
 | Číhošť,rozc.1.8 | osm-name | direct: OpenStreetMap has "Číhošť, rozcestí 1.8" |
-| Čížov | osm-name | direct: OpenStreetMap has "Čížov" |
-| Čížov | osm-name | direct: OpenStreetMap has "Čížov" |
 | Řečice,Kamenná Trouba | place | village-centroid: centre of the 2 stops already placed in Řečice |
 | Ždánice | osm-similar | named-near: OpenStreetMap has "Ždánice", 1.5 km from Bystřice n.Pern.,Karasín on line 12350.zip |
 | Ždánice,rozc.Karasín 2.0 | place | village-centre: OpenStreetMap's node for Ždánice, no stop of this name found |
