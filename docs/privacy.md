@@ -1,6 +1,6 @@
 # Privacy policy · Zásady ochrany osobních údajů
 
-Effective 20 October 2026 · Účinné od 20. října 2026
+Effective 21 October 2026 · Účinné od 21. října 2026
 
 VDV Live shows the live positions of buses and trains in the Vysočina Region, and
 its published timetables. It is an unofficial app: it is not operated by the
@@ -21,23 +21,27 @@ ani žádný dopravce.
 
 ### What leaves your device
 
-Two public servers are asked for data, the same way a web browser would ask:
+Two public servers are asked for data, the same way a web browser would ask, and
+the base map is drawn by Apple's MapKit:
 
 | Server | What is requested | Why |
 |---|---|---|
 | `mapavdv.kr-vysocina.cz` | the current vehicle positions | the map |
 | `portal.cisjr.cz` | the timetable archive's index and individual lines, when you download timetables | stop times, and filling in lines the live feed has dropped |
+| Apple (MapKit) | the map tiles, and what MapKit needs to draw them | the base map |
 
 Those servers necessarily see your IP address, the time, and the standard HTTP
 request, as any website does. This app adds no identifiers to those requests and
-keeps no history of them.
+keeps no history of them. The base map is Apple Maps, so Apple sees its own
+requests under Apple's privacy policy; the app sends Apple nothing else.
 
 ### Your location
 
 The map can open on your position and follow it. That is optional and off unless
 you ask for it. The position is read on the device and used only to decide where
-the map points; it is never sent anywhere, never stored, and never written to a
-log.
+the map points. It is never sent anywhere and never written to a log, and it is
+not kept anywhere but on this device: the last position it used is remembered so
+that the map can open in the right place next time, and it goes when the app does.
 
 ### What is kept on your device
 
@@ -74,22 +78,27 @@ ondrej.linek@gmail.com
 ### Co opouští zařízení
 
 Aplikace si vyžádá data ze dvou veřejných serverů, stejně jako by to udělal
-webový prohlížeč:
+webový prohlížeč, a podkladovou mapu kreslí MapKit od Apple:
 
 | Server | Co se požaduje | Proč |
 |---|---|---|
 | `mapavdv.kr-vysocina.cz` | aktuální polohy vozidel | mapa |
 | `portal.cisjr.cz` | index archivu jízdních řádů a jednotlivé linky, pokud si jízdní řády stáhnete | časy zastávek a doplnění linek, které živý zdroj vynechal |
+| Apple (MapKit) | dlaždice mapy a to, co MapKit ke kreslení potřebuje | podkladová mapa |
 
 Tyto servery nutně vidí vaši IP adresu, čas a standardní HTTP požadavek, jako
 každý jiný web. Aplikace k požadavkům nepřidává žádné identifikátory a historii
-požadavků neuchovává.
+požadavků neuchovává. Podkladovou mapou jsou Apple Maps, takže Apple vidí své
+vlastní požadavky podle zásad ochrany osobních údajů Applu; nic dalšího mu
+aplikace neposílá.
 
 ### Vaše poloha
 
 Mapa se může otevřít na vaší poloze a sledovat ji. Je to volitelné a vypnuté,
-dokud o to nepožádáte. Poloha se čte v zařízení a slouží jen k určení středu mapy;
-nikam se neposílá, neukládá se a nezapisuje se do logu.
+dokud o to nepožádáte. Poloha se čte v zařízení a slouží jen k určení středu mapy.
+Nikam se neposílá a nezapisuje se do logu, a neukládá se nikde jinde než v tomto
+zařízení: poslední použitá poloha se pamatuje, aby se mapa příště otevřela na
+správném místě, a zmizí spolu s aplikací.
 
 ### Co zůstává v zařízení
 
