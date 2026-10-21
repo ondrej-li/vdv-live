@@ -33,10 +33,11 @@ struct MapHeaderBar: View {
                 // The stop board is the one thing here that is not about the traffic on
                 // screen, so it leads the row: a rider looks up a departure, not a bus.
                 iconButton(
-                    emoji: "\u{1F68F}",
                     label: String(localized: "Stop departure boards"),
                     action: onShowStopBoards
-                )
+                ) {
+                    StopBoardGlyph()
+                }
                 iconButton(
                     systemName: isAutoRefreshEnabled ? "pause.fill" : "play.fill",
                     label: isAutoRefreshEnabled
@@ -201,16 +202,15 @@ struct MapHeaderBar: View {
         }
     }
 
-    /// A symbol from outside SF Symbols - the bus stop pictogram, which says
-    /// "departures from here" in a way no system symbol does.
+    /// A symbol from outside SF Symbols: the bus stop sign. Drawn rather than typed, so
+    /// it is one colour like the rest of the row - the emoji version is a colour bitmap
+    /// that neither tints nor dims with its neighbours.
     private func iconButton(
-        emoji: String,
         label: String,
         action: @escaping () -> Void
     ) -> some View {
         iconButton(label: label, action: action) {
-            Text(verbatim: emoji)
-                .font(.system(size: 15))
+            StopBoardGlyph()
         }
     }
 
@@ -230,5 +230,26 @@ struct MapHeaderBar: View {
         .buttonStyle(.plain)
         .disabled(!isEnabled)
         .accessibilityLabel(label)
+    }
+}
+
+/// The bus stop sign, drawn to the size of the symbols beside it.
+///
+/// The emoji (`🚏`) is the neatest drawing of it, but it is a colour bitmap: it neither
+/// takes the row's tint nor dims when the button is disabled. Two strokes cost nothing
+/// and behave like a symbol.
+struct StopBoardGlyph: View {
+    /// Height of an SF Symbol at `.footnote.weight(.semibold)`, which is what the other
+    /// buttons in the row use.
+    private static let height: CGFloat = 13
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                .strokeBorder(lineWidth: 1.2)
+            Image(systemName: "bus.fill")
+                .font(.system(size: 6.5, weight: .bold))
+        }
+        .frame(width: Self.height, height: Self.height)
     }
 }
