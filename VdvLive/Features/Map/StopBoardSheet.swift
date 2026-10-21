@@ -55,15 +55,6 @@ struct StopBoardSheet: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            viewModel.toggleStarredStop(named: stop.name)
-                        } label: {
-                            Image(systemName: isStarred ? "star.fill" : "star")
-                        }
-                        .accessibilityLabel(isStarred ? Text("Remove from starred stops")
-                                                      : Text("Star this stop"))
-                    }
                     if hasFavouriteLines {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button {
@@ -79,7 +70,19 @@ struct StopBoardSheet: View {
                                                 : Text("Show only pinned lines"))
                         }
                     }
+                    // Right of the filter, left of Done: the stop's name, then what the
+                    // board shows, then the stop itself, then the way out.
                     ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            viewModel.toggleStarredStop(named: stop.name)
+                        } label: {
+                            Image(systemName: isStarred ? "star.fill" : "star")
+                        }
+                        .accessibilityLabel(isStarred ? Text("Remove from starred stops")
+                                                      : Text("Star this stop"))
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        // Plain text, like the rest of the app's Done buttons.
                         Button("Done") { dismiss() }
                     }
                 }
