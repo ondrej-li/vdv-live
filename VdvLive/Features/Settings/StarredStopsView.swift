@@ -14,8 +14,7 @@ struct StarredStopsView: View {
     private var matches: [String] {
         let query = search.trimmingCharacters(in: .whitespaces)
         guard !query.isEmpty else { return [] }
-        let table = StopPositions.bundled()
-        return table.allNames
+        return StopPositions.shipped.allNames
             .filter { $0.localizedCaseInsensitiveContains(query) && !viewModel.isStarred(stopNamed: $0) }
             .prefix(20)
             .map { $0 }

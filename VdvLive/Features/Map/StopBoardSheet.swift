@@ -175,11 +175,17 @@ struct StopBoardSheet: View {
         .padding(.vertical, 10)
         .opacity(isPast ? 0.5 : 1)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            "Line \(LineCode(raw: entry.lineNumber).number), "
-            + "scheduled \(entry.scheduled.text), "
-            + (entry.expected.map { "expected \($0.text)" } ?? "not departed yet")
-            + ", \(delayText(entry))"
+        .accessibilityLabel(spokenLabel(entry))
+    }
+
+    /// What VoiceOver reads for one row. Built from translated pieces rather than by
+    /// joining English ones, so a Czech board reads as Czech.
+    private func spokenLabel(_ entry: StopBoardEntry) -> String {
+        let line = LineCode(raw: entry.lineNumber).number
+        let expected = entry.expected.map { String(localized: "expected \($0.text)") }
+            ?? String(localized: "not departed yet")
+        return String(
+            localized: "Line \(line), scheduled \(entry.scheduled.text), \(expected), \(delayText(entry))"
         )
     }
 
@@ -193,7 +199,10 @@ struct StopBoardSheet: View {
     private func delayText(_ entry: StopBoardEntry) -> String {
         guard let delay = entry.delayMinutes else { return "—" }
         if delay == 0 { return String(localized: "on time") }
-        return delay > 0 ? "+\(delay) min" : "\(delay) min"
+        // The minus sign comes from the number, so an early bus reads `-3 min`.
+        return delay > 0
+            ? String(localized: "+\(delay) min")
+            : String(localized: "\(delay) min")
     }
 
     private func loadTimetables() async {

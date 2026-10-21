@@ -18,6 +18,7 @@ struct MapHeaderBar: View {
     /// state rather than the current one.
     let isOffline: Bool
     let onSelectFilter: (VehicleFilter) -> Void
+    let onShowStopBoards: () -> Void
     let onRefresh: () -> Void
     let onRecenter: () -> Void
     let onToggleAutoRefresh: () -> Void
@@ -29,6 +30,14 @@ struct MapHeaderBar: View {
             HStack(spacing: 10) {
                 title
                 Spacer(minLength: 8)
+                // The stop board is the one thing here that is not about the traffic on
+                // screen, so it leads the row: a rider looks up a departure, not a bus.
+                iconButton(
+                    label: String(localized: "Stop departure boards"),
+                    action: onShowStopBoards
+                ) {
+                    StopBoardGlyph()
+                }
                 iconButton(
                     systemName: isAutoRefreshEnabled ? "pause.fill" : "play.fill",
                     label: isAutoRefreshEnabled
@@ -187,9 +196,33 @@ struct MapHeaderBar: View {
         tint: Color? = nil,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
+        iconButton(label: label, isEnabled: isEnabled, tint: tint, action: action) {
             Image(systemName: systemName)
                 .font(.footnote.weight(.semibold))
+        }
+    }
+
+    /// A symbol from outside SF Symbols: the bus stop sign. Drawn rather than typed, so
+    /// it is one colour like the rest of the row - the emoji version is a colour bitmap
+    /// that neither tints nor dims with its neighbours.
+    private func iconButton(
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        iconButton(label: label, action: action) {
+            StopBoardGlyph()
+        }
+    }
+
+    private func iconButton<Glyph: View>(
+        label: String,
+        isEnabled: Bool = true,
+        tint: Color? = nil,
+        action: @escaping () -> Void,
+        @ViewBuilder glyph: () -> Glyph
+    ) -> some View {
+        Button(action: action) {
+            glyph()
                 .foregroundStyle(tint ?? Color.primary)
                 .frame(width: 28, height: 28)
                 .background(.quaternary, in: Circle())
@@ -197,5 +230,26 @@ struct MapHeaderBar: View {
         .buttonStyle(.plain)
         .disabled(!isEnabled)
         .accessibilityLabel(label)
+    }
+}
+
+/// The bus stop sign, drawn to the size of the symbols beside it.
+///
+/// The emoji (`🚏`) is the neatest drawing of it, but it is a colour bitmap: it neither
+/// takes the row's tint nor dims when the button is disabled. Two strokes cost nothing
+/// and behave like a symbol.
+struct StopBoardGlyph: View {
+    /// Height of an SF Symbol at `.footnote.weight(.semibold)`, which is what the other
+    /// buttons in the row use.
+    private static let height: CGFloat = 13
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                .strokeBorder(lineWidth: 1.2)
+            Image(systemName: "bus.fill")
+                .font(.system(size: 6.5, weight: .bold))
+        }
+        .frame(width: Self.height, height: Self.height)
     }
 }

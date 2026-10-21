@@ -1705,6 +1705,254 @@
           }
         }
       }
+    },
+    "Departures and arrivals" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjezdy a příjezdy"
+          }
+        }
+      }
+    },
+    "Timetables not downloaded" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řády nejsou staženy"
+          }
+        }
+      }
+    },
+    "The board is read from the line timetables, which have to be downloaded once." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabule se sestavuje z jízdních řádů linek, ty je potřeba jednou stáhnout."
+          }
+        }
+      }
+    },
+    "Nothing due" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nic nejede"
+          }
+        }
+      }
+    },
+    "No service calls here between an hour ago and three hours from now." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V této zastávce nezastavuje žádný spoj od hodiny zpět do tří hodin dopředu."
+          }
+        }
+      }
+    },
+    "Line" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka"
+          }
+        }
+      }
+    },
+    "Scheduled" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podle řádu"
+          }
+        }
+      }
+    },
+    "Expected" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Očekáváno"
+          }
+        }
+      }
+    },
+    "Delay" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zpoždění"
+          }
+        }
+      }
+    },
+    "Reading %lld lines…" : {
+      "localizations" : {
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Načítám %lld linku…"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Načítám %lld linky…"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Načítám %lld linek…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Remove from starred stops" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odebrat z oblíbených zastávek"
+          }
+        }
+      }
+    },
+    "Star this stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat zastávku k oblíbeným"
+          }
+        }
+      }
+    },
+    "Starred stops" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené zastávky"
+          }
+        }
+      }
+    },
+    "No starred stops yet." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatím žádné oblíbené zastávky."
+          }
+        }
+      }
+    },
+    "Tap a stop for its departures. Swipe to remove." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klepnutím na zastávku zobrazíte odjezdy. Přejetím doleva ji odeberete."
+          }
+        }
+      }
+    },
+    "Add a stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat zastávku"
+          }
+        }
+      }
+    },
+    "Search by name" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hledat podle názvu"
+          }
+        }
+      }
+    },
+    "Stops can also be starred from the board, after tapping their flag on the map." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávku můžete přidat k oblíbeným i z tabule po klepnutí na její vlaječku v mapě."
+          }
+        }
+      }
+    },
+    "Departure boards for the stops you watch" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjezdové tabule vašich zastávek"
+          }
+        }
+      }
+    },
+    "Stop departure boards" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjezdové tabule zastávek"
+          }
+        }
+      }
+    },
+    "expected %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "očekáváno %@"
+          }
+        }
+      }
+    },
+    "not departed yet" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ještě neodjelo"
+          }
+        }
+      }
+    },
+    "Line %@, scheduled %@, %@, %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka %@, podle řádu %@, %@, %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -9,6 +9,8 @@ struct VehicleMapView: View {
     @State private var isShowingSettings = false
     /// The stop whose board is open, if any.
     @State private var boardStop: StopPosition?
+    /// Whether the stop boards screen is open, which the top bar can reach with stops off.
+    @State private var isShowingStopBoards = false
     /// Size of the map, needed to turn a zoom level into a distance.
     @State private var mapSize: CGSize = .zero
     /// Where the map is pointing. Kept from the last camera change, because a
@@ -51,6 +53,9 @@ struct VehicleMapView: View {
         .sheet(isPresented: $isShowingSettings) { settingsSheet }
         .sheet(item: $boardStop) { stop in
             StopBoardSheet(stop: stop, viewModel: viewModel)
+        }
+        .sheet(isPresented: $isShowingStopBoards) {
+            StopBoardsSheet(viewModel: viewModel)
         }
         // The appearance is a property of the window rather than of a view, so
         // handing it over here is what makes a change visible at once and keeps
@@ -241,6 +246,7 @@ struct VehicleMapView: View {
                 isMapViewSaved: viewModel.savedMapView != nil,
                 isOffline: viewModel.isOffline,
                 onSelectFilter: { viewModel.select(filter: $0) },
+                onShowStopBoards: { isShowingStopBoards = true },
                 onRefresh: { Task { await viewModel.load() } },
                 onRecenter: recenter,
                 onToggleAutoRefresh: {

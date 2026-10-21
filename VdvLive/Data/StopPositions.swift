@@ -56,6 +56,10 @@ struct StopPositions: Sendable {
 
     static let empty = StopPositions(positions: [:], lines: [:])
 
+    /// The shipped table, read once. It is half a megabyte of JSON and the stop search
+    /// asks for its names on every keystroke.
+    static let shipped = bundled()
+
     init(positions: [String: StopPosition], lines: [String: [String]] = [:]) {
         self.positions = positions
         self.lines = lines
