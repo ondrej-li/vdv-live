@@ -41,6 +41,11 @@ enum StopBoard {
     static let lookBackMinutes = 60
     /// Minutes after now the board reaches.
     static let lookAheadMinutes = 180
+    /// How long after a run's last call a vehicle still counts as being on that run.
+    ///
+    /// Long enough to keep a badly late service on the board, short enough that the line's
+    /// next service - which has not left the depot - does not inherit its delay.
+    static let delayTailMinutes = 120
 
     /// The rows of the board at a stop, earliest first.
     ///
@@ -57,7 +62,7 @@ enum StopBoard {
         delays: [String: Int] = [:],
         now: TimeOfDay
     ) -> [StopBoardEntry] {
-        var entries: [StopBoardEntry] = []
+        var rows: [Row] = []
 
         for timetable in timetables {
             for run in timetable.runs {
@@ -67,33 +72,96 @@ enum StopBoard {
                 guard let call = run.call(matchingStopName: stopName),
                       let scheduled = call.time else { continue }
 
-                // A run's own delay when the feed names the run, and the line's delay
-                // otherwise: the positions feed reports vehicles by line, not by run.
-                let late = delays[delayKey(line: timetable.lineNumber, service: run.serviceNumber)]
-                    ?? delays[timetable.lineNumber]
-                let expected = late.flatMap { call.time(lateByMinutes: $0) }
-                let readAt = (expected ?? scheduled).minutes
-
-                guard readAt >= now.minutes - lookBackMinutes,
-                      readAt <= now.minutes + lookAheadMinutes else { continue }
-
-                entries.append(
-                    StopBoardEntry(
+                rows.append(
+                    Row(
                         lineNumber: timetable.lineNumber,
                         serviceNumber: run.serviceNumber,
                         scheduled: scheduled,
-                        expected: expected
+                        call: call,
+                        isUnderWay: Self.isUnderWay(run, at: now),
+                        // Only a delay the feed reports for this very run is this row's
+                        // own business.
+                        delay: delays[delayKey(line: timetable.lineNumber,
+                                               service: run.serviceNumber)]
                     )
                 )
             }
         }
 
-        return entries.sorted { first, second in
-            let firstAt = (first.expected ?? first.scheduled).minutes
-            let secondAt = (second.expected ?? second.scheduled).minutes
-            if firstAt != secondAt { return firstAt < secondAt }
-            if first.lineNumber != second.lineNumber { return first.lineNumber < second.lineNumber }
-            return first.serviceNumber < second.serviceNumber
+        Self.lendLineDelays(to: &rows, delays: delays, now: now)
+
+        return rows
+            .filter {
+                $0.readAt >= now.minutes - lookBackMinutes
+                    && $0.readAt <= now.minutes + lookAheadMinutes
+            }
+            .map(\.entry)
+            .sorted { first, second in
+                let firstAt = (first.expected ?? first.scheduled).minutes
+                let secondAt = (second.expected ?? second.scheduled).minutes
+                if firstAt != secondAt { return firstAt < secondAt }
+                if first.lineNumber != second.lineNumber { return first.lineNumber < second.lineNumber }
+                return first.serviceNumber < second.serviceNumber
+            }
+    }
+
+    /// A line's delay, given to the one row the vehicle reporting it can be on.
+    ///
+    /// The positions feed names the line but not the run, so a delay is the line's rather
+    /// than a run's. Lending it to every service of the line put delays on departures that
+    /// had not left yet - the bug this fixes - so it goes to the single nearest row of a
+    /// run that is actually under way, and to nothing else.
+    private static func lendLineDelays(to rows: inout [Row],
+                                       delays: [String: Int],
+                                       now: TimeOfDay) {
+        var owner: [String: Int] = [:]
+
+        for index in rows.indices {
+            let row = rows[index]
+            guard row.delay == nil, row.isUnderWay, delays[row.lineNumber] != nil else { continue }
+            guard let current = owner[row.lineNumber] else {
+                owner[row.lineNumber] = index
+                continue
+            }
+            if Self.distance(rows[current].scheduled, now) > Self.distance(row.scheduled, now) {
+                owner[row.lineNumber] = index
+            }
+        }
+
+        for (line, index) in owner {
+            rows[index].delay = delays[line]
+        }
+    }
+
+    /// Whether a run is on the road, near enough for a vehicle's delay to be its own.
+    private static func isUnderWay(_ run: ScheduledRun, at now: TimeOfDay) -> Bool {
+        let times = run.calls.compactMap(\.time).map(\.minutes)
+        guard let first = times.min(), let last = times.max() else { return false }
+        return now.minutes >= first && now.minutes <= last + delayTailMinutes
+    }
+
+    private static func distance(_ time: TimeOfDay, _ now: TimeOfDay) -> Int {
+        abs(time.minutes - now.minutes)
+    }
+
+    /// A row before it becomes a board entry: the call is kept so that the delay, once it
+    /// is known, can shift the time the way the timetable shifts it.
+    private struct Row {
+        let lineNumber: String
+        let serviceNumber: String
+        let scheduled: TimeOfDay
+        let call: ScheduledCall
+        let isUnderWay: Bool
+        var delay: Int?
+
+        var expected: TimeOfDay? { delay.flatMap { call.time(lateByMinutes: $0) } }
+        var readAt: Int { (expected ?? scheduled).minutes }
+
+        var entry: StopBoardEntry {
+            StopBoardEntry(lineNumber: lineNumber,
+                           serviceNumber: serviceNumber,
+                           scheduled: scheduled,
+                           expected: expected)
         }
     }
 

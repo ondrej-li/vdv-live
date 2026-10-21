@@ -21,13 +21,19 @@ struct StopBoardSheet: View {
     @State private var needsDownload = false
     @State private var now = TimeOfDay(Date())
     @State private var hasScrolled = false
+    /// Whether the board shows only the lines the user pinned.
+    @State private var showsOnlyFavourites = false
 
     private var entries: [StopBoardEntry] {
-        StopBoard.entries(at: stop.name,
-                          in: timetables,
-                          delays: viewModel.liveDelays,
-                          now: now)
+        let all = StopBoard.entries(at: stop.name,
+                                    in: timetables,
+                                    delays: viewModel.liveDelays,
+                                    now: now)
+        guard showsOnlyFavourites else { return all }
+        return all.filter { viewModel.favouriteLines.contains($0.lineNumber) }
     }
+
+    private var hasFavouriteLines: Bool { !viewModel.favouriteLines.isEmpty }
 
     private var isStarred: Bool { viewModel.isStarred(stopNamed: stop.name) }
 
@@ -49,7 +55,7 @@ struct StopBoardSheet: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: .topBarLeading) {
                         Button {
                             viewModel.toggleStarredStop(named: stop.name)
                         } label: {
@@ -57,6 +63,21 @@ struct StopBoardSheet: View {
                         }
                         .accessibilityLabel(isStarred ? Text("Remove from starred stops")
                                                       : Text("Star this stop"))
+                    }
+                    if hasFavouriteLines {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showsOnlyFavourites.toggle()
+                                hasScrolled = false
+                            } label: {
+                                Image(systemName: showsOnlyFavourites
+                                      ? "line.3.horizontal.decrease.circle.fill"
+                                      : "line.3.horizontal.decrease.circle")
+                            }
+                            .accessibilityLabel(showsOnlyFavourites
+                                                ? Text("Show all lines")
+                                                : Text("Show only pinned lines"))
+                        }
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Done") { dismiss() }
@@ -93,9 +114,15 @@ struct StopBoardSheet: View {
             ProgressView("Reading \(viewModel.lines(atStopNamed: stop.name).count) lines…")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if entries.isEmpty {
-            ContentUnavailableView("Nothing due",
-                                   systemImage: "clock",
-                                   description: Text("No service calls here between an hour ago and three hours from now."))
+            if showsOnlyFavourites {
+                ContentUnavailableView("No pinned lines here",
+                                       systemImage: "star",
+                                       description: Text("None of the lines that call at this stop is one you pinned."))
+            } else {
+                ContentUnavailableView("Nothing due",
+                                       systemImage: "clock",
+                                       description: Text("No service calls here between an hour ago and three hours from now."))
+            }
         } else {
             board
         }
