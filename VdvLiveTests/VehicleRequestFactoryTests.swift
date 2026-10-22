@@ -12,17 +12,27 @@ final class VehicleRequestFactoryTests: XCTestCase {
         XCTAssertEqual(request.httpMethod, "GET")
     }
 
-    func testSendsTheHeadersTheFeedWasVerifiedWith() {
+    func testSendsTheHeadersTheFeedAnswersTo() {
         let request = VehicleRequestFactory.makeRequest()
 
         XCTAssertEqual(request.value(forHTTPHeaderField: "Accept"), "*/*")
         XCTAssertEqual(request.value(forHTTPHeaderField: "X-Requested-With"), "XMLHttpRequest")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Referer"), "https://mapavdv.kr-vysocina.cz/")
-        XCTAssertEqual(request.value(forHTTPHeaderField: "Accept-Language"), "en-US,en;q=0.7")
+        XCTAssertNil(request.value(forHTTPHeaderField: "Accept-Language"))
         XCTAssertEqual(
             request.value(forHTTPHeaderField: "User-Agent"),
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"
+            "VdvLive/1.0 (+https://github.com/ondrej-li/vdv-live)"
         )
+    }
+
+    /// The feed has to be able to tell the app from the site's own front end, which is
+    /// the whole point of the header: it says what this is, and where to ask about it.
+    func testNamesItselfAndWhereToAsk() {
+        let agent = VehicleRequestConfiguration.live.userAgent
+
+        XCTAssertTrue(agent.hasPrefix("VdvLive/"), agent)
+        XCTAssertTrue(agent.contains("(+https://"), agent)
+        XCTAssertFalse(agent.lowercased().contains("mozilla"), agent)
     }
 
     func testLeavesOutTheSessionCookieUntilOneIsConfigured() {

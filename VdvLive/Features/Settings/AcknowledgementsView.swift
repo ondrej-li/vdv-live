@@ -27,18 +27,22 @@ struct AcknowledgementsView: View {
 
             Section {
                 Text("Positions come from the regional map of the Vysočina Region at mapavdv.kr-vysocina.cz. This app is not affiliated with the region or with the transport operators.")
+                sourceLink("mapavdv.kr-vysocina.cz", "https://mapavdv.kr-vysocina.cz/")
             } header: {
                 Text("Live vehicle positions")
             }
 
             Section {
                 Text("Timetables come from “Jízdní řády veřejné linkové dopravy”, published by the Ministry of Transport of the Czech Republic (IČO 66003008) on the CIS JŘ portal at portal.cisjr.cz, under the Creative Commons Attribution 4.0 licence (creativecommons.org/licenses/by/4.0/) and the sui generis database right.")
+                sourceLink("portal.cisjr.cz", "https://portal.cisjr.cz/")
+                sourceLink("Creative Commons Attribution 4.0", "https://creativecommons.org/licenses/by/4.0/")
             } header: {
                 Text("Timetables")
             }
 
             Section {
                 Text("Stop positions are matched from OpenStreetMap by stop name, and the app icon is drawn from its roads and rivers. The data is © OpenStreetMap contributors, published under the Open Database Licence 1.0 (openstreetmap.org/copyright).")
+                sourceLink("openstreetmap.org/copyright", "https://www.openstreetmap.org/copyright")
             } header: {
                 Text("OpenStreetMap")
             }
@@ -51,5 +55,16 @@ struct AcknowledgementsView: View {
         }
         .navigationTitle("Acknowledgements")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// One source or licence, as a link the reader can follow - the attribution the
+    /// licences ask for is only attribution if it is reachable, not text naming a host.
+    ///
+    /// The label is the address itself, so it is written verbatim and needs no
+    /// translation.
+    private func sourceLink(_ address: String, _ destination: String) -> some View {
+        Link(destination: URL(string: destination)!) {
+            Text(verbatim: address)
+        }
     }
 }

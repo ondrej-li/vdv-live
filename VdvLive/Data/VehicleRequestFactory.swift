@@ -14,10 +14,14 @@ struct VehicleRequestConfiguration: Sendable, Equatable {
     /// paste the value of the `sznlbr` cookie from a browser session if that
     /// ever happens.
     var sessionCookie: String?
-    /// Sent as `User-Agent`. The feed is behind a web front end, so the app
-    /// identifies itself as the browser the endpoint was verified with.
+    /// Sent as `User-Agent`. The app names itself rather than dressing as a browser:
+    /// the endpoint answers `VdvLive/1.0` with the same payload, and a request the
+    /// operator can recognise is the only kind that can be permitted.
     var userAgent: String
     var referer: String?
+    /// Sent as `Accept-Language` when set. The live feed ignores it - the same bytes
+    /// come back for `en` and for `cs` - so nothing is sent rather than a browser's
+    /// language list.
     var acceptLanguage: String?
     var timeout: TimeInterval
 
@@ -25,9 +29,9 @@ struct VehicleRequestConfiguration: Sendable, Equatable {
         baseURL: URL(string: "https://mapavdv.kr-vysocina.cz")!,
         endpointPath: "Ajax/GetPoints",
         sessionCookie: nil,
-        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+        userAgent: "VdvLive/1.0 (+https://github.com/ondrej-li/vdv-live)",
         referer: "https://mapavdv.kr-vysocina.cz/",
-        acceptLanguage: "en-US,en;q=0.7",
+        acceptLanguage: nil,
         timeout: 20
     )
 }
