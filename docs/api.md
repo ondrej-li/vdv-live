@@ -23,17 +23,25 @@ It answers with a JSON array, one element per vehicle currently being tracked:
 ]
 ```
 
-The request the app sends is deliberately close to what the site's own front end
-sends:
+The request the app sends names the app, not a browser:
 
 ```sh
 curl 'https://mapavdv.kr-vysocina.cz/Ajax/GetPoints' \
   -H 'Accept: */*' \
-  -H 'Accept-Language: en-US,en;q=0.7' \
   -H 'Referer: https://mapavdv.kr-vysocina.cz/' \
   -H 'X-Requested-With: XMLHttpRequest' \
-  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ...'
+  -H 'User-Agent: VdvLive/1.0 (+https://github.com/ondrej-li/vdv-live)'
 ```
+
+The `Referer` and `X-Requested-With` are kept because the endpoints are the site's
+own AJAX endpoints and the browser front end sends them; neither hides what the
+client is. An honest `User-Agent` was verified on 22 October 2026 against all
+three endpoints (`GetPoints`, `OpenInfoWindow`, `GetTimetable`): each answers
+`200` with the same payload as the disguised request did, so the disguise bought
+nothing and is gone. An `Accept-Language` is not sent: the feed returns the same
+bytes for `en` and for `cs`, so there is no reason to claim a browser's language
+list. This is what [issue #46](https://github.com/ondrej-li/vdv-live/issues/46)
+asked for.
 
 `Sec-Fetch-*`, `sec-ch-ua*`, `Connection` and `Sec-GPC` from a browser request
 are not sent: `URLSession` manages connection headers itself, and the endpoint

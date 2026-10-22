@@ -389,9 +389,10 @@ Three things specific to this app are worth knowing before review:
   required and review will look at the map on a tablet. Drop to `"1"` if that is
   not wanted.
 - **The data is third-party.** The app calls the region's own map endpoint and the
-  Ministry's timetable archive; it is not affiliated with either. The review notes
-  should say so, and the Acknowledgements screen is what answers the content-rights
-  question.
+  Ministry's timetable archive; it is not affiliated with either, and it names itself
+  as `VdvLive/1.0` in the `User-Agent` rather than dressing as a browser. The review
+  notes should say so, and the Acknowledgements screen - which links each source and
+  its licence - is what answers the content-rights question.
 - **The watch app is reviewed with the phone app** and has to stand on its own —
   it fetches its vehicles itself, so it does.
 
