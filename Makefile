@@ -93,8 +93,13 @@ EXPORT_OPTIONS := $(DERIVED_DATA)/ExportOptions.plist
 # What App Store Connect calls the version, and the build number it compares every
 # upload against. The build is stamped from the clock unless it is given, so an
 # upload can never be refused for repeating the one before it.
+#
+# Expanded once, not at every use: `?=` would re-read the clock each time it is
+# mentioned, so the number printed at the end of an upload could differ from the one
+# inside the archive - and the printed one is what a person carries to App Store
+# Connect.
 VERSION ?= 1.0
-BUILD ?= $(shell date +%y%m%d%H%M)
+BUILD := $(if $(BUILD),$(BUILD),$(shell date +%y%m%d%H%M))
 
 # Where 'make shots' puts the App Store screenshots, and the devices it takes them
 # on: the two sizes Apple asks for, plus the watch.
