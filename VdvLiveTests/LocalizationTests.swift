@@ -55,6 +55,22 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Stop opening the map here"), "Neotvírat mapu tady")
     }
 
+    /// The bar and the strip are the only way into half of the app now, so their labels
+    /// have to be translated like everything else.
+    func testTranslatesTheChromeIntoCzech() throws {
+        XCTAssertEqual(try czechString("Lines"), "Linky")
+        XCTAssertEqual(try czechString("Stations"), "Zastávky")
+        XCTAssertEqual(try czechString("Reload"), "Obnovit")
+        XCTAssertEqual(try czechString("Search"), "Hledat")
+        XCTAssertEqual(try czechString("Show the whole region"), "Zobrazit celý kraj")
+        XCTAssertEqual(try czechString("Line number or stop name"), "Číslo linky nebo název zastávky")
+        XCTAssertEqual(
+            try czechString("Type a line number, such as 420, or the name of a stop."),
+            "Zadejte číslo linky, například 420, nebo název zastávky."
+        )
+        XCTAssertEqual(try czechString("Nothing matches “%@”."), "Nic neodpovídá „%@“.")
+    }
+
     func testTranslatesTheDetailCardIntoCzech() throws {
         XCTAssertEqual(try czechString("Service"), "Spoj")
         XCTAssertEqual(try czechString("Last stop"), "Poslední zastávka")
@@ -92,7 +108,8 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(try czechString("Show my position on the map"), "Zobrazit moji polohu na mapě")
         XCTAssertEqual(try czechString("Follow my position"), "Sledovat moji polohu")
         XCTAssertEqual(try czechString("Stop following my position"), "Přestat sledovat moji polohu")
-        XCTAssertEqual(try czechString("Clear saved view"), "Zrušit uložený výřez")
+        XCTAssertEqual(try czechString("Saved view"), "Uložený výřez")
+        XCTAssertEqual(try czechString("Open the map here from now on"), "Otevírat mapu vždy tady")
         XCTAssertEqual(try czechString("Vehicles"), "Vozidla")
         XCTAssertEqual(try czechString("Group buses within"), "Seskupovat autobusy blíž než")
         XCTAssertEqual(try czechString("Off"), "Vypnuto")
@@ -166,8 +183,8 @@ final class LocalizationTests: XCTestCase {
             "Z vašich oblíbených linek momentálně nic nejede."
         )
         XCTAssertEqual(
-            try czechString("No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star."),
-            "Zatím žádné oblíbené linky. Přidejte číslo linky v Nastavení, nebo klepněte na vozidlo na mapě a použijte jeho hvězdičku."
+            try czechString("No pinned lines yet. Pin a line number in the Lines screen, or tap a vehicle on the map and use its star."),
+            "Zatím žádné oblíbené linky. Přidejte číslo linky na obrazovce Linky nebo klepněte na vozidlo v mapě a použijte jeho hvězdičku."
         )
         XCTAssertEqual(
             try czechString("There is no internet connection."),

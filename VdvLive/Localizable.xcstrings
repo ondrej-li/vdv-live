@@ -657,7 +657,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Linek"
+            "value" : "Linky"
           }
         }
       }
@@ -1990,6 +1990,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Touto zastávkou neprojíždí žádná z vašich oblíbených linek."
+          }
+        }
+      }
+    },
+    "Search" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hledat"
+          }
+        }
+      }
+    },
+    "Stations" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávky"
+          }
+        }
+      }
+    },
+    "Reload" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obnovit"
+          }
+        }
+      }
+    },
+    "Show the whole region" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazit celý kraj"
+          }
+        }
+      }
+    },
+    "Line number or stop name" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Číslo linky nebo název zastávky"
+          }
+        }
+      }
+    },
+    "Type a line number, such as 420, or the name of a stop." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadejte číslo linky, například 420, nebo název zastávky."
+          }
+        }
+      }
+    },
+    "Nothing matches “%@”." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nic neodpovídá „%@“."
+          }
+        }
+      }
+    },
+    "Saved view" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uložený výřez"
+          }
+        }
+      }
+    },
+    "Remembers the part of the map and the zoom you are looking at now, and opens there next time. Turning it off forgets it." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zapamatuje si část mapy a přiblížení, které právě vidíte, a příště se otevře tam. Vypnutím se zapomenou."
+          }
+        }
+      }
+    },
+    "The position is read on the device and never sent anywhere. The blue dot is the system's own, and following keeps the map centred on it while you move." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poloha se čte v zařízení a nikam se neposílá. Modrý bod je systémový a sledování drží mapu vycentrovanou na něm, když se pohybujete."
+          }
+        }
+      }
+    },
+    "No pinned lines yet. Pin a line number in the Lines screen, or tap a vehicle on the map and use its star." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatím žádné oblíbené linky. Přidejte číslo linky na obrazovce Linky nebo klepněte na vozidlo v mapě a použijte jeho hvězdičku."
+          }
+        }
+      }
+    },
+    "Lines in the archive" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linek v archivu"
           }
         }
       }

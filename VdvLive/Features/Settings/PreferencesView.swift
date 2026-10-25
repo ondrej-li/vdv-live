@@ -13,7 +13,8 @@ struct PreferencesView: View {
     let onSetFollowsCurrentLocation: (Bool) -> Void
     let onSetStartsAtCurrentLocation: (Bool) -> Void
     let onSetShowsStops: (Bool) -> Void
-    let onClearSavedMapView: () -> Void
+    /// Saves the viewport on screen as the one to open at, or forgets it.
+    let onSetSavedMapView: (Bool) -> Void
 
     var body: some View {
         Form {
@@ -87,14 +88,18 @@ struct PreferencesView: View {
                 Toggle("Show my position on the map", isOn: showsCurrentLocationBinding)
                 Toggle("Follow my position", isOn: followsCurrentLocationBinding)
                 Toggle("Open at my location", isOn: startsAtCurrentLocationBinding)
-
-                if settings.savedMapView != nil {
-                    Button("Clear saved view", role: .destructive, action: onClearSavedMapView)
-                }
             } header: {
                 Text("My location")
             } footer: {
-                Text("The position is read on the device and never sent anywhere. The blue dot is the system's own; following keeps the map centred on it while you move, and the bookmark button remembers the view you are looking at instead.")
+                Text("The position is read on the device and never sent anywhere. The blue dot is the system's own, and following keeps the map centred on it while you move.")
+            }
+
+            Section {
+                Toggle("Open the map here from now on", isOn: savedMapViewBinding)
+            } header: {
+                Text("Saved view")
+            } footer: {
+                Text("Remembers the part of the map and the zoom you are looking at now, and opens there next time. Turning it off forgets it.")
             }
         }
         .navigationTitle("Preferences")
@@ -151,6 +156,10 @@ struct PreferencesView: View {
 
     private var showsStopsBinding: Binding<Bool> {
         Binding(get: { settings.showsStops }, set: onSetShowsStops)
+    }
+
+    private var savedMapViewBinding: Binding<Bool> {
+        Binding(get: { settings.savedMapView != nil }, set: onSetSavedMapView)
     }
 
     /// "30 s" for the short intervals, "2 min" for the long ones.

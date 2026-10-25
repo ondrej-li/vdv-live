@@ -39,8 +39,8 @@ the next release of the app.
 ### The map goes grey
 
 Grey markers mean the app has not heard from those vehicles since it last
-refreshed — usually a lost connection. The header says `Offline · last 12:34` when
-the feed cannot be reached. A position from an hour ago is not the map, so it is
+refreshed — usually a lost connection. The status line at the top says
+`Offline · last 12:34` when the feed cannot be reached. A position from an hour ago is not the map, so it is
 drawn grey rather than passed off as current.
 
 ### Reporting a bug

@@ -9,13 +9,20 @@ struct VehicleMapView: View {
     @State private var isShowingSettings = false
     /// The stop whose board is open, if any.
     @State private var boardStop: StopPosition?
-    /// Whether the stop boards screen is open, which the top bar can reach with stops off.
-    @State private var isShowingStopBoards = false
+    /// Whether the pinned lines sheet is open, which the bar reaches.
+    @State private var isShowingLines = false
+    /// Whether the stations sheet is open, which the bar reaches.
+    @State private var isShowingStations = false
+    /// Whether the ad hoc search is open, which the bar reaches.
+    @State private var isShowingSearch = false
     /// Size of the map, needed to turn a zoom level into a distance.
     @State private var mapSize: CGSize = .zero
     /// Where the map is pointing. Kept from the last camera change, because a
     /// region cannot describe a direction and the reset has to.
     @State private var lastCamera: MapCamera?
+    /// How far the map is turned away from north, which decides whether the compass
+    /// is on screen at all.
+    @State private var cameraHeading: CLLocationDirection = 0
 
     init(
         fetcher: VehicleFetching = AppDependencies.live.vehicleFetcher,
@@ -54,8 +61,17 @@ struct VehicleMapView: View {
         .sheet(item: $boardStop) { stop in
             StopBoardSheet(stop: stop, viewModel: viewModel)
         }
-        .sheet(isPresented: $isShowingStopBoards) {
+        .sheet(isPresented: $isShowingLines) { linesSheet }
+        .sheet(isPresented: $isShowingStations) {
             StopBoardsSheet(viewModel: viewModel)
+        }
+        .sheet(isPresented: $isShowingSearch) {
+            // The sheet is asked to close before the map flies: a camera move behind an
+            // open sheet would be invisible until it was dismissed.
+            LineSearchView(viewModel: viewModel) { line in
+                isShowingSearch = false
+                focus(onLine: line)
+            }
         }
         // The appearance is a property of the window rather than of a view, so
         // handing it over here is what makes a change visible at once and keeps
@@ -181,12 +197,10 @@ struct VehicleMapView: View {
             }
         }
         .mapStyle(.standard(elevation: .flat, pointsOfInterest: .excludingAll))
-        .mapControls {
-            MapCompass()
-        }
         .onMapCameraChange(frequency: .onEnd) { context in
             viewModel.updateVisibleRegion(context.region)
             lastCamera = context.camera
+            cameraHeading = context.camera.heading
             // A pan is the user taking over. Following stops rather than pulling
             // the map back to the position under their finger.
             if camera.positionedByUser {
@@ -234,61 +248,67 @@ struct VehicleMapView: View {
     }
 
     private var overlays: some View {
-        VStack(spacing: 10) {
-            MapHeaderBar(
+        VStack(spacing: 8) {
+            MapStatusStrip(
                 vehicleCount: viewModel.vehicleCount,
                 lastUpdatedAt: viewModel.lastUpdatedAt,
                 isRefreshing: viewModel.isRefreshing,
+                isOffline: viewModel.isOffline,
+                refreshInterval: viewModel.isAutoRefreshEnabled
+                    ? viewModel.autoRefreshInterval
+                    : nil,
                 filters: viewModel.availableFilters,
                 selectedFilter: viewModel.filter,
-                isAutoRefreshEnabled: viewModel.isAutoRefreshEnabled,
-                refreshInterval: viewModel.isAutoRefreshEnabled ? viewModel.autoRefreshInterval : nil,
-                isMapViewSaved: viewModel.savedMapView != nil,
-                isOffline: viewModel.isOffline,
+                scale: mapScale,
+                isFollowingPosition: viewModel.followsCurrentLocation,
+                isTurnedFromNorth: isTurnedFromNorth,
                 onSelectFilter: { viewModel.select(filter: $0) },
-                onShowStopBoards: { isShowingStopBoards = true },
-                onRefresh: { Task { await viewModel.load() } },
-                onRecenter: recenter,
-                onToggleAutoRefresh: {
-                    viewModel.setAutoRefresh(enabled: !viewModel.isAutoRefreshEnabled)
+                onShowWholeRegion: recenter,
+                onToggleFollowPosition: {
+                    viewModel.setFollowsCurrentLocation(!viewModel.followsCurrentLocation)
                 },
-                onToggleSavedMapView: { viewModel.toggleSavedMapView() },
-                onShowSettings: { isShowingSettings = true }
+                onPointNorthUp: pointNorthUp
             )
 
-            if viewModel.isOffline {
-                // Not being able to reach the feed is a state rather than a
-                // mistake: say what is on screen, how old it is, and offer the
-                // retry.
-                MapStatusBanner(
-                    message: offlineMessage,
-                    onAction: { Task { await viewModel.load() } }
-                )
-            } else if let errorMessage = viewModel.errorMessage {
-                MapStatusBanner(
-                    message: errorMessage,
-                    onAction: { Task { await viewModel.load() } }
-                )
-            } else if viewModel.filter == .favourites, viewModel.favouriteLines.isEmpty {
-                MapStatusBanner(
-                    message: String(localized: "No pinned lines yet. Pin a line number in Settings, or tap a vehicle on the map and use its star."),
-                    style: .information
-                )
-            } else if viewModel.hasLoadedOnce,
-                      viewModel.visibleVehicleCount == 0,
-                      viewModel.showsOnlyPinnedLines {
-                // Nothing in view while only pinned lines are shown: what is
-                // hiding the map is the filter rather than the viewport, so the
-                // hint says which, and how much is on the map at all.
-                MapStatusBanner(message: pinnedEmptyStateMessage, style: .information)
-            } else if viewModel.hasLoadedOnce, viewModel.visibleVehicleCount == 0 {
-                MapStatusBanner(message: emptyStateMessage, style: .information)
+            Group {
+                if viewModel.isOffline {
+                    // Not being able to reach the feed is a state rather than a
+                    // mistake: say what is on screen, how old it is, and offer the
+                    // retry.
+                    MapStatusBanner(
+                        message: offlineMessage,
+                        onAction: { Task { await viewModel.load() } }
+                    )
+                } else if let errorMessage = viewModel.errorMessage {
+                    MapStatusBanner(
+                        message: errorMessage,
+                        onAction: { Task { await viewModel.load() } }
+                    )
+                } else if viewModel.filter == .favourites, viewModel.favouriteLines.isEmpty {
+                    MapStatusBanner(
+                        message: String(localized: "No pinned lines yet. Pin a line number in the Lines screen, or tap a vehicle on the map and use its star."),
+                        style: .information
+                    )
+                } else if viewModel.hasLoadedOnce,
+                          viewModel.visibleVehicleCount == 0,
+                          viewModel.showsOnlyPinnedLines {
+                    // Nothing in view while only pinned lines are shown: what is
+                    // hiding the map is the filter rather than the viewport, so the
+                    // hint says which, and how much is on the map at all.
+                    MapStatusBanner(message: pinnedEmptyStateMessage, style: .information)
+                } else if viewModel.hasLoadedOnce, viewModel.visibleVehicleCount == 0 {
+                    MapStatusBanner(message: emptyStateMessage, style: .information)
+                }
             }
+            .padding(.horizontal, 16)
 
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+    }
+
+    /// Whether the map is turned away from north, which is when the compass is drawn.
+    private var isTurnedFromNorth: Bool {
+        MapHeading.isTurnedAwayFromNorth(cameraHeading)
     }
 
     /// Wording for the "nothing on screen" hint while the pinned filter is on.
@@ -321,7 +341,9 @@ struct VehicleMapView: View {
             onSetFollowsCurrentLocation: { viewModel.setFollowsCurrentLocation($0) },
             onSetStartsAtCurrentLocation: { viewModel.setStartsAtCurrentLocation($0) },
             onSetShowsStops: { viewModel.setShowsStops($0) },
-            onClearSavedMapView: { viewModel.setSavedMapView(nil) },
+            onSetSavedMapView: { isSaved in
+                viewModel.setSavedMapView(isSaved ? SavedMapView(region: viewModel.visibleRegion) : nil)
+            },
             favouriteLines: viewModel.favouriteLines,
             runningLines: viewModel.runningLines,
             summaryForLine: { viewModel.summary(forLine: $0) },
@@ -363,25 +385,53 @@ struct VehicleMapView: View {
         )
     }
 
-    /// Scale legend and the map's own controls, all anchored to the bottom left.
+    /// The pinned lines, as the bar's first item opens them.
     ///
-    /// Sharing one stack is what keeps the legend just above the card when a
-    /// vehicle is selected, and hard against the bottom edge when it is not.
+    /// The same list the settings screen pushes - it is the content alone, so the two
+    /// cannot drift apart - with the sheet's own stack and way out.
+    private var linesSheet: some View {
+        NavigationStack {
+            FavouriteLinesList(
+                favouriteLines: viewModel.favouriteLines,
+                runningLines: viewModel.runningLines,
+                summaryForLine: { viewModel.summary(forLine: $0) },
+                showsOnlyPinned: viewModel.showsOnlyPinnedLines,
+                onSetShowsOnlyPinned: { viewModel.setShowsOnlyPinnedLines($0) },
+                onToggleLine: { viewModel.toggleFavourite(line: $0) },
+                onPinLine: { viewModel.pin(line: $0) },
+                onShowLine: { line in
+                    isShowingLines = false
+                    focus(onLine: line)
+                }
+            )
+            .navigationTitle("Pinned lines")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { isShowingLines = false }
+                }
+            }
+        }
+    }
+
+    /// The detail card and the bar, both floating over the map.
+    ///
+    /// Sharing one stack is what keeps the card resting on the bar rather than on the
+    /// screen edge, and the bar clear of the home indicator.
     private var bottomOverlay: some View {
         VStack(spacing: 10) {
-            HStack(spacing: 8) {
-                if let mapScale {
-                    MapScaleLegend(scale: mapScale)
-                }
-                northUpButton
-                followButton
-                Spacer(minLength: 0)
-            }
-            .padding(.leading, 16)
-
             detailCard
+
+            MapBottomBar(
+                isRefreshing: viewModel.isRefreshing,
+                onShowLines: { isShowingLines = true },
+                onShowStations: { isShowingStations = true },
+                onReload: { Task { await viewModel.load() } },
+                onShowSettings: { isShowingSettings = true },
+                onSearch: { isShowingSearch = true }
+            )
         }
-        .padding(.bottom, 12)
+        .padding(.bottom, 10)
     }
 
     @ViewBuilder
@@ -499,52 +549,6 @@ struct VehicleMapView: View {
         withAnimation(.easeInOut(duration: 0.35)) {
             camera = .camera(current.pointingNorth)
         }
-    }
-
-    /// Reset for the map's direction, which belongs with the scale legend: both
-    /// answer the same question, which is how the map is being read.
-    private var northUpButton: some View {
-        mapControl(
-            systemName: "safari",
-            label: String(localized: "Point north up"),
-            action: pointNorthUp
-        )
-    }
-
-    /// Turns following the user's own position on and off.
-    ///
-    /// It sits with the compass rather than in the header card: both answer where
-    /// the map is looking, and the card already carries the two controls that
-    /// change what the map is showing.
-    private var followButton: some View {
-        mapControl(
-            systemName: viewModel.followsCurrentLocation ? "location.fill" : "location",
-            label: viewModel.followsCurrentLocation
-                ? String(localized: "Stop following my position")
-                : String(localized: "Follow my position"),
-            isActive: viewModel.followsCurrentLocation,
-            action: { viewModel.setFollowsCurrentLocation(!viewModel.followsCurrentLocation) }
-        )
-    }
-
-    /// Round button for the map's own controls, drawn like the legend it shares a
-    /// row with rather than like the icons inside the header card.
-    private func mapControl(
-        systemName: String,
-        label: String,
-        isActive: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(isActive ? Color.accentColor : Color.primary.opacity(0.7))
-                .frame(width: 30, height: 30)
-                .background(.regularMaterial, in: Circle())
-                .shadow(color: .black.opacity(0.1), radius: 5, y: 1)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(label))
     }
 
     /// Flies to the first vehicle reporting on `line`.

@@ -28,32 +28,41 @@ draws them on a map that is framed - and locked - to the region.
   needs the same permission as opening the map at your location, so iOS is not
   asked for anything unless one of the two wants it, and the position is never
   stored or sent anywhere - MapKit draws the dot and keeps it up to date.
-- **Following the position.** Off by default, and turned on from the header or
-  from the settings. The map then keeps the position in the middle as you move,
+- **A glass bar, and a quiet strip.** The map is the screen: navigation floats over
+  it as one translucent bar - Lines, Stations, Reload, Settings - with the search
+  circle beside it, clear of the bar because finding a line is not a place to be.
+  The top carries two lines rather than a card: how many vehicles are on screen and
+  when they were fetched, then the filters. The map's own controls - the whole
+  region and following your position - sit at the top right, and the compass joins
+  them only once the map has actually been turned.
+- **Following the position.** Off by default, and turned on from the map's controls
+  or from the settings. The map then keeps the position in the middle as you move,
   which is the mode to use in a car. Panning counts as looking at something else
   and stops it, and so do the controls that fly the map somewhere themselves -
-  the recenter button, a tap on a vehicle, a jump to a pinned line.
+  the whole-region button, a tap on a vehicle, a jump to a pinned line.
 - **Opens on the current location.** The map starts about 10 km around where you
   are, so the first thing on screen is your neighbourhood rather than a region
   seen from far out. The position is read once per launch, never leaves the
   device, and is only used when it falls inside the region the feed covers: a map
   of somewhere with no vehicles on it would be worse than the region view. The
-  bookmark button in the header does the opposite - it remembers the viewport you
-  are looking at, zoom included, and opens there from then on, which suits a
-  commute you check every morning. Both are in the settings, and pressing the
-  bookmark again forgets the viewport it saved.
-- **Distance legend.** A small scale bar under the header says what a stretch of
-  the map is worth ("10 km"), so a marker a couple of centimetres away can be
-  read as a real distance. It follows the zoom level and rounds to numbers worth
+  saved view in the settings does the opposite - it remembers the viewport you are
+  looking at, zoom included, and opens there from then on, which suits a commute
+  you check every morning. Both are in the settings, and turning the saved view off
+  forgets it.
+- **Distance legend.** A bare scale bar at the right of the filter row says what a
+  stretch of the map is worth ("10 km"), so a marker a couple of centimetres away
+  can be read as a real distance. It has no capsule around it on purpose: it shares
+  that row with the filter chips, and anything with a background up there reads as
+  another chip. It follows the zoom level and rounds to numbers worth
   labelling. It is worked out from the latitude span MapKit fits to the map's
   height, which is exact while the camera is flat - tilting the map stretches
   the projection, and then it is only roughly right.
-- **Refresh countdown.** A hairline, translucent rainbow grows along the top edge
-  of the header card over one refresh interval, so it answers "when is this
-  updated next?" without asking for attention: it is faint enough to go
-  unnoticed until you look for it. It sits inside the straight part of that edge,
-  clear of the rounded corners, and it is not drawn at all when automatic refresh
-  is off, because then there is no next refresh to count down to.
+- **Refresh countdown.** A hairline, translucent rainbow grows across the top edge
+  of the screen over one refresh interval, so it answers "when is this updated
+  next?" without asking for attention: it is faint enough to go unnoticed until
+  you look for it. It is an indicator and nothing else - automatic refresh is
+  switched in the settings - and it is not drawn at all when automatic refresh is
+  off, because then there is no next refresh to count down to.
 - **Vehicles move instead of jumping.** Each payload puts a bus somewhere new, so
   the marker for a single vehicle travels there over two seconds - a straight line
   at a constant speed from the position it was drawn at to the position the feed
@@ -66,7 +75,7 @@ draws them on a map that is framed - and locked - to the region.
   stays where it was last seen, drawn grey, and leaves the map only after five
   consecutive payloads without news. A greyed marker carrying a live bus is never
   drawn grey: a cluster is stale only when nothing in it is being reported. A
-  failed load is not news either, so it never ages anything, and the header count
+  failed load is not news either, so it never ages anything, and the count line
   keeps counting what the feed actually reports.
 - **Coming back to the screen shows grey, then shows live.** What is on the map
   when the app is sent to the background is older than the refresh interval by the
@@ -101,7 +110,7 @@ draws them on a map that is framed - and locked - to the region.
   the info window names, so a page for a different run is ignored rather than
   producing a wrong next stop; when the timetable is unavailable the card says so.
 - **Pinned lines.** Pin the lines you care about, either from a vehicle's star on
-  the map or by number in the pinned lines screen. A pinned line stays in the list
+  the map or by number in the bar's Lines screen. A pinned line stays in the list
   when it is not running, which matters for a line that only operates at certain
   hours. Pin 420 and 337 and the map rings their markers in amber with a star, and
   the `Pinned` chip filters the map down to them.
@@ -112,9 +121,9 @@ draws them on a map that is framed - and locked - to the region.
   pinned line that is running.
 - **Traction filter.** Chips for the tractions actually present in the last
   payload.
-- **Refresh.** Manual refresh, plus automatic refresh that can be paused. The
-  interval is chosen in the settings and remembered: anything from 5 seconds up,
-  15 by default.
+- **Refresh.** The bar's Reload item, plus automatic refresh that can be switched
+  off. The interval is chosen in the settings and remembered: anything from 5
+  seconds up, 15 by default.
 - **Settings.** One screen for the refresh interval (automatic refresh can also
   be turned off there), where the map opens, and the language. Czech is the
   default; English and "follow the device" are one tap away. A language change is
@@ -155,8 +164,8 @@ the subject already filled in.
 - **Offline, and honest about it.** Losing the network does not empty the map. The
   last payload is kept on disk and comes back on the next launch, drawn grey until
   a live payload replaces it, because a position from an hour ago is not the map.
-  The header says `Offline · last 12:34` in place of the vehicle count, and the
-  banner says what is on screen and offers a retry. Nothing else is kept, and
+  The status line says `Offline · last 12:34` in place of the vehicle count, and
+  the banner says what is on screen and offers a retry. Nothing else is kept, and
   `docs/offline.md` records what and why.
 - **Honest failure handling.** Errors keep the last good data on screen and show
   a banner with a retry button.

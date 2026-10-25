@@ -23,8 +23,9 @@ it would have shown anyway.
 - The restored payload is drawn **grey** until a live payload replaces it. That is
   the marker the app already uses for a vehicle the feed has stopped reporting, and
   it means the same thing here: this is not news.
-- The header gives up the vehicle count for `Offline · last 12:34` while the feed
-  cannot be reached, so the age of what is on screen is visible rather than implied.
+- The status line at the top gives up the vehicle count for `Offline · last 12:34`
+  while the feed cannot be reached, so the age of what is on screen is visible rather
+  than implied.
 - The banner says what is being shown - "No connection to the feed. Showing the
   last positions from 12:34." - and carries the retry.
 - All of it goes the moment a payload arrives.

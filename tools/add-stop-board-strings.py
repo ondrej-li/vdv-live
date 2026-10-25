@@ -45,6 +45,23 @@ TRANSLATIONS = {
     "expected %@": "očekáváno %@",
     "not departed yet": "ještě neodjelo",
     "Line %@, scheduled %@, %@, %@": "Linka %@, podle řádu %@, %@, %@",
+    "Search": "Hledat",
+    "Lines": "Linky",
+    "Lines in the archive": "Linek v archivu",
+    "Stations": "Zastávky",
+    "Reload": "Obnovit",
+    "Show the whole region": "Zobrazit celý kraj",
+    "Line number or stop name": "Číslo linky nebo název zastávky",
+    "Type a line number, such as 420, or the name of a stop.":
+        "Zadejte číslo linky, například 420, nebo název zastávky.",
+    "Nothing matches “%@”.": "Nic neodpovídá „%@“.",
+    "Saved view": "Uložený výřez",
+    "Remembers the part of the map and the zoom you are looking at now, and opens there next time. Turning it off forgets it.":
+        "Zapamatuje si část mapy a přiblížení, které právě vidíte, a příště se otevře tam. Vypnutím se zapomenou.",
+    "The position is read on the device and never sent anywhere. The blue dot is the system's own, and following keeps the map centred on it while you move.":
+        "Poloha se čte v zařízení a nikam se neposílá. Modrý bod je systémový a sledování drží mapu vycentrovanou na něm, když se pohybujete.",
+    "No pinned lines yet. Pin a line number in the Lines screen, or tap a vehicle on the map and use its star.":
+        "Zatím žádné oblíbené linky. Přidejte číslo linky na obrazovce Linky nebo klepněte na vozidlo v mapě a použijte jeho hvězdičku.",
     "Show all lines": "Zobrazit všechny linky",
     "Show only pinned lines": "Zobrazit jen oblíbené linky",
     "No pinned lines here": "Žádné oblíbené linky",
