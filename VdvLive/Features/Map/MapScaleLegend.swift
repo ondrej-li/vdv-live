@@ -9,16 +9,15 @@ struct MapScaleLegend: View {
     let scale: MapScale
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             bar
             Text(scale.labelText)
                 .font(.caption2.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 9)
-        .padding(.vertical, 4)
-        .background(.regularMaterial, in: Capsule())
-        .shadow(color: .black.opacity(0.1), radius: 5, y: 1)
+        // No capsule: it shares a row with the filter chips, and anything with a
+        // background up there reads as another chip. The strip's scrim is what makes
+        // it legible.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Map scale"))
         .accessibilityValue(Text(scale.labelText))

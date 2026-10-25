@@ -36,7 +36,7 @@ struct TimetablesView: View {
                             Text(archivePublishedAt.formatted(date: .abbreviated, time: .shortened))
                         }
                     }
-                    LabeledContent("Lines") {
+                    LabeledContent("Lines in the archive") {
                         Text(String(format: String(localized: "%lld"), knownLineCount))
                     }
 

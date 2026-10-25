@@ -3,6 +3,9 @@ import SwiftUI
 /// Settings, in four parts: what the app prefers, the pinned lines, the official
 /// timetables, and where the data comes from.
 ///
+/// The bar reaches the pinned lines and the starred stops directly, so those rows are
+/// the long way round rather than the only way in.
+///
 /// Each part gets a screen of its own rather than one long form: nothing is more
 /// than two taps away, and no screen has to be scrolled to be read.
 struct SettingsSheet: View {
@@ -18,9 +21,10 @@ struct SettingsSheet: View {
     let onSetFollowsCurrentLocation: (Bool) -> Void
     let onSetStartsAtCurrentLocation: (Bool) -> Void
     let onSetShowsStops: (Bool) -> Void
-    let onClearSavedMapView: () -> Void
+    /// Saves the viewport on screen as the one to open at, or forgets it.
+    let onSetSavedMapView: (Bool) -> Void
 
-    /// Pinned lines, which the star in the header manages too.
+    /// Pinned lines, which the bar's Lines screen shows too.
     let favouriteLines: FavouriteLines
     let runningLines: [LineSummary]
     let summaryForLine: (String) -> LineSummary
@@ -69,7 +73,7 @@ struct SettingsSheet: View {
                             onSetFollowsCurrentLocation: onSetFollowsCurrentLocation,
                             onSetStartsAtCurrentLocation: onSetStartsAtCurrentLocation,
                             onSetShowsStops: onSetShowsStops,
-                            onClearSavedMapView: onClearSavedMapView
+                            onSetSavedMapView: onSetSavedMapView
                         )
                     } label: {
                         SettingsRow(
