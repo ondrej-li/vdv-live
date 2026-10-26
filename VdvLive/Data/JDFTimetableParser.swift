@@ -20,6 +20,24 @@ enum JDFTimetableParser {
         enum Line {
             static let routeName = 1
             static let operatorID = 2
+            /// The timetable period, as `DDMMYYYY`. The package says when it starts
+            /// and, for the current one, when it ends - which is the day before the
+            /// next timetable change.
+            static let validityFrom = 13
+            static let validityTo = 14
+        }
+
+        /// `Spoje.txt`: line, run, then up to ten fixed-code references.
+        enum Trip {
+            static let serviceNumber = 1
+            static let firstAttribute = 2
+            static let lastAttribute = 11
+        }
+
+        /// `Pevnykod.txt`: fixed code, then the symbol it stands for.
+        enum FixedCode {
+            static let code = 0
+            static let symbol = 1
         }
 
         enum Operator {
@@ -35,8 +53,10 @@ enum JDFTimetableParser {
             static let departure = 11
         }
 
-        enum Validity {
+        /// `Caskody.txt`: line, run, sequence, code, **kind**, from, to, note.
+        enum Exception {
             static let serviceNumber = 1
+            static let kind = 4
             static let from = 5
             static let to = 6
         }
@@ -109,18 +129,57 @@ enum JDFTimetableParser {
             )
         }
 
-        // Periods each run is published for. A line's package carries one row per
-        // period, so a run that changes with the school year has several.
-        var validityByRun: [String: [ValidityPeriod]] = [:]
-        if let validityData = files["Caskody.txt"] {
-            for row in try rows(in: validityData, name: "Caskody.txt") {
-                guard let serviceNumber = row[safe: Column.Validity.serviceNumber],
-                      let from = row[safe: Column.Validity.from]
+        // The period the whole line is published for. `Linky.txt` states it once,
+        // for every run: the archive calls it "platnost" and it is what the
+        // timetable change in December ends.
+        let line = try rows(in: files["Linky.txt"] ?? Data(), name: "Linky.txt").first
+        var lineValidity: [ValidityPeriod] = []
+        if let from = line?[safe: Column.Line.validityFrom].flatMap(ServiceDay.init(archiveText:)) {
+            let to = line?[safe: Column.Line.validityTo].flatMap(ServiceDay.init(archiveText:))
+            lineValidity = [ValidityPeriod(from: from, to: to)]
+        }
+
+        // Dated exceptions per run: "does not run 22.12.-2.1.", "runs only in the
+        // school term", "runs in odd weeks". These are footnotes, not validity -
+        // reading them as periods would turn "does not run in the holidays" into
+        // "runs only in the holidays".
+        var exceptionsByRun: [String: [RunCalendar.Exception]] = [:]
+        if let exceptionData = files["Caskody.txt"] {
+            for row in try rows(in: exceptionData, name: "Caskody.txt") {
+                guard let serviceNumber = row[safe: Column.Exception.serviceNumber],
+                      let from = row[safe: Column.Exception.from]
                         .flatMap(ServiceDay.init(archiveText:)) else { continue }
-                // An empty end is an open period, not a missing row: the archive
-                // writes it for a run that continues until the next republication.
-                let to = row[safe: Column.Validity.to].flatMap(ServiceDay.init(archiveText:))
-                validityByRun[serviceNumber, default: []].append(ValidityPeriod(from: from, to: to))
+                let to = row[safe: Column.Exception.to].flatMap(ServiceDay.init(archiveText:))
+                guard let kind = row[safe: Column.Exception.kind].flatMap(exceptionKind) else { continue }
+                exceptionsByRun[serviceNumber, default: []].append(
+                    RunCalendar.Exception(kind: kind, from: from, to: to)
+                )
+            }
+        }
+
+        // The header rules: `Spoje.txt` lists fixed codes per run, and
+        // `Pevnykod.txt` says which symbol each code stands for. `X`, `+` and
+        // `1`-`7` are the calendar ones; the rest are notes about accessibility,
+        // bicycles and the like.
+        var symbolByCode: [String: String] = [:]
+        if let codeData = files["Pevnykod.txt"] {
+            for row in try rows(in: codeData, name: "Pevnykod.txt") {
+                guard let code = row[safe: Column.FixedCode.code],
+                      let symbol = row[safe: Column.FixedCode.symbol] else { continue }
+                symbolByCode[code] = symbol
+            }
+        }
+
+        var rulesByRun: [String: Set<RunCalendar.Rule>] = [:]
+        if let tripData = files["Spoje.txt"] {
+            for row in try rows(in: tripData, name: "Spoje.txt") {
+                guard let serviceNumber = row[safe: Column.Trip.serviceNumber] else { continue }
+                for index in Column.Trip.firstAttribute...Column.Trip.lastAttribute {
+                    guard let code = row[safe: index], !code.isEmpty,
+                          let symbol = symbolByCode[code],
+                          let rule = RunCalendar.rule(forSymbol: symbol) else { continue }
+                    rulesByRun[serviceNumber, default: []].insert(rule)
+                }
             }
         }
 
@@ -129,12 +188,13 @@ enum JDFTimetableParser {
                 ScheduledRun(
                     serviceNumber: $0.key,
                     calls: ScheduledRun.inTravelOrder($0.value),
-                    validity: validityByRun[$0.key] ?? []
+                    validity: lineValidity,
+                    calendar: RunCalendar(rules: rulesByRun[$0.key] ?? [],
+                                          exceptions: exceptionsByRun[$0.key] ?? [])
                 )
             }
             .sorted { $0.serviceNumber.compare($1.serviceNumber, options: .numeric) == .orderedAscending }
 
-        let line = try rows(in: files["Linky.txt"] ?? Data(), name: "Linky.txt").first
         let operators = try rows(in: files["Dopravci.txt"] ?? Data(), name: "Dopravci.txt")
         let operatorID = line?[safe: Column.Line.operatorID]
         let operatorName = operators
@@ -146,8 +206,24 @@ enum JDFTimetableParser {
             displayNumber: LineCode(raw: lineNumber).number,
             routeName: line?[safe: Column.Line.routeName] ?? "",
             operatorName: operatorName.flatMap { $0.isEmpty ? nil : $0 },
-            runs: runs
+            runs: runs,
+            validity: lineValidity
         )
+    }
+
+    /// The `Typ časového kódu` column, as the archive writes it.
+    private static func exceptionKind(_ text: String) -> RunCalendar.Exception.Kind? {
+        switch text.trimmingCharacters(in: .whitespaces) {
+        case "1": return .service
+        case "2": return .serviceAlso
+        case "3": return .serviceOnly
+        case "4": return .noService
+        case "5": return .oddWeeks
+        case "6": return .evenWeeks
+        case "7": return .oddWeeksFromTo
+        case "8": return .evenWeeksFromTo
+        default: return nil
+        }
     }
 
     /// Rows of a JDF file, each a list of unquoted fields.

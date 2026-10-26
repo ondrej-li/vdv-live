@@ -276,39 +276,55 @@ final class JDFTimetableParserTests: XCTestCase {
 
     // MARK: - Validity of a run
 
-    /// `Caskody.txt` says which periods a run is published for. Two runs of this
-    /// line carry periods and the rest are published without any, which has to mean
-    /// "runs whenever its times fit" rather than "never".
-    func testReadsTheValidityPeriodsOfARun() throws {
+    /// `Linky.txt` states the period once for the whole line, and every run of it is
+    /// published for that period. The fixture's period runs from the second Sunday
+    /// of December 2025 to the day before the second Sunday of December 2026, which
+    /// is where Czech timetables change.
+    func testReadsTheLinesPeriod() throws {
+        let timetable = try JDFTimetableParser.parse(files: try lineFiles())
+
+        XCTAssertEqual(timetable.validity.count, 1)
+        XCTAssertEqual(timetable.validity.first?.from, ServiceDay(archiveText: "14122025"))
+        XCTAssertEqual(timetable.validity.first?.to, ServiceDay(archiveText: "12122026"))
+        XCTAssertEqual(try XCTUnwrap(timetable.runs.first).validity, timetable.validity)
+    }
+
+    /// `Caskody.txt` is not validity. Its rows are "does not run here" notes, and
+    /// reading them as periods used to turn "the school bus does not run in the
+    /// holidays" into "the school bus only runs in the holidays".
+    func testReadsTheExceptionsOfARun() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
         let run = try XCTUnwrap(timetable.run(serviceNumber: "50"))
 
-        XCTAssertEqual(run.validity.count, 6)
-        XCTAssertEqual(run.validity.first?.from, ServiceDay(archiveText: "22122025"))
-        XCTAssertEqual(run.validity.first?.to, ServiceDay(archiveText: "02012026"))
-        // The second period is left open by the archive: it runs until the next one
-        // starts rather than until a stated day.
-        XCTAssertNil(run.validity[1].to)
-        XCTAssertEqual(run.validity[1].from, ServiceDay(archiveText: "30012026"))
+        XCTAssertEqual(run.calendar.exceptions.count, 6)
+        XCTAssertEqual(run.calendar.exceptions.first?.kind, .noService)
+        XCTAssertEqual(run.calendar.exceptions.first?.from, ServiceDay(archiveText: "22122025"))
+        XCTAssertEqual(run.calendar.exceptions.first?.to, ServiceDay(archiveText: "02012026"))
+        // The second one is left open by the archive: a single day rather than a
+        // period that never ends.
+        XCTAssertNil(run.calendar.exceptions[1].to)
+        XCTAssertEqual(run.calendar.exceptions[1].from, ServiceDay(archiveText: "30012026"))
     }
 
-    func testARunWithoutPeriodsOperatesOnAnyDay() throws {
+    /// `Spoje.txt` points at fixed codes and `Pevnykod.txt` says `1` is `X`, the
+    /// working-day header every run of this line carries.
+    func testReadsTheHeaderRuleOfARun() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
         let run = try XCTUnwrap(timetable.run(serviceNumber: "1"))
 
-        XCTAssertTrue(run.validity.isEmpty)
-        XCTAssertTrue(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "20102026"))))
+        XCTAssertEqual(run.calendar.rules, [.weekdays])
+        XCTAssertTrue(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "20102026"))))   // Tuesday
+        XCTAssertFalse(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "24102026"))))  // Saturday
     }
 
-    func testARunOperatesOnlyInsideItsPeriods() throws {
+    /// The exception is a footnote and it wins: a run that does not run on 30 January
+    /// does not run on 30 January, whatever its header says.
+    func testAnExceptionBeatsTheHeader() throws {
         let timetable = try JDFTimetableParser.parse(files: try lineFiles())
         let run = try XCTUnwrap(timetable.run(serviceNumber: "50"))
 
-        // 20 October falls in the period that opened on 2 April and was never closed.
         XCTAssertTrue(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "20102026"))))
-        // Nothing is published for 1 December: the first period only opens on the
-        // 22nd.
-        XCTAssertFalse(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "01122025"))))
+        XCTAssertFalse(run.operates(on: try XCTUnwrap(ServiceDay(archiveText: "30012026"))))
     }
 
     // MARK: - Time of day
