@@ -497,6 +497,30 @@ final class VehicleMapViewModel {
         return runningLines.first { $0.line == normalized } ?? .idle(normalized)
     }
 
+    /// Selects the vehicle that is running a particular service.
+    ///
+    /// The positions feed names the line but not the run, so this asks each vehicle
+    /// of the line for its info window - the only place `Spoj` is published - and
+    /// selects the one that matches. A reminder tap uses it to land on the bus the
+    /// notification was about rather than on the line.
+    ///
+    /// - Returns: the cluster now selected, or `nil` when no vehicle is reporting
+    ///   that run - offline, or the bus has finished.
+    @discardableResult
+    func selectVehicle(line: String, serviceNumber: String) async -> VehicleCluster? {
+        let wanted = FavouriteLines.normalize(line)
+        for vehicle in vehicles where FavouriteLines.normalize(vehicle.line) == wanted {
+            guard let detail = try? await detailFetcher.fetchDetail(for: vehicle) else { continue }
+            guard detail.serviceNumber == serviceNumber else { continue }
+            guard let cluster = clusters.first(where: { cluster in
+                cluster.vehicles.contains { $0.id == vehicle.id }
+            }) else { continue }
+            selectedClusterID = cluster.id
+            return cluster
+        }
+        return nil
+    }
+
     /// First vehicle reporting on `line`, used to fly the map to a pinned line.
     func firstVehicle(forLine line: String) -> Vehicle? {
         let wanted = FavouriteLines.normalize(line)

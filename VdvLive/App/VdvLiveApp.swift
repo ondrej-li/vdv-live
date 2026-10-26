@@ -2,6 +2,9 @@ import SwiftUI
 
 @main
 struct VdvLiveApp: App {
+    /// Notifications are delivered through an app delegate, and the tap has to be
+    /// handed to the map, which is the only screen.
+    @UIApplicationDelegateAdaptor(ReminderNotificationDelegate.self) private var notifications
     /// Keeps the watch's copy of the pinned lines current, wherever they are
     /// pinned from. Started here rather than in a screen so the watch hears about
     /// a change made anywhere in the app.

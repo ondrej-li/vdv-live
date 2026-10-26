@@ -77,7 +77,7 @@ struct ServiceDay: Hashable, Comparable, Sendable {
         self.init(year: year, month: month, day: day)
     }
 
-    private init(year: Int, month: Int, day: Int) {
+    init(year: Int, month: Int, day: Int) {
         var calendar = Calendar(identifier: .gregorian)
         // Midnight UTC, so the division below lands exactly on a day boundary.
         calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
@@ -159,24 +159,33 @@ struct ScheduledRun: Hashable, Identifiable, Sendable {
     let serviceNumber: String
     /// Calls in travel order.
     let calls: [ScheduledCall]
-    /// The periods the archive says this run operates in.
+    /// The period the timetable is published for, from `Linky.txt`.
     ///
     /// Empty when the package said nothing, which is read as "runs whenever its
     /// times fit": assuming a run is running is the only answer that does not
     /// invent a silence the archive never stated.
     let validity: [ValidityPeriod]
 
-    init(serviceNumber: String, calls: [ScheduledCall], validity: [ValidityPeriod] = []) {
+    /// Which days *of the week* the run operates on, and the dated exceptions to
+    /// that. `nil` on a run the package said nothing about.
+    let calendar: RunCalendar
+
+    init(serviceNumber: String,
+         calls: [ScheduledCall],
+         validity: [ValidityPeriod] = [],
+         calendar: RunCalendar = .everyDay) {
         self.serviceNumber = serviceNumber
         self.calls = calls
         self.validity = validity
+        self.calendar = calendar
     }
 
     var id: String { serviceNumber }
 
-    /// Whether the run is published for `day`.
+    /// Whether the run is published for `day`, by the timetable's period and by
+    /// the weekday rules and exceptions the archive gave it.
     func operates(on day: ServiceDay) -> Bool {
-        validity.covers(day)
+        validity.covers(day) && calendar.operates(on: day)
     }
 
     var lastCall: ScheduledCall? { calls.last }
@@ -223,6 +232,25 @@ struct LineTimetable: Hashable, Sendable {
     let routeName: String
     let operatorName: String?
     let runs: [ScheduledRun]
+    /// The period the timetable is published for, from `Linky.txt`.
+    ///
+    /// Empty when the package did not say, which reminders read as "run until the
+    /// next timetable change" rather than "run forever".
+    let validity: [ValidityPeriod]
+
+    init(lineNumber: String,
+         displayNumber: String,
+         routeName: String,
+         operatorName: String?,
+         runs: [ScheduledRun],
+         validity: [ValidityPeriod] = []) {
+        self.lineNumber = lineNumber
+        self.displayNumber = displayNumber
+        self.routeName = routeName
+        self.operatorName = operatorName
+        self.runs = runs
+        self.validity = validity
+    }
 
     var isEmpty: Bool { runs.isEmpty }
 

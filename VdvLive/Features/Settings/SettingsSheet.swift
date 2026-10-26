@@ -145,6 +145,16 @@ struct SettingsSheet: View {
                     }
 
                     NavigationLink {
+                        RemindersView()
+                    } label: {
+                        SettingsRow(
+                            title: "Reminders",
+                            systemImage: "bell",
+                            subtitle: "Warnings before a service reaches your stop"
+                        )
+                    }
+
+                    NavigationLink {
                         AcknowledgementsView()
                     } label: {
                         SettingsRow(

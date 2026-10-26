@@ -37,12 +37,15 @@ enum ExpectedServices {
         struct Run: Sendable {
             let serviceNumber: String
             let validity: [ValidityPeriod]
+            /// Which weekdays and exceptions apply, so a school-day run is not
+            /// claimed for a Sunday or a public holiday.
+            let calendar: RunCalendar
             let firstMinute: Int
             let lastMinute: Int
             let calls: [TimedCall]
 
             func operates(on day: ServiceDay) -> Bool {
-                validity.covers(day)
+                validity.covers(day) && calendar.operates(on: day)
             }
         }
 
@@ -65,6 +68,7 @@ enum ExpectedServices {
                     return Schedule.Run(
                         serviceNumber: run.serviceNumber,
                         validity: run.validity,
+                        calendar: run.calendar,
                         firstMinute: first.minutes,
                         lastMinute: last.minutes,
                         calls: timed.map {

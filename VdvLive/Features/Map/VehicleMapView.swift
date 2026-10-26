@@ -15,6 +15,8 @@ struct VehicleMapView: View {
     @State private var isShowingStations = false
     /// Whether the ad hoc search is open, which the bar reaches.
     @State private var isShowingSearch = false
+    /// Reminders: what is stored, and what is scheduled.
+    @State private var reminders: ReminderCenter
     /// Size of the map, needed to turn a zoom level into a distance.
     @State private var mapSize: CGSize = .zero
     /// Where the map is pointing. Kept from the last camera change, because a
@@ -38,6 +40,7 @@ struct VehicleMapView: View {
             locationProvider: locationProvider
         )
         _viewModel = State(initialValue: viewModel)
+        _reminders = State(initialValue: ReminderCenter(timetables: viewModel.timetables))
         // A viewport the user locked is known before the first frame, so the map
         // opens straight at it. Opening on the current location needs a position,
         // which only arrives later - see the `task` in `body`. Following is known
@@ -91,7 +94,25 @@ struct VehicleMapView: View {
             guard follows else { return }
             centreOnFollowedVehicle()
         }
+        .environment(reminders)
         .task { await viewModel.loadIfNeeded() }
+        .task { await reminders.scheduleAll() }
+        .onReceive(NotificationCenter.default.publisher(for: .reminderNotificationTapped)) { note in
+            if let info = note.object as? [AnyHashable: Any] {
+                reminders.handleTap(userInfo: info)
+            }
+        }
+        .onChange(of: reminders.pendingTarget) { _, target in
+            guard let target else { return }
+            openReminderTarget(target)
+        }
+        .task {
+            // A cold start from a notification: the delegate's tap arrives before
+            // this view exists, so it is kept on disk and picked up here.
+            if let target = ReminderCenter.consumePendingTap() {
+                openReminderTarget(target)
+            }
+        }
         .task {
             // Opening on the current location needs a position, which is only
             // there after the first frame. Nothing happens unless the user asked
@@ -479,6 +500,19 @@ struct VehicleMapView: View {
         followsHeading: false,
         fallback: .automatic
     )
+
+    /// Opens the thing a notification was about: the stop's board, which works from
+    /// the cached timetable even offline, and the live vehicle when it is reporting.
+    private func openReminderTarget(_ target: ReminderCenter.ReminderTarget) {
+        reminders.pendingTarget = nil
+        if let stop = viewModel.position(forStopNamed: target.stopName) {
+            boardStop = stop
+        }
+        Task {
+            await viewModel.selectVehicle(line: target.lineNumber,
+                                          serviceNumber: target.serviceNumber)
+        }
+    }
 
     private func recenter() {
         // Deliberate camera moves take over from following, which would otherwise
