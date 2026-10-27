@@ -155,6 +155,7 @@ struct ReminderEditorView: View {
                         choose(service: service)
                     } label: {
                         row(title: String(format: String(localized: "service %@"), service.serviceNumber),
+                            detail: directionText(service),
                             caption: serviceCaption(service))
                     }
                     .buttonStyle(.plain)
@@ -169,11 +170,12 @@ struct ReminderEditorView: View {
         Form {
             if let selectedStop, let selectedLine, let selectedService {
                 Section {
-                    LabeledContent("Stop", value: selectedStop.replacingOccurrences(of: ",", with: ", "))
+                    LabeledContent("Stop", value: displayName(selectedStop))
                     LabeledContent("Line", value: selectedLine.displayNumber)
                     LabeledContent("Service") {
                         Text(String(format: String(localized: "service %@"), selectedService.serviceNumber))
                     }
+                    LabeledContent("Direction", value: directionText(selectedService))
                 }
 
                 // The schedule the notification will follow, so the lead and the
@@ -223,11 +225,16 @@ struct ReminderEditorView: View {
 
     // MARK: - Chrome
 
-    private func row(title: String, caption: String?) -> some View {
+    private func row(title: String, detail: String? = nil, caption: String?) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.body.weight(.semibold).monospacedDigit())
+                if let detail {
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                }
                 if let caption {
                     Text(caption)
                         .font(.caption)
@@ -349,6 +356,19 @@ struct ReminderEditorView: View {
     /// printed timetable also uses.
     private func serviceCaption(_ service: ReminderSetup.Service) -> String {
         "\(service.departure.text) · \(restrictionLabel(service.days.restriction))"
+    }
+
+    /// Where the run goes, which is what tells two directions of one line apart.
+    private func directionText(_ service: ReminderSetup.Service) -> String {
+        String(format: String(localized: "%@ – %@"),
+               displayName(service.origin),
+               displayName(service.destination))
+    }
+
+    /// A timetable stop name with its comma spaced the way the rest of the app shows
+    /// it: `Zašovice,Nová Brtnice` reads as `Zašovice, Nová Brtnice`.
+    private func displayName(_ stopName: String) -> String {
+        stopName.replacingOccurrences(of: ",", with: ", ")
     }
 
     /// How the archive's restriction is named: "working days", "weekends", "Sundays",

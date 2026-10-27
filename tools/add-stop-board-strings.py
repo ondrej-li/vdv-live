@@ -48,6 +48,8 @@ TRANSLATIONS = {
     "At departure": "V době odjezdu",
     "Notifications": "Upozornění",
     "Schedule": "Jízdní řád",
+    "Direction": "Směr",
+    "%@ – %@": "%@ – %@",
     "Timetable until": "Jízdní řád do",
     "Next notification": "Další oznámení",
     "Not on these days": "V tyto dny nic",
