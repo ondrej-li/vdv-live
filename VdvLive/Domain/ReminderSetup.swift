@@ -47,8 +47,21 @@ enum ReminderSetup {
         let includesHolidays: Bool
         /// The run has dated exceptions, so the pattern is not the whole story.
         let hasExceptions: Bool
+        /// How the pattern is named on the timetable's own terms.
+        let restriction: Restriction
 
         var isEveryDay: Bool { days.count == 7 }
+    }
+
+    /// The pattern in the words a printed timetable uses for it.
+    enum Restriction: Hashable, Sendable {
+        case everyDay
+        case workingDays
+        case weekends
+        case sundays
+        case sundaysAndHolidays
+        /// Anything else the archive states, such as Saturdays only.
+        case chosenDays(Set<Int>)
     }
 
     /// The lines of `timetables` that call at `stop`, in passenger-number order.
@@ -104,8 +117,22 @@ enum ReminderSetup {
                 }
             }
         }
+        let includesHolidays = calendar.rules.contains(.sundaysAndHolidays)
         return Weekdays(days: days,
-                        includesHolidays: calendar.rules.contains(.sundaysAndHolidays),
-                        hasExceptions: !calendar.exceptions.isEmpty)
+                        includesHolidays: includesHolidays,
+                        hasExceptions: !calendar.exceptions.isEmpty,
+                        restriction: restriction(days: days,
+                                                 includesHolidays: includesHolidays,
+                                                 stated: !calendar.rules.isEmpty))
+    }
+
+    private static func restriction(days: Set<Int>,
+                                    includesHolidays: Bool,
+                                    stated: Bool) -> Restriction {
+        guard stated else { return .everyDay }
+        if days == Set(1...5) { return .workingDays }
+        if days == Set(6...7) { return .weekends }
+        if days == [7] { return includesHolidays ? .sundaysAndHolidays : .sundays }
+        return .chosenDays(days)
     }
 }

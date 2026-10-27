@@ -855,6 +855,15 @@ final class VehicleMapViewModel {
     /// Every stop a search field can offer.
     var allStopNames: [String] { stopPositions.allNames }
 
+    /// Stops matching what was typed, ignoring accents and small typos, limited to the
+    /// stops some line actually calls at: a notification needs a service, so a stop
+    /// nothing calls at is not an answer here.
+    func stopNames(matching text: String, limit: Int = 40) -> [String] {
+        stopPositions.names(matching: text,
+                            excluding: { self.lines(atStopNamed: $0).isEmpty },
+                            limit: limit)
+    }
+
     /// Whether the user starred this stop.
     func isStarred(stopNamed name: String) -> Bool { starredStops.contains(name) }
 
