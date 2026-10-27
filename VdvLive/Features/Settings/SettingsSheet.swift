@@ -149,9 +149,9 @@ struct SettingsSheet: View {
                             RemindersView(viewModel: viewModel)
                         } label: {
                             SettingsRow(
-                                title: "Reminders",
+                                title: "Notifications",
                                 systemImage: "bell",
-                                subtitle: "Warnings before a service reaches your stop"
+                                subtitle: "Warn me before a service reaches my stop"
                             )
                         }
                     }
