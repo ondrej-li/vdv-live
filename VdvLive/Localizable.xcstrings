@@ -2124,16 +2124,6 @@
         }
       }
     },
-    "Remind me" : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Připomenout"
-          }
-        }
-      }
-    },
     "Warn me" : {
       "localizations" : {
         "cs" : {
@@ -2252,16 +2242,6 @@
         }
       }
     },
-    "No reminders yet. Open a stop's board and tap the bell next to a departure." : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zatím žádné připomínky. Otevřete tabuli zastávky a klepněte na zvonek u odjezdu."
-          }
-        }
-      }
-    },
     "Notifications are turned off for this app, so no reminder can arrive. Turn them on in the system settings." : {
       "localizations" : {
         "cs" : {
@@ -2338,6 +2318,186 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "spoj %@"
+          }
+        }
+      }
+    },
+    "Add notification" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat upozornění"
+          }
+        }
+      }
+    },
+    "Tap + to add a notification." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klepnutím na + přidáte upozornění."
+          }
+        }
+      }
+    },
+    "Search stops" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hledat zastávky"
+          }
+        }
+      }
+    },
+    "Select stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat zastávku"
+          }
+        }
+      }
+    },
+    "Select line" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat linku"
+          }
+        }
+      }
+    },
+    "Select service" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat spoj"
+          }
+        }
+      }
+    },
+    "Customize" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přizpůsobit"
+          }
+        }
+      }
+    },
+    "Loading timetable…" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Načítám jízdní řád…"
+          }
+        }
+      }
+    },
+    "No lines at this stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V této zastávce nejsou linky"
+          }
+        }
+      }
+    },
+    "No line is listed for this stop." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro tuto zastávku není uvedena žádná linka."
+          }
+        }
+      }
+    },
+    "No timetable is available for this line." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro tuto linku není dostupný jízdní řád."
+          }
+        }
+      }
+    },
+    "No services at this stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V této zastávce nejsou spoje"
+          }
+        }
+      }
+    },
+    "This line has no timed service calling at the selected stop." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na této lince v této zastávce nezastavuje žádný časovaný spoj."
+          }
+        }
+      }
+    },
+    "Notify me" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upozornit"
+          }
+        }
+      }
+    },
+    "How far ahead" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S jakým předstihem"
+          }
+        }
+      }
+    },
+    "Exclude days" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vynechat dny"
+          }
+        }
+      }
+    },
+    "Download timetables in Settings before adding a notification." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Před přidáním upozornění stáhněte jízdní řády v Nastavení."
+          }
+        }
+      }
+    },
+    "Unable to load timetables" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řády se nepodařilo načíst"
           }
         }
       }

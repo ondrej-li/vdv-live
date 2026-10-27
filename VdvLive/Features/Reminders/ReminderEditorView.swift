@@ -1,82 +1,186 @@
 import SwiftUI
 
-/// The screen that makes a reminder: which run, which stop, how long before, and
-/// which days the user actually wants it.
-///
-/// Everything here is a choice about *when a notification arrives*, not about what
-/// the bus does - the timetable decides that, and the screen says when the timetable
-/// stops.
+/// Adds a notification by choosing its stop, line, service, and notification rules.
 struct ReminderEditorView: View {
-    let lineNumber: String
-    let serviceNumber: String
-    let stopName: String
-    /// The time this run leaves the stop, when the timetable could place it.
-    let departureText: String?
-    /// The last day the timetable is published for, as text.
-    let lastDayText: String?
-    /// The reminder already stored for this run and stop, if there is one.
-    var existing: Reminder?
-
+    let viewModel: VehicleMapViewModel
     let onSave: (Reminder) -> Void
-    let onDelete: (Reminder) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var leadMinutes: Int
-    @State private var excludedWeekdays: Set<Int>
+    @Environment(ReminderCenter.self) private var center
+    @State private var step: Step = .stop
+    @State private var searchText = ""
+    @State private var selectedStop: String?
+    @State private var selectedLine: LineTimetable?
+    @State private var selectedService: ServiceChoice?
+    @State private var lineChoices: [String] = []
+    @State private var serviceChoices: [ServiceChoice] = []
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    @State private var leadMinutes = 10
+    @State private var excludedWeekdays: Set<Int> = []
 
-    init(lineNumber: String,
-         serviceNumber: String,
-         stopName: String,
-         departureText: String?,
-         lastDayText: String?,
-         existing: Reminder?,
-         onSave: @escaping (Reminder) -> Void,
-         onDelete: @escaping (Reminder) -> Void) {
-        self.lineNumber = lineNumber
-        self.serviceNumber = serviceNumber
-        self.stopName = stopName
-        self.departureText = departureText
-        self.lastDayText = lastDayText
-        self.existing = existing
-        self.onSave = onSave
-        self.onDelete = onDelete
-        _leadMinutes = State(initialValue: existing?.leadMinutes ?? 10)
-        _excludedWeekdays = State(initialValue: existing?.excludedWeekdays ?? [])
+    private enum Step {
+        case stop
+        case line
+        case service
+        case customize
+    }
+
+    private struct ServiceChoice: Identifiable {
+        let run: ScheduledRun
+        let stopName: String
+        var id: String { run.serviceNumber }
+    }
+
+    private var filteredStops: [String] {
+        let names = viewModel.allStopNames.filter { !viewModel.lines(atStopNamed: $0).isEmpty }
+        guard !searchText.isEmpty else { return names }
+        return names.filter { $0.localizedCaseInsensitiveContains(searchText) }
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    LabeledContent("Line") {
-                        Text(LineCode(raw: lineNumber).number)
-                    }
-                    LabeledContent("Service") {
-                        Text(serviceNumber)
-                    }
-                    LabeledContent("Stop") {
-                        Text(stopName.replacingOccurrences(of: ",", with: ", "))
-                    }
-                    if let departureText {
-                        LabeledContent("Departs") {
-                            Text(departureText).monospacedDigit()
+            Group {
+                switch step {
+                case .stop:
+                    stopPicker
+                case .line:
+                    linePicker
+                case .service:
+                    servicePicker
+                case .customize:
+                    customization
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(step == .stop ? "Cancel" : "Back") {
+                        if step == .stop {
+                            dismiss()
+                        } else {
+                            goBack()
                         }
                     }
-                } footer: {
-                    if let lastDayText {
-                        Text(String(format: String(localized: "The timetable is published until %@."),
-                                    lastDayText))
+                }
+                if step == .customize {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") { save() }
+                            .disabled(excludedWeekdays.count == 7)
                     }
+                }
+            }
+            .alert("Unable to load timetables", isPresented: errorIsPresented) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(errorMessage ?? "")
+            }
+        }
+    }
+
+    private var stopPicker: some View {
+        List(filteredStops, id: \.self) { stop in
+            Button {
+                choose(stop: stop)
+            } label: {
+                HStack {
+                    Text(stop)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .searchable(text: $searchText, prompt: Text("Search stops"))
+        .overlay {
+            if !viewModel.timetables.isReady {
+                ContentUnavailableView {
+                    Label("Timetables not downloaded", systemImage: "calendar.badge.exclamationmark")
+                } description: {
+                    Text("Download timetables in Settings before adding a notification.")
+                }
+            }
+        }
+        .disabled(isLoading || !viewModel.timetables.isReady)
+    }
+
+    private var linePicker: some View {
+        List {
+            if isLoading {
+                ProgressView("Loading timetable…")
+            } else if lineChoices.isEmpty {
+                ContentUnavailableView("No lines at this stop",
+                                       systemImage: "bus",
+                                       description: Text("No line is listed for this stop."))
+            } else {
+                ForEach(lineChoices, id: \.self) { lineNumber in
+                    Button {
+                        Task { await choose(lineNumber: lineNumber) }
+                    } label: {
+                        HStack {
+                            Text(LineCode(raw: lineNumber).number)
+                                .font(.body.weight(.semibold).monospacedDigit())
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .disabled(isLoading)
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private var servicePicker: some View {
+        List(serviceChoices) { choice in
+            Button {
+                selectedService = choice
+                leadMinutes = existingReminder(for: choice)?.leadMinutes ?? 10
+                excludedWeekdays = existingReminder(for: choice)?.excludedWeekdays ?? []
+                step = .customize
+            } label: {
+                HStack {
+                    Text(String(format: String(localized: "service %@"), choice.run.serviceNumber))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .overlay {
+            if serviceChoices.isEmpty {
+                ContentUnavailableView("No services at this stop",
+                                       systemImage: "bus",
+                                       description: Text("This line has no timed service calling at the selected stop."))
+            }
+        }
+    }
+
+    private var customization: some View {
+        Form {
+            if let selectedStop, let selectedLine, let selectedService {
+                Section {
+                    LabeledContent("Stop", value: selectedStop)
+                    LabeledContent("Line", value: selectedLine.displayNumber)
+                    LabeledContent("Service", value: selectedService.run.serviceNumber)
                 }
 
                 Section {
-                    Picker("Warn me", selection: $leadMinutes) {
-                        ForEach(leadOptions, id: \.self) { minutes in
+                    Picker("Notify me", selection: $leadMinutes) {
+                        ForEach(Reminder.leadOptions, id: \.self) { minutes in
                             Text(leadLabel(minutes)).tag(minutes)
                         }
                     }
-                } footer: {
-                    Text("The warning is about the timetable's own time. A late bus is not waited for: the notification arrives when the timetable says it should, and the app shows the live delay next time it is opened.")
+                } header: {
+                    Text("How far ahead")
                 }
 
                 Section {
@@ -86,43 +190,97 @@ struct ReminderEditorView: View {
                         }
                     }
                 } header: {
-                    Text("Days")
-                } footer: {
-                    Text("Turn off a day you do not travel. A day the service does not run on, or a public holiday, is left out on its own.")
-                }
-
-                if let existing {
-                    Section {
-                        Button("Delete reminder", role: .destructive) {
-                            onDelete(existing)
-                            dismiss()
-                        }
-                    }
-                }
-            }
-            .navigationTitle(existing == nil ? "New reminder" : "Reminder")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        onSave(Reminder(id: existing?.id ?? UUID(),
-                                        lineNumber: lineNumber,
-                                        serviceNumber: serviceNumber,
-                                        stopName: stopName,
-                                        leadMinutes: leadMinutes,
-                                        excludedWeekdays: excludedWeekdays))
-                        dismiss()
-                    }
-                    .disabled(excludedWeekdays.count == 7)
+                    Text("Exclude days")
                 }
             }
         }
     }
 
-    private var leadOptions: [Int] { Reminder.leadOptions }
+    private var title: String {
+        switch step {
+        case .stop: "Select stop"
+        case .line: "Select line"
+        case .service: "Select service"
+        case .customize: "Customize"
+        }
+    }
+
+    private var errorIsPresented: Binding<Bool> {
+        Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )
+    }
+
+    private func choose(stop: String) {
+        guard viewModel.timetables.isReady else { return }
+        selectedStop = stop
+        selectedLine = nil
+        selectedService = nil
+        lineChoices = viewModel.lines(atStopNamed: stop).sorted {
+            LineCode(raw: $0).number.localizedStandardCompare(LineCode(raw: $1).number) == .orderedAscending
+        }
+        step = .line
+    }
+
+    private func choose(lineNumber: String) async {
+        guard let selectedStop else { return }
+        selectedLine = nil
+        selectedService = nil
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            guard let timetable = try await viewModel.timetables.timetable(forLine: lineNumber) else {
+                errorMessage = String(localized: "No timetable is available for this line.")
+                return
+            }
+            selectedLine = timetable
+            serviceChoices = services(in: timetable, at: selectedStop)
+            step = .service
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func services(in timetable: LineTimetable, at stopName: String) -> [ServiceChoice] {
+        timetable.runs.compactMap { run in
+            guard let call = run.call(matchingStopName: stopName), call.time != nil else { return nil }
+            return ServiceChoice(run: run, stopName: call.stopName)
+        }
+        .sorted { $0.run.serviceNumber.compare($1.run.serviceNumber, options: .numeric) == .orderedAscending }
+    }
+
+    private func existingReminder(for choice: ServiceChoice) -> Reminder? {
+        guard let selectedLine else { return nil }
+        return center.reminder(forLine: selectedLine.lineNumber,
+                               serviceNumber: choice.run.serviceNumber,
+                               stopName: choice.stopName)
+    }
+
+    private func save() {
+        guard let selectedLine, let selectedService else { return }
+        let existing = existingReminder(for: selectedService)
+        onSave(Reminder(id: existing?.id ?? UUID(),
+                        lineNumber: selectedLine.lineNumber,
+                        serviceNumber: selectedService.run.serviceNumber,
+                        stopName: selectedService.stopName,
+                        leadMinutes: leadMinutes,
+                        excludedWeekdays: excludedWeekdays))
+        dismiss()
+    }
+
+    private func goBack() {
+        switch step {
+        case .stop:
+            dismiss()
+        case .line:
+            step = .stop
+        case .service:
+            step = .line
+        case .customize:
+            step = .service
+        }
+    }
 
     private func leadLabel(_ minutes: Int) -> String {
         minutes == 0
@@ -132,19 +290,18 @@ struct ReminderEditorView: View {
 
     private func binding(for weekday: Int) -> Binding<Bool> {
         Binding(
-            get: { !excludedWeekdays.contains(weekday) },
-            set: { isOn in
-                if isOn {
-                    excludedWeekdays.remove(weekday)
-                } else {
+            get: { excludedWeekdays.contains(weekday) },
+            set: { isExcluded in
+                if isExcluded {
                     excludedWeekdays.insert(weekday)
+                } else {
+                    excludedWeekdays.remove(weekday)
                 }
             }
         )
     }
 
-    /// Monday first, whatever the device's week starts on: the archive numbers days
-    /// that way and so does the exclusion.
+    /// Monday first, matching the archive's weekday numbering.
     private static let weekdayNames: [String] = {
         let formatter = DateFormatter()
         formatter.locale = .current

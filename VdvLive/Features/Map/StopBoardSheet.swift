@@ -16,10 +16,7 @@ struct StopBoardSheet: View {
     let viewModel: VehicleMapViewModel
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(ReminderCenter.self) private var reminders
     @State private var timetables: [LineTimetable] = []
-    /// The departure a reminder is being made for, if that sheet is open.
-    @State private var reminderSelection: ReminderSelection?
     @State private var isLoading = true
     @State private var needsDownload = false
     @State private var now = TimeOfDay(Date())
@@ -89,25 +86,6 @@ struct StopBoardSheet: View {
                         Button("Done") { dismiss() }
                     }
                 }
-        }
-        .sheet(item: $reminderSelection) { selection in
-            ReminderEditorView(
-                lineNumber: selection.lineNumber,
-                serviceNumber: selection.serviceNumber,
-                stopName: selection.stopName,
-                departureText: selection.departureText,
-                lastDayText: selection.lastDayText,
-                existing: selection.existing,
-                onSave: { reminder in
-                    Task {
-                        await reminders.requestPermissionIfNeeded()
-                        await reminders.save(reminder)
-                    }
-                },
-                onDelete: { reminder in
-                    Task { await reminders.remove(reminder) }
-                }
-            )
         }
         .task { await loadTimetables() }
         .task {
@@ -223,77 +201,12 @@ struct StopBoardSheet: View {
                 .foregroundStyle(expectedColour(entry))
                 .frame(width: 68, alignment: .trailing)
 
-            // A reminder is about one departure, so it belongs on its row rather than
-            // in a picker somewhere else.
-            Button {
-                reminderSelection = selection(for: entry)
-            } label: {
-                Image(systemName: isReminded(entry) ? "bell.fill" : "bell")
-                    .font(.footnote)
-                    .foregroundStyle(isReminded(entry) ? Color.accentColor : Color.secondary)
-                    .frame(width: 32, height: 32)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(Text("Remind me"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .opacity(isPast ? 0.5 : 1)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(spokenLabel(entry))
-    }
-
-    /// What the editor needs to know about one departure, worked out where the
-    /// timetable that owns it is at hand.
-    struct ReminderSelection: Identifiable {
-        let id = UUID()
-        let lineNumber: String
-        let serviceNumber: String
-        let stopName: String
-        let departureText: String?
-        let lastDayText: String?
-        let existing: Reminder?
-    }
-
-    private func selection(for entry: StopBoardEntry) -> ReminderSelection {
-        let timetable = timetables.first { $0.lineNumber == entry.lineNumber }
-        let run = timetable?.run(serviceNumber: entry.serviceNumber)
-        // The archive's own spelling of the stop, which is what a reminder is
-        // matched against later. The board's name is the shipped position table's.
-        let stopName = run?.call(matchingStopName: stop.name)?.stopName ?? stop.name
-        let periodEnd = timetable?.validity.compactMap(\.to).min()
-        return ReminderSelection(
-            lineNumber: entry.lineNumber,
-            serviceNumber: entry.serviceNumber,
-            stopName: stopName,
-            departureText: entry.scheduled.text,
-            lastDayText: periodEnd.map { dayText($0) },
-            existing: reminders.reminder(forLine: entry.lineNumber,
-                                         serviceNumber: entry.serviceNumber,
-                                         stopName: stopName)
-        )
-    }
-
-    private func isReminded(_ entry: StopBoardEntry) -> Bool {
-        let timetable = timetables.first { $0.lineNumber == entry.lineNumber }
-        let stopName = timetable?
-            .run(serviceNumber: entry.serviceNumber)?
-            .call(matchingStopName: stop.name)?.stopName ?? stop.name
-        return reminders.reminder(forLine: entry.lineNumber,
-                                  serviceNumber: entry.serviceNumber,
-                                  stopName: stopName) != nil
-    }
-
-    private func dayText(_ day: ServiceDay) -> String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = ReminderSchedule.timeZone
-        guard let date = calendar.date(from: DateComponents(year: day.components.year,
-                                                            month: day.components.month,
-                                                            day: day.components.day)) else {
-            return ""
-        }
-        return date.formatted(date: .abbreviated, time: .omitted)
     }
 
     /// What VoiceOver reads for one row. Built from translated pieces rather than by

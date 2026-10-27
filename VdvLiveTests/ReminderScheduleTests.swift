@@ -4,6 +4,10 @@ import XCTest
 final class ReminderScheduleTests: XCTestCase {
     private let prague = ReminderSchedule.timeZone
 
+    func testLeadOptionsAdvanceInFiveMinuteStepsUpToOneHour() {
+        XCTAssertEqual(Reminder.leadOptions, Array(stride(from: 5, through: 60, by: 5)))
+    }
+
     private func date(_ text: String, hour: Int = 6, minute: Int = 0) throws -> Date {
         let day = try XCTUnwrap(ServiceDay(archiveText: text))
         var calendar = Calendar(identifier: .gregorian)
