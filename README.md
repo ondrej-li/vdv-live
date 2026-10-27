@@ -172,7 +172,7 @@ the subject already filled in.
 
 ## Getting started
 
-Requirements: Xcode 26 or newer and iOS 18 or newer on the device or simulator.
+Requirements: Xcode 26 or newer and iOS 26 or newer on the device or simulator.
 There are no third party dependencies, so there is nothing to resolve before
 building.
 

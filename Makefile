@@ -74,7 +74,7 @@ WATCH_XCODEBUILD := xcodebuild -project $(PROJECT) -derivedDataPath $(DERIVED_DA
 SWIFTC := $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc
 IOS_SIMULATOR_PLATFORM := $(DEVELOPER_DIR)/Platforms/iPhoneSimulator.platform/Developer
 IOS_SIMULATOR_SDK := $(IOS_SIMULATOR_PLATFORM)/SDKs/iPhoneSimulator.sdk
-SWIFT_TARGET ?= arm64-apple-ios18.0-simulator
+SWIFT_TARGET ?= arm64-apple-ios26.0-simulator
 TYPECHECK_DIR := $(DERIVED_DATA)/typecheck
 LIVE_DIR := $(DERIVED_DATA)/live
 # Width the mirrored frames are downscaled to before they reach the browser.

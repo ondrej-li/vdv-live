@@ -200,6 +200,6 @@ private struct LineSummaryRow: View {
     private var lineLabel: Text {
         let number = Text(summary.line).font(.subheadline.weight(.bold))
         guard let licenceArea = summary.licenceAreaCode else { return number }
-        return Text(licenceArea).font(.caption2.weight(.semibold)) + Text(" ") + number
+        return Text("\(Text(licenceArea).font(.caption2.weight(.semibold))) \(number)")
     }
 }
