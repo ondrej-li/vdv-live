@@ -2182,16 +2182,6 @@
         }
       }
     },
-    "Warnings before a service reaches your stop" : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Upozornění před příjezdem spoje na vaši zastávku"
-          }
-        }
-      }
-    },
     "service %@" : {
       "localizations" : {
         "cs" : {
@@ -2402,26 +2392,6 @@
         }
       }
     },
-    "Every day" : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Každý den"
-          }
-        }
-      }
-    },
-    "and public holidays" : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "a státní svátky"
-          }
-        }
-      }
-    },
     "Reading services…" : {
       "localizations" : {
         "cs" : {
@@ -2498,6 +2468,106 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oznámení se počítají ze stažených jízdních řádů, takže respektují dny spoje: školní spoj nejezdí o víkendu ani o svátcích a po konci platnosti řádu se nic nenaplánuje."
+          }
+        }
+      }
+    },
+    "Schedule" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řád"
+          }
+        }
+      }
+    },
+    "Timetable until" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řád do"
+          }
+        }
+      }
+    },
+    "Next notification" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Další oznámení"
+          }
+        }
+      }
+    },
+    "Not on these days" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V tyto dny nic"
+          }
+        }
+      }
+    },
+    "Until the next timetable change" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do změny jízdních řádů"
+          }
+        }
+      }
+    },
+    "working days" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pracovní dny"
+          }
+        }
+      }
+    },
+    "weekends" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "víkendy"
+          }
+        }
+      }
+    },
+    "Sundays" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neděle"
+          }
+        }
+      }
+    },
+    "Sundays and public holidays" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "neděle a svátky"
+          }
+        }
+      }
+    },
+    "every day" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "každý den"
           }
         }
       }

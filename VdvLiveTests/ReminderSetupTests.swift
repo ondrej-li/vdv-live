@@ -138,6 +138,40 @@ final class ReminderSetupTests: XCTestCase {
         XCTAssertFalse(days.hasExceptions)
     }
 
+    func testWorkingDaysAreNamedThatWay() {
+        let days = ReminderSetup.weekdays(from: RunCalendar(rules: [.weekdays]))
+
+        XCTAssertEqual(days.restriction, .workingDays)
+    }
+
+    func testSaturdayAndSundayAreWeekends() {
+        let days = ReminderSetup.weekdays(from: RunCalendar(rules: [.weekday(6), .weekday(7)]))
+
+        XCTAssertEqual(days.restriction, .weekends)
+    }
+
+    func testSundayAloneIsSundays() {
+        let days = ReminderSetup.weekdays(from: RunCalendar(rules: [.weekday(7)]))
+
+        XCTAssertEqual(days.restriction, .sundays)
+    }
+
+    func testSundayServiceThatAlsoRunsOnHolidaysSaysSo() {
+        let days = ReminderSetup.weekdays(from: RunCalendar(rules: [.sundaysAndHolidays]))
+
+        XCTAssertEqual(days.restriction, .sundaysAndHolidays)
+    }
+
+    func testAnUnstatedCalendarIsEveryDay() {
+        XCTAssertEqual(ReminderSetup.weekdays(from: .everyDay).restriction, .everyDay)
+    }
+
+    func testAnythingElseKeepsItsOwnDays() {
+        let days = ReminderSetup.weekdays(from: RunCalendar(rules: [.weekday(3)]))
+
+        XCTAssertEqual(days.restriction, .chosenDays([3]))
+    }
+
     func testDatedExceptionsAreFlagged() throws {
         let exception = RunCalendar.Exception(kind: .noService,
                                               from: try XCTUnwrap(ServiceDay(archiveText: "22122026")),

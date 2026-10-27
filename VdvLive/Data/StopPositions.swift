@@ -109,46 +109,40 @@ struct StopPositions: Sendable {
         positions.values.map(\.name).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
     }
 
-    /// Stop names matching what was typed, the way people type: `nova brnice` finds
-    /// `Zašovice,Nová Brtnice`, and `zasovice` finds `Zašovice`.
+    /// Stop names matching what was typed, the way people type: `nova brtnice` finds
+    /// `Nová Brtnice`, and a slipped letter (`nova betnice`) still finds it.
     ///
     /// Both sides are washed down to the key the file is already keyed by, which drops
     /// case, diacritics, spaces and punctuation - the same fold the positions and the
     /// lines are looked up by, so the search cannot disagree with the rest of the app.
+    /// ``StopNameMatching`` ranks the answers, so a name that begins with the text
+    /// comes before one that merely contains it.
     func names(matching text: String,
                excluding isExcluded: (String) -> Bool = { _ in false },
                limit: Int = 20) -> [String] {
-        let query = Self.lookupKey(for: text)
-        guard !query.isEmpty else { return [] }
+        guard !StopNameMatching.key(for: text).isEmpty else { return [] }
 
         let found = positions.values
-            .map(\.name)
-            .filter { !isExcluded($0) && Self.lookupKey(for: $0).contains(query) }
+            .compactMap { position -> (name: String, quality: StopNameMatching.Quality)? in
+                guard !isExcluded(position.name),
+                      let quality = StopNameMatching.quality(of: position.name, matching: text) else {
+                    return nil
+                }
+                return (position.name, quality)
+            }
 
-        // Names that begin with what was typed come first: typing `telc` should put
-        // Telč's own stops above every other stop that merely mentions the town.
         return found
             .sorted { lhs, rhs in
-                let left = Self.lookupKey(for: lhs)
-                let right = Self.lookupKey(for: rhs)
-                let leftStarts = left.hasPrefix(query)
-                let rightStarts = right.hasPrefix(query)
-                if leftStarts != rightStarts { return leftStarts }
-                return left.localizedStandardCompare(right) == .orderedAscending
+                if lhs.quality != rhs.quality { return lhs.quality < rhs.quality }
+                return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
             }
             .prefix(limit)
-            .map { $0 }
+            .map(\.name)
     }
 
     /// Case, diacritics, spaces and punctuation washed out, matching how the file is keyed.
     static func lookupKey(for name: String) -> String {
-        let folded = name.folding(options: [.diacriticInsensitive, .caseInsensitive],
-                                  locale: Locale(identifier: "en_US_POSIX"))
-        return folded.unicodeScalars.reduce(into: "") { key, scalar in
-            if CharacterSet.alphanumerics.contains(scalar) {
-                key.unicodeScalars.append(scalar)
-            }
-        }
+        StopNameMatching.key(for: name)
     }
 
     private struct Document: Decodable {

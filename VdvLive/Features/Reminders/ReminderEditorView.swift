@@ -15,6 +15,7 @@ struct ReminderEditorView: View {
     @State private var searchText = ""
     @State private var selectedStop: String?
     @State private var selectedLine: ReminderSetup.Line?
+    @State private var selectedTimetable: LineTimetable?
     @State private var selectedService: ReminderSetup.Service?
     @State private var lineChoices: [ReminderSetup.Line] = []
     @State private var serviceChoices: [ReminderSetup.Service] = []
@@ -31,10 +32,14 @@ struct ReminderEditorView: View {
         case customize
     }
 
+    /// Stops to offer: everything when nothing is typed, otherwise the matcher's
+    /// answers, which ignore accents and forgive a slipped letter.
     private var filteredStops: [String] {
-        let names = viewModel.allStopNames.filter { !viewModel.lines(atStopNamed: $0).isEmpty }
-        guard !searchText.isEmpty else { return names }
-        return names.filter { $0.localizedCaseInsensitiveContains(searchText) }
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else {
+            return viewModel.allStopNames.filter { !viewModel.lines(atStopNamed: $0).isEmpty }
+        }
+        return viewModel.stopNames(matching: query)
     }
 
     var body: some View {
@@ -169,12 +174,26 @@ struct ReminderEditorView: View {
                     LabeledContent("Service") {
                         Text(String(format: String(localized: "service %@"), selectedService.serviceNumber))
                     }
+                }
+
+                // The schedule the notification will follow, so the lead and the
+                // excluded days are chosen against something visible.
+                Section {
                     LabeledContent("Departs") {
                         Text(selectedService.departure.text).monospacedDigit()
                     }
                     LabeledContent("Runs") {
-                        Text(daySummary(selectedService.days))
+                        Text(restrictionLabel(selectedService.days.restriction))
                     }
+                    LabeledContent("Timetable until") {
+                        Text(timetableEndText)
+                    }
+                    LabeledContent("Next notification") {
+                        Text(nextNotificationText)
+                            .foregroundStyle(nextNotification == nil ? Color.secondary : Color.primary)
+                    }
+                } header: {
+                    Text("Schedule")
                 }
 
                 Section {
@@ -276,6 +295,7 @@ struct ReminderEditorView: View {
                 errorMessage = String(localized: "No timetable is available for this line.")
                 return
             }
+            selectedTimetable = timetable
             serviceChoices = ReminderSetup.services(in: timetable, atStopNamed: line.stopName)
             step = .service
         } catch {
@@ -325,25 +345,76 @@ struct ReminderEditorView: View {
 
     // MARK: - Words
 
+    /// The departure and the days, as one line: what the service is, in terms a
+    /// printed timetable also uses.
     private func serviceCaption(_ service: ReminderSetup.Service) -> String {
-        "\(service.departure.text) · \(daySummary(service.days))"
+        "\(service.departure.text) · \(restrictionLabel(service.days.restriction))"
     }
 
-    private func daySummary(_ weekdays: ReminderSetup.Weekdays) -> String {
-        let names = weekdays.days.sorted().map(Self.weekdayName)
-        var summary: String
-        if weekdays.isEveryDay {
-            summary = String(localized: "Every day")
-        } else if weekdays.days == Set(1...5) {
-            summary = "\(names.first ?? "")–\(names.last ?? "")"
-        } else {
-            summary = ListFormatter.localizedString(byJoining: names)
+    /// How the archive's restriction is named: "working days", "weekends", "Sundays",
+    /// or the days themselves when it is something else.
+    private func restrictionLabel(_ restriction: ReminderSetup.Restriction) -> String {
+        switch restriction {
+        case .everyDay:
+            return String(localized: "every day")
+        case .workingDays:
+            return String(localized: "working days")
+        case .weekends:
+            return String(localized: "weekends")
+        case .sundays:
+            return String(localized: "Sundays")
+        case .sundaysAndHolidays:
+            return String(localized: "Sundays and public holidays")
+        case .chosenDays(let days):
+            return ListFormatter.localizedString(byJoining: days.sorted().map(Self.weekdayName))
         }
-        if weekdays.includesHolidays {
-            summary += " " + String(localized: "and public holidays")
-        }
-        return summary
     }
+
+    /// The last day the timetable is published for, or the next change of timetables
+    /// when the archive left the end open.
+    private var timetableEndText: String {
+        guard let end = selectedTimetable?.validity.compactMap(\.to).min() else {
+            return String(localized: "Until the next timetable change")
+        }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = ReminderSchedule.timeZone
+        let parts = end.components
+        guard let date = calendar.date(from: DateComponents(year: parts.year,
+                                                            month: parts.month,
+                                                            day: parts.day)) else {
+            return String(localized: "Until the next timetable change")
+        }
+        return date.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    /// The first moment the notification would arrive with the choices on screen.
+    private var nextNotification: Date? {
+        guard let timetable = selectedTimetable,
+              let line = selectedLine,
+              let service = selectedService else { return nil }
+        let reminder = Reminder(lineNumber: line.lineNumber,
+                                serviceNumber: service.serviceNumber,
+                                stopName: service.stopName,
+                                leadMinutes: leadMinutes,
+                                excludedWeekdays: excludedWeekdays)
+        return ReminderSchedule.occurrences(for: reminder, in: timetable, now: Date()).first?.fireAt
+    }
+
+    private var nextNotificationText: String {
+        guard let nextNotification else { return String(localized: "Not on these days") }
+        return Self.fireDateFormatter.string(from: nextNotification)
+    }
+
+    /// A fire time is a timetable moment, so it is shown in the timetables' own zone
+    /// whatever the phone is set to.
+    private static let fireDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.timeZone = ReminderSchedule.timeZone
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
 
     private func leadLabel(_ minutes: Int) -> String {
         String(format: String(localized: "%lld min before"), minutes)
