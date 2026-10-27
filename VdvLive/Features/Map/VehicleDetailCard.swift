@@ -27,7 +27,7 @@ struct VehicleDetailCard: View {
 
     /// The card is a drawer: it opens short, with the few things a passenger came
     /// for, and is pulled up when the timetable is what they want.
-    @State private var isExpanded = false
+    @State private var isExpanded = ScreenshotRoute.startsExpanded
     /// Live drag distance, negative while the card is being pulled up. It moves the
     /// card, it never resizes it: a height that changes with every frame would be
     /// laid out and measured again on every frame, which is what hung the app.

@@ -95,7 +95,10 @@ struct VehicleMapView: View {
             centreOnFollowedVehicle()
         }
         .environment(reminders)
-        .task { await viewModel.loadIfNeeded() }
+        .task {
+            await viewModel.loadIfNeeded()
+            await applyScreenshotRoute()
+        }
         .task { await reminders.scheduleAll() }
         .onReceive(NotificationCenter.default.publisher(for: .reminderNotificationTapped)) { note in
             if let info = note.object as? [AnyHashable: Any] {
@@ -590,6 +593,59 @@ struct VehicleMapView: View {
     /// The filter is nudged so the vehicle is actually on screen afterwards:
     /// pinned lines switch to the pinned filter, anything else falls back to
     /// showing every traction.
+    /// Opens the screen a screenshot asked for, after the first payload is in.
+    ///
+    /// Debug only in effect: every answer `ScreenshotRoute` gives is empty in a
+    /// Release build, so this is a no-op in the archive.
+    private func applyScreenshotRoute() async {
+        if ScreenshotRoute.downloadsTimetables, !viewModel.timetables.isReady {
+            await viewModel.timetables.downloadIndex()
+        }
+        if ScreenshotRoute.showsAllVehicles {
+            viewModel.select(filter: .all)
+        }
+        if ScreenshotRoute.opensSettings {
+            isShowingSettings = true
+        }
+        if let stopName = ScreenshotRoute.boardStopName,
+           let stop = viewModel.position(forStopNamed: stopName) {
+            boardStop = stop
+        }
+        if let line = ScreenshotRoute.serviceLine {
+            await showService(onLine: line)
+        }
+    }
+
+    /// Selects the first running vehicle of a line and lets the map settle on it, so
+    /// the detail card - and with it the timetable drawer - is on screen.
+    private func showService(onLine line: String) async {
+        for _ in 0..<80 where viewModel.clusters.isEmpty {
+            try? await Task.sleep(for: .milliseconds(250))
+        }
+        // A marker holding two vehicles opens the group card, which has no
+        // timetable, so the shot needs one that stands alone.
+        let wanted = FavouriteLines.normalize(line)
+        let candidates = viewModel.clusters
+            .filter { $0.vehicles.count == 1 }
+            .flatMap(\.vehicles)
+            .filter { FavouriteLines.normalize($0.line) == wanted }
+
+        for vehicle in candidates.prefix(8) {
+            focus(on: vehicle)
+            // Clusters are built for the viewport, so the marker only exists once
+            // the camera has arrived and the region change has been applied.
+            for _ in 0..<12 {
+                try? await Task.sleep(for: .milliseconds(250))
+                if let cluster = viewModel.clusters.first(where: {
+                    $0.vehicles.count == 1 && $0.vehicles[0].id == vehicle.id
+                }) {
+                    viewModel.selectedClusterID = cluster.id
+                    return
+                }
+            }
+        }
+    }
+
     private func focus(onLine line: String) {
         guard let vehicle = viewModel.firstVehicle(forLine: line) else { return }
         // Flying somewhere is a deliberate camera move, so following gives way.
