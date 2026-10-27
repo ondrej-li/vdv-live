@@ -2571,6 +2571,26 @@
           }
         }
       }
+    },
+    "Direction" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Směr"
+          }
+        }
+      }
+    },
+    "%@ – %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ – %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

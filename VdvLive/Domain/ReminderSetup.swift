@@ -31,6 +31,14 @@ enum ReminderSetup {
         let departure: TimeOfDay
         /// Which days the run operates on, as the archive states them.
         let days: Weekdays
+        /// First call of the run, as the timetable names it.
+        ///
+        /// A line usually runs both ways and its runs are numbered in one sequence,
+        /// so `spoj 1` and `spoj 2` do not say which direction either is. The two
+        /// ends of the run are what a passenger reads instead.
+        let origin: String
+        /// Last call of the run, as the timetable names it.
+        let destination: String
 
         var id: String { serviceNumber }
     }
@@ -90,7 +98,9 @@ enum ReminderSetup {
             return Service(serviceNumber: run.serviceNumber,
                            stopName: call.stopName,
                            departure: departure,
-                           days: weekdays(from: run.calendar))
+                           days: weekdays(from: run.calendar),
+                           origin: run.calls.first?.stopName ?? call.stopName,
+                           destination: run.calls.last?.stopName ?? call.stopName)
         }
         .sorted {
             $0.serviceNumber.compare($1.serviceNumber, options: .numeric) == .orderedAscending

@@ -94,6 +94,50 @@ final class ReminderSetupTests: XCTestCase {
         XCTAssertEqual(services.first?.departure, TimeOfDay(minutes: 7 * 60 + 5))
     }
 
+    /// A line runs both ways, and its runs are numbered in one sequence, so the two
+    /// directions have to be told apart by where they go.
+    func testServicesCarryTheDirectionTheyRunIn() {
+        let outbound = ScheduledRun(serviceNumber: "1", calls: [
+            call(1, "Telč,,aut.nádr.", at: 7 * 60),
+            call(2, "Třešť,,nám.", at: 7 * 60 + 25),
+            call(3, "Brtnice", at: 7 * 60 + 50)
+        ])
+        let inbound = ScheduledRun(serviceNumber: "2", calls: [
+            call(1, "Brtnice", at: 8 * 60),
+            call(2, "Třešť,,nám.", at: 8 * 60 + 25),
+            call(3, "Telč,,aut.nádr.", at: 8 * 60 + 50)
+        ])
+        let line = timetable(lineNumber: "764421", displayNumber: "421", runs: [outbound, inbound])
+
+        let services = ReminderSetup.services(in: line, atStopNamed: "Třešť,nám.")
+
+        XCTAssertEqual(services.map(\.serviceNumber), ["1", "2"])
+        XCTAssertEqual(services[0].origin, "Telč,,aut.nádr.")
+        XCTAssertEqual(services[0].destination, "Brtnice")
+        XCTAssertEqual(services[1].origin, "Brtnice")
+        XCTAssertEqual(services[1].destination, "Telč,,aut.nádr.")
+        XCTAssertNotEqual(services[0].origin, services[1].origin,
+                          "the two directions must not look the same")
+    }
+
+    /// The run goes on past the chosen stop, so the direction is the whole run's.
+    func testDirectionIsTheWholeRunNotTheStop() {
+        let line = timetable(
+            lineNumber: "764421",
+            displayNumber: "421",
+            runs: [ScheduledRun(serviceNumber: "5", calls: [
+                call(1, "Start", at: 6 * 60),
+                call(2, "Zastávka", at: 6 * 60 + 10),
+                call(3, "End", at: 6 * 60 + 30)
+            ])]
+        )
+
+        let service = ReminderSetup.services(in: line, atStopNamed: "Zastávka").first
+
+        XCTAssertEqual(service?.origin, "Start")
+        XCTAssertEqual(service?.destination, "End")
+    }
+
     func testAServiceKeepsTheArchivesStopSpelling() {
         let line = timetable(
             lineNumber: "764421",
