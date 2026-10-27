@@ -144,14 +144,16 @@ struct SettingsSheet: View {
                         )
                     }
 
-                    NavigationLink {
-                        RemindersView()
-                    } label: {
-                        SettingsRow(
-                            title: "Reminders",
-                            systemImage: "bell",
-                            subtitle: "Warnings before a service reaches your stop"
-                        )
+                    if let viewModel {
+                        NavigationLink {
+                            RemindersView(viewModel: viewModel)
+                        } label: {
+                            SettingsRow(
+                                title: "Reminders",
+                                systemImage: "bell",
+                                subtitle: "Warnings before a service reaches your stop"
+                            )
+                        }
                     }
 
                     NavigationLink {

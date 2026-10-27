@@ -45,7 +45,7 @@ struct Reminder: Codable, Identifiable, Hashable, Sendable {
     }
 
     /// Leads a reader is offered, in minutes.
-    static let leadOptions = [0, 5, 10, 15, 30]
+    static let leadOptions = Array(stride(from: 5, through: 60, by: 5))
 
     /// How far ahead reminders are scheduled.
     ///

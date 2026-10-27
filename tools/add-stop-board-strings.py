@@ -46,9 +46,28 @@ TRANSLATIONS = {
     "not departed yet": "ještě neodjelo",
     "Line %@, scheduled %@, %@, %@": "Linka %@, podle řádu %@, %@, %@",
     "Reminders": "Připomínky",
-    "Remind me": "Připomenout",
     "Warn me": "Upozornit",
     "At departure": "V době odjezdu",
+    "Add notification": "Přidat upozornění",
+    "Tap + to add a notification.": "Klepnutím na + přidáte upozornění.",
+    "Search stops": "Hledat zastávky",
+    "Select stop": "Vybrat zastávku",
+    "Select line": "Vybrat linku",
+    "Select service": "Vybrat spoj",
+    "Customize": "Přizpůsobit",
+    "Loading timetable…": "Načítám jízdní řád…",
+    "No lines at this stop": "V této zastávce nejsou linky",
+    "No line is listed for this stop.": "Pro tuto zastávku není uvedena žádná linka.",
+    "No timetable is available for this line.": "Pro tuto linku není dostupný jízdní řád.",
+    "No services at this stop": "V této zastávce nejsou spoje",
+    "This line has no timed service calling at the selected stop.":
+        "Na této lince v této zastávce nezastavuje žádný časovaný spoj.",
+    "Notify me": "Upozornit",
+    "How far ahead": "S jakým předstihem",
+    "Exclude days": "Vynechat dny",
+    "Download timetables in Settings before adding a notification.":
+        "Před přidáním upozornění stáhněte jízdní řády v Nastavení.",
+    "Unable to load timetables": "Jízdní řády se nepodařilo načíst",
     "%lld min before": {
         "one": "%lld minutu předem",
         "few": "%lld minuty předem",
@@ -63,8 +82,6 @@ TRANSLATIONS = {
     "New reminder": "Nová připomínka",
     "Reminder": "Připomínka",
     "Delete reminder": "Smazat připomínku",
-    "No reminders yet. Open a stop's board and tap the bell next to a departure.":
-        "Zatím žádné připomínky. Otevřete tabuli zastávky a klepněte na zvonek u odjezdu.",
     "Notifications are turned off for this app, so no reminder can arrive. Turn them on in the system settings.":
         "Oznámení jsou pro tuto aplikaci vypnutá, takže žádná připomínka nedorazí. Zapněte je v nastavení systému.",
     "Line %@ has no timetable on this device, so its reminders cannot be scheduled.":

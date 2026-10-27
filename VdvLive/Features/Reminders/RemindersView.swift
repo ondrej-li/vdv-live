@@ -6,8 +6,10 @@ import SwiftUI
 /// Reached from Settings, because a reminder is set once and then forgotten about -
 /// which is the point of it.
 struct RemindersView: View {
+    let viewModel: VehicleMapViewModel
+
     @Environment(ReminderCenter.self) private var center
-    @State private var pendingDelete: Reminder?
+    @State private var isAddingReminder = false
 
     var body: some View {
         List {
@@ -36,7 +38,7 @@ struct RemindersView: View {
 
             Section {
                 if center.reminders.isEmpty {
-                    Text("No reminders yet. Open a stop's board and tap the bell next to a departure.")
+                    Text("Tap + to add a notification.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 } else {
@@ -57,6 +59,24 @@ struct RemindersView: View {
         }
         .navigationTitle("Reminders")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    isAddingReminder = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel(Text("Add notification"))
+            }
+        }
+        .sheet(isPresented: $isAddingReminder) {
+            ReminderEditorView(viewModel: viewModel) { reminder in
+                Task {
+                    await center.requestPermissionIfNeeded()
+                    await center.save(reminder)
+                }
+            }
+        }
         .task { await center.scheduleAll() }
     }
 
