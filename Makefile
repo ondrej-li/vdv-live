@@ -131,7 +131,7 @@ PNG_STRIP := python3 tools/strip-png-metadata.py
 # artwork must not have; this draws them opaque before the strip below.
 PNG_FLATTEN := swift tools/flatten-png.swift
 
-.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch creative
+.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch creative screenshots
 
 all: build
 
@@ -346,6 +346,113 @@ shots-watch: watch
 	@rm -f '$(APPSTORE_SHOTS)/watch-49mm.raw.png'
 	$(PNG_STRIP) '$(APPSTORE_SHOTS)/watch-49mm.png'
 	@echo "wrote $(APPSTORE_SHOTS)/watch-49mm.png"
+
+# --- Screenshots kept with the repo ----------------------------------------
+#
+# The App Store artwork, captured from a clean simulator at the two sizes Apple
+# asks for, and on the watch. Screens that need a tap to reach are opened by the
+# debug-only launch arguments in `ScreenshotRoute`, so `make screenshots`
+# reproduces the same frames on any Mac.
+SCREENSHOT_DIR := screenshots
+SCREENSHOT_DELAY ?= 15
+SCREENSHOT_BOARD_DELAY ?= 40
+SCREENSHOT_SERVICE_DELAY ?= 40
+SCREENSHOT_WATCH_DELAY ?= 30
+# The iPad shows far more of the region at the same span, which turns the markers
+# into a crowd, so it opens tighter.
+SHOT_IPAD_LATITUDE ?= 49.4
+SHOT_IPAD_LONGITUDE ?= 15.6
+SHOT_IPAD_LATITUDE_DELTA ?= 0.36
+SHOT_IPAD_LONGITUDE_DELTA ?= 0.52
+# A stop with enough lines that its board fills the screen, and a line that is
+# usually running. Both are text, so a different region needs different values.
+SCREENSHOT_ARGS := -screenshotAllVehicles
+SCREENSHOT_BOARD_ARGS := $(SCREENSHOT_ARGS) -screenshotDownloadTimetables -screenshotBoard 'Třebíč,aut.nádr.'
+SCREENSHOT_SERVICE_ARGS := $(SCREENSHOT_ARGS) -screenshotDownloadTimetables -screenshotExpandTimetable -screenshotService 410
+
+# prepare-shot-device(device, latitude, longitude, latitude delta, longitude delta):
+# boot it, make it look like a photograph rather than
+# a phone someone has been using, install the app, and seed the preferences that
+# keep the map and the permission alert out of the picture.
+define prepare-shot-device
+@echo "preparing $(1)"; \
+xcrun simctl shutdown '$(1)' >/dev/null 2>&1 || true; \
+xcrun simctl boot '$(1)' >/dev/null 2>&1 || true; \
+xcrun simctl bootstatus '$(1)' -b >/dev/null 2>&1 || true; \
+xcrun simctl status_bar '$(1)' override --time '9:41' --dataNetwork wifi --wifiBars 3 \
+	--cellularBars 4 --batteryState charged --batteryLevel 100 >/dev/null 2>&1 || true; \
+xcrun simctl terminate '$(1)' $(APP_ID) >/dev/null 2>&1 || true; \
+xcrun simctl uninstall '$(1)' $(APP_ID) >/dev/null 2>&1 || true; \
+xcrun simctl install '$(1)' '$(APP_BUNDLE)'; \
+container=$$(xcrun simctl get_app_container '$(1)' $(APP_ID) data); \
+mkdir -p "$$container/Library/Preferences"; \
+plutil -create xml1 "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert startsAtCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert showsCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView -dictionary "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.latitude -float $(2) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.longitude -float $(3) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.latitudeDelta -float $(4) "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert savedMapView.longitudeDelta -float $(5) "$$container/Library/Preferences/$(APP_ID).plist"
+endef
+
+# capture-screen(device, path, delay, launch arguments): relaunch the installed app
+# with the arguments the shot needs, wait for it to settle, and write a PNG that
+# App Store Connect accepts.
+define capture-screen
+@echo "capturing $(1) -> $(2)"; \
+xcrun simctl terminate '$(1)' $(APP_ID) >/dev/null 2>&1 || true; \
+xcrun simctl launch '$(1)' $(APP_ID) $(4) >/dev/null; \
+sleep $(3); \
+xcrun simctl io '$(1)' screenshot '$(2).raw.png'; \
+$(PNG_FLATTEN) '$(2).raw.png' '$(2)'; \
+rm -f '$(2).raw.png'; \
+$(PNG_STRIP) '$(2)'
+endef
+
+## Capture the screenshots kept with the repo, for the iPhone, iPad and watch.
+screenshots: build watch
+	@mkdir -p '$(SCREENSHOT_DIR)/iphone' '$(SCREENSHOT_DIR)/ipad' '$(SCREENSHOT_DIR)/watch'
+	@xcrun simctl list devices available | grep -q '$(SHOT_IPHONE) (' || \
+		xcrun simctl create '$(SHOT_IPHONE)' $(SHOT_IPHONE_TYPE) $(SHOT_IPHONE_RUNTIME)
+	$(call prepare-shot-device,$(SHOT_IPHONE),$(SHOT_LATITUDE),$(SHOT_LONGITUDE),$(SHOT_LATITUDE_DELTA),$(SHOT_LONGITUDE_DELTA))
+	$(call capture-screen,$(SHOT_IPHONE),$(SCREENSHOT_DIR)/iphone/01-main.png,$(SCREENSHOT_DELAY),$(SCREENSHOT_ARGS))
+	$(call capture-screen,$(SHOT_IPHONE),$(SCREENSHOT_DIR)/iphone/02-settings.png,$(SCREENSHOT_DELAY),$(SCREENSHOT_ARGS) -screenshotSettings)
+	$(call capture-screen,$(SHOT_IPHONE),$(SCREENSHOT_DIR)/iphone/03-service-timetable.png,$(SCREENSHOT_SERVICE_DELAY),$(SCREENSHOT_SERVICE_ARGS))
+	$(call capture-screen,$(SHOT_IPHONE),$(SCREENSHOT_DIR)/iphone/04-departure-board.png,$(SCREENSHOT_BOARD_DELAY),$(SCREENSHOT_BOARD_ARGS))
+	$(call prepare-shot-device,$(SHOT_IPAD),$(SHOT_IPAD_LATITUDE),$(SHOT_IPAD_LONGITUDE),$(SHOT_IPAD_LATITUDE_DELTA),$(SHOT_IPAD_LONGITUDE_DELTA))
+	$(call capture-screen,$(SHOT_IPAD),$(SCREENSHOT_DIR)/ipad/01-main.png,$(SCREENSHOT_DELAY),$(SCREENSHOT_ARGS))
+	$(call capture-screen,$(SHOT_IPAD),$(SCREENSHOT_DIR)/ipad/02-settings.png,$(SCREENSHOT_DELAY),$(SCREENSHOT_ARGS) -screenshotSettings)
+	$(call capture-screen,$(SHOT_IPAD),$(SCREENSHOT_DIR)/ipad/03-service-timetable.png,$(SCREENSHOT_SERVICE_DELAY),$(SCREENSHOT_SERVICE_ARGS))
+	$(call capture-screen,$(SHOT_IPAD),$(SCREENSHOT_DIR)/ipad/04-departure-board.png,$(SCREENSHOT_BOARD_DELAY),$(SCREENSHOT_BOARD_ARGS))
+	@$(call capture-watch-screens)
+	@echo "wrote $(SCREENSHOT_DIR) - iphone 1206x2622, ipad 2064x2752"
+
+# The watch shots: the map, and the detail sheet `-watchSelectFirst` opens. The
+# watch reads its pinned lines from its own defaults on a Mac, so two are seeded.
+define capture-watch-screens
+xcrun simctl boot '$(SHOT_WATCH)' >/dev/null 2>&1 || true; \
+xcrun simctl bootstatus '$(SHOT_WATCH)' -b >/dev/null 2>&1 || true; \
+xcrun simctl status_bar '$(SHOT_WATCH)' override --time '9:41' --batteryState charged --batteryLevel 100 >/dev/null 2>&1 || true; \
+xcrun simctl terminate '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null 2>&1 || true; \
+xcrun simctl uninstall '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null 2>&1 || true; \
+xcrun simctl spawn '$(SHOT_WATCH)' defaults write $(WATCH_ID) favouriteLines \
+	-array 358300 764330; \
+xcrun simctl install '$(SHOT_WATCH)' '$(WATCH_APP)'; \
+xcrun simctl launch '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null; \
+sleep $(SCREENSHOT_WATCH_DELAY); \
+xcrun simctl io '$(SHOT_WATCH)' screenshot '$(SCREENSHOT_DIR)/watch/01-main.raw.png'; \
+$(PNG_FLATTEN) '$(SCREENSHOT_DIR)/watch/01-main.raw.png' '$(SCREENSHOT_DIR)/watch/01-main.png'; \
+rm -f '$(SCREENSHOT_DIR)/watch/01-main.raw.png'; \
+$(PNG_STRIP) '$(SCREENSHOT_DIR)/watch/01-main.png'; \
+xcrun simctl terminate '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null 2>&1 || true; \
+xcrun simctl launch '$(SHOT_WATCH)' $(WATCH_ID) -watchSelectFirst >/dev/null; \
+sleep 6; \
+xcrun simctl io '$(SHOT_WATCH)' screenshot '$(SCREENSHOT_DIR)/watch/02-service.raw.png'; \
+$(PNG_FLATTEN) '$(SCREENSHOT_DIR)/watch/02-service.raw.png' '$(SCREENSHOT_DIR)/watch/02-service.png'; \
+rm -f '$(SCREENSHOT_DIR)/watch/02-service.raw.png'; \
+$(PNG_STRIP) '$(SCREENSHOT_DIR)/watch/02-service.png'
+endef
 
 ## Save a screenshot of the running app from the booted simulator.
 screenshot:
