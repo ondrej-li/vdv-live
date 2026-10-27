@@ -1,6 +1,10 @@
 import SwiftUI
 
-/// Adds a notification by choosing its stop, line, service, and notification rules.
+/// Adds a notification by choosing its stop, line, service, and then how it warns.
+///
+/// This is the only way a notification is set up. Everything before the last step is
+/// a timetable fact - which lines call at the stop, which runs of that line do - so
+/// the schedule the notification follows is the service's own.
 struct ReminderEditorView: View {
     let viewModel: VehicleMapViewModel
     let onSave: (Reminder) -> Void
@@ -10,11 +14,12 @@ struct ReminderEditorView: View {
     @State private var step: Step = .stop
     @State private var searchText = ""
     @State private var selectedStop: String?
-    @State private var selectedLine: LineTimetable?
-    @State private var selectedService: ServiceChoice?
-    @State private var lineChoices: [String] = []
-    @State private var serviceChoices: [ServiceChoice] = []
-    @State private var isLoading = false
+    @State private var selectedLine: ReminderSetup.Line?
+    @State private var selectedService: ReminderSetup.Service?
+    @State private var lineChoices: [ReminderSetup.Line] = []
+    @State private var serviceChoices: [ReminderSetup.Service] = []
+    @State private var isLoadingLines = false
+    @State private var isLoadingServices = false
     @State private var errorMessage: String?
     @State private var leadMinutes = 10
     @State private var excludedWeekdays: Set<Int> = []
@@ -24,12 +29,6 @@ struct ReminderEditorView: View {
         case line
         case service
         case customize
-    }
-
-    private struct ServiceChoice: Identifiable {
-        let run: ScheduledRun
-        let stopName: String
-        var id: String { run.serviceNumber }
     }
 
     private var filteredStops: [String] {
@@ -79,6 +78,8 @@ struct ReminderEditorView: View {
         }
     }
 
+    // MARK: - Step 1: the stop
+
     private var stopPicker: some View {
         List(filteredStops, id: \.self) { stop in
             Button {
@@ -105,72 +106,75 @@ struct ReminderEditorView: View {
                 }
             }
         }
-        .disabled(isLoading || !viewModel.timetables.isReady)
+        .disabled(!viewModel.timetables.isReady)
     }
+
+    // MARK: - Step 2: the line
 
     private var linePicker: some View {
         List {
-            if isLoading {
+            if isLoadingLines {
                 ProgressView("Loading timetable…")
             } else if lineChoices.isEmpty {
                 ContentUnavailableView("No lines at this stop",
                                        systemImage: "bus",
                                        description: Text("No line is listed for this stop."))
             } else {
-                ForEach(lineChoices, id: \.self) { lineNumber in
+                ForEach(lineChoices) { line in
                     Button {
-                        Task { await choose(lineNumber: lineNumber) }
+                        Task { await choose(line: line) }
                     } label: {
-                        HStack {
-                            Text(LineCode(raw: lineNumber).number)
-                                .font(.body.weight(.semibold).monospacedDigit())
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.tertiary)
-                        }
+                        row(title: line.displayNumber,
+                            caption: line.routeName.isEmpty ? nil : line.routeName)
                     }
-                    .disabled(isLoading)
+                    .disabled(isLoadingServices)
                     .buttonStyle(.plain)
                 }
             }
         }
     }
 
+    // MARK: - Step 3: the service
+
     private var servicePicker: some View {
-        List(serviceChoices) { choice in
-            Button {
-                selectedService = choice
-                leadMinutes = existingReminder(for: choice)?.leadMinutes ?? 10
-                excludedWeekdays = existingReminder(for: choice)?.excludedWeekdays ?? []
-                step = .customize
-            } label: {
-                HStack {
-                    Text(String(format: String(localized: "service %@"), choice.run.serviceNumber))
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                }
-            }
-            .buttonStyle(.plain)
-        }
-        .overlay {
-            if serviceChoices.isEmpty {
+        List {
+            if isLoadingServices {
+                ProgressView("Reading services…")
+            } else if serviceChoices.isEmpty {
                 ContentUnavailableView("No services at this stop",
                                        systemImage: "bus",
                                        description: Text("This line has no timed service calling at the selected stop."))
+            } else {
+                ForEach(serviceChoices) { service in
+                    Button {
+                        choose(service: service)
+                    } label: {
+                        row(title: String(format: String(localized: "service %@"), service.serviceNumber),
+                            caption: serviceCaption(service))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
+
+    // MARK: - Step 4: how it warns
 
     private var customization: some View {
         Form {
             if let selectedStop, let selectedLine, let selectedService {
                 Section {
-                    LabeledContent("Stop", value: selectedStop)
+                    LabeledContent("Stop", value: selectedStop.replacingOccurrences(of: ",", with: ", "))
                     LabeledContent("Line", value: selectedLine.displayNumber)
-                    LabeledContent("Service", value: selectedService.run.serviceNumber)
+                    LabeledContent("Service") {
+                        Text(String(format: String(localized: "service %@"), selectedService.serviceNumber))
+                    }
+                    LabeledContent("Departs") {
+                        Text(selectedService.departure.text).monospacedDigit()
+                    }
+                    LabeledContent("Runs") {
+                        Text(daySummary(selectedService.days))
+                    }
                 }
 
                 Section {
@@ -191,17 +195,40 @@ struct ReminderEditorView: View {
                     }
                 } header: {
                     Text("Exclude days")
+                } footer: {
+                    Text("A day the service does not run on, or a public holiday, is left out on its own.")
                 }
             }
         }
     }
 
+    // MARK: - Chrome
+
+    private func row(title: String, caption: String?) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.body.weight(.semibold).monospacedDigit())
+                if let caption {
+                    Text(caption)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
+    }
+
     private var title: String {
         switch step {
-        case .stop: "Select stop"
-        case .line: "Select line"
-        case .service: "Select service"
-        case .customize: "Customize"
+        case .stop: String(localized: "Select stop")
+        case .line: String(localized: "Select line")
+        case .service: String(localized: "Select service")
+        case .customize: String(localized: "Customize")
         }
     }
 
@@ -212,49 +239,63 @@ struct ReminderEditorView: View {
         )
     }
 
+    // MARK: - Choosing
+
     private func choose(stop: String) {
         guard viewModel.timetables.isReady else { return }
         selectedStop = stop
         selectedLine = nil
         selectedService = nil
-        lineChoices = viewModel.lines(atStopNamed: stop).sorted {
-            LineCode(raw: $0).number.localizedStandardCompare(LineCode(raw: $1).number) == .orderedAscending
-        }
+        lineChoices = []
         step = .line
+        Task { await loadLines(at: stop) }
     }
 
-    private func choose(lineNumber: String) async {
-        guard let selectedStop else { return }
-        selectedLine = nil
+    private func loadLines(at stop: String) async {
+        isLoadingLines = true
+        defer { isLoadingLines = false }
+
+        var loaded: [LineTimetable] = []
+        for lineNumber in viewModel.lines(atStopNamed: stop) {
+            if let timetable = try? await viewModel.timetables.timetable(forLine: lineNumber) {
+                loaded.append(timetable)
+            }
+        }
+        lineChoices = ReminderSetup.lines(in: loaded, atStopNamed: stop)
+    }
+
+    private func choose(line: ReminderSetup.Line) async {
+        selectedLine = line
         selectedService = nil
-        isLoading = true
-        defer { isLoading = false }
+        serviceChoices = []
+        isLoadingServices = true
+        defer { isLoadingServices = false }
+
         do {
-            guard let timetable = try await viewModel.timetables.timetable(forLine: lineNumber) else {
+            guard let timetable = try await viewModel.timetables.timetable(forLine: line.lineNumber) else {
                 errorMessage = String(localized: "No timetable is available for this line.")
                 return
             }
-            selectedLine = timetable
-            serviceChoices = services(in: timetable, at: selectedStop)
+            serviceChoices = ReminderSetup.services(in: timetable, atStopNamed: line.stopName)
             step = .service
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    private func services(in timetable: LineTimetable, at stopName: String) -> [ServiceChoice] {
-        timetable.runs.compactMap { run in
-            guard let call = run.call(matchingStopName: stopName), call.time != nil else { return nil }
-            return ServiceChoice(run: run, stopName: call.stopName)
-        }
-        .sorted { $0.run.serviceNumber.compare($1.run.serviceNumber, options: .numeric) == .orderedAscending }
+    private func choose(service: ReminderSetup.Service) {
+        selectedService = service
+        let existing = existingReminder(for: service)
+        leadMinutes = existing?.leadMinutes ?? 10
+        excludedWeekdays = existing?.excludedWeekdays ?? []
+        step = .customize
     }
 
-    private func existingReminder(for choice: ServiceChoice) -> Reminder? {
+    private func existingReminder(for service: ReminderSetup.Service) -> Reminder? {
         guard let selectedLine else { return nil }
         return center.reminder(forLine: selectedLine.lineNumber,
-                               serviceNumber: choice.run.serviceNumber,
-                               stopName: choice.stopName)
+                               serviceNumber: service.serviceNumber,
+                               stopName: service.stopName)
     }
 
     private func save() {
@@ -262,7 +303,7 @@ struct ReminderEditorView: View {
         let existing = existingReminder(for: selectedService)
         onSave(Reminder(id: existing?.id ?? UUID(),
                         lineNumber: selectedLine.lineNumber,
-                        serviceNumber: selectedService.run.serviceNumber,
+                        serviceNumber: selectedService.serviceNumber,
                         stopName: selectedService.stopName,
                         leadMinutes: leadMinutes,
                         excludedWeekdays: excludedWeekdays))
@@ -282,10 +323,30 @@ struct ReminderEditorView: View {
         }
     }
 
+    // MARK: - Words
+
+    private func serviceCaption(_ service: ReminderSetup.Service) -> String {
+        "\(service.departure.text) · \(daySummary(service.days))"
+    }
+
+    private func daySummary(_ weekdays: ReminderSetup.Weekdays) -> String {
+        let names = weekdays.days.sorted().map(Self.weekdayName)
+        var summary: String
+        if weekdays.isEveryDay {
+            summary = String(localized: "Every day")
+        } else if weekdays.days == Set(1...5) {
+            summary = "\(names.first ?? "")–\(names.last ?? "")"
+        } else {
+            summary = ListFormatter.localizedString(byJoining: names)
+        }
+        if weekdays.includesHolidays {
+            summary += " " + String(localized: "and public holidays")
+        }
+        return summary
+    }
+
     private func leadLabel(_ minutes: Int) -> String {
-        minutes == 0
-            ? String(localized: "At departure")
-            : String(format: String(localized: "%lld min before"), minutes)
+        String(format: String(localized: "%lld min before"), minutes)
     }
 
     private func binding(for weekday: Int) -> Binding<Bool> {

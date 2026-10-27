@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// The reminders the user has made, and the two things that stop them arriving:
+/// The notifications the user has set up, and the two things that stop them arriving:
 /// a denied permission and a timetable that is not on the device.
 ///
-/// Reached from Settings, because a reminder is set once and then forgotten about -
-/// which is the point of it.
+/// Reached from Settings, because a notification is set once and then forgotten
+/// about - which is the point of it - and the plus button here is the only way one is
+/// ever created.
 struct RemindersView: View {
     let viewModel: VehicleMapViewModel
 
@@ -15,7 +16,7 @@ struct RemindersView: View {
         List {
             if center.isDenied {
                 Section {
-                    Label("Notifications are turned off for this app, so no reminder can arrive. Turn them on in the system settings.",
+                    Label("Notifications are turned off for this app, so nothing can arrive. Turn them on in the system settings.",
                           systemImage: "bell.slash")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -25,7 +26,7 @@ struct RemindersView: View {
             if !center.missingTimetableLines.isEmpty {
                 Section {
                     ForEach(center.missingTimetableLines.sorted(), id: \.self) { line in
-                        Label(String(format: String(localized: "Line %@ has no timetable on this device, so its reminders cannot be scheduled."),
+                        Label(String(format: String(localized: "Line %@ has no timetable on this device, so its notifications cannot be scheduled."),
                                     LineCode(raw: line).number),
                               systemImage: "exclamationmark.triangle")
                             .font(.footnote)
@@ -54,10 +55,10 @@ struct RemindersView: View {
                     }
                 }
             } footer: {
-                Text("Reminders are worked out from the downloaded timetables, so they follow the service's own days: no weekends on a school run, no public holidays, and nothing after the timetable ends.")
+                Text("Notifications are worked out from the downloaded timetables, so they follow the service's own days: no weekends on a school run, no public holidays, and nothing after the timetable ends.")
             }
         }
-        .navigationTitle("Reminders")
+        .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

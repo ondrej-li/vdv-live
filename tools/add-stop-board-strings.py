@@ -45,9 +45,22 @@ TRANSLATIONS = {
     "expected %@": "očekáváno %@",
     "not departed yet": "ještě neodjelo",
     "Line %@, scheduled %@, %@, %@": "Linka %@, podle řádu %@, %@, %@",
-    "Reminders": "Připomínky",
-    "Warn me": "Upozornit",
     "At departure": "V době odjezdu",
+    "Notifications": "Upozornění",
+    "Warn me before a service reaches my stop": "Upozornit před příjezdem spoje na moji zastávku",
+    "Every day": "Každý den",
+    "and public holidays": "a státní svátky",
+    "Reading services…": "Načítám spoje…",
+    "Stop": "Zastávka",
+    "Service": "Spoj",
+    "Departs": "Odjíždí",
+    "Runs": "Jezdí",
+    "A day the service does not run on, or a public holiday, is left out on its own.":
+        "Den, kdy spoj nejede, nebo státní svátek se vynechá sám.",
+    "Notifications are turned off for this app, so nothing can arrive. Turn them on in the system settings.":
+        "Oznámení jsou pro tuto aplikaci vypnutá, takže nic nedorazí. Zapněte je v nastavení systému.",
+    "Line %@ has no timetable on this device, so its notifications cannot be scheduled.":
+        "Linka %@ nemá v zařízení jízdní řád, takže její oznámení nelze naplánovat.",
     "Add notification": "Přidat upozornění",
     "Tap + to add a notification.": "Klepnutím na + přidáte upozornění.",
     "Search stops": "Hledat zastávky",
@@ -73,22 +86,7 @@ TRANSLATIONS = {
         "few": "%lld minuty předem",
         "other": "%lld minut předem",
     },
-    "Days": "Dny",
-    "Turn off a day you do not travel. A day the service does not run on, or a public holiday, is left out on its own.":
-        "Vypněte den, kdy necestujete. Den, kdy spoj nejede, nebo státní svátek se vynechá sám.",
-    "The warning is about the timetable's own time. A late bus is not waited for: the notification arrives when the timetable says it should, and the app shows the live delay next time it is opened.":
-        "Upozornění vychází z času v jízdním řádu. Na zpožděný spoj se nečeká: připomínka přijde včas podle řádu a živé zpoždění ukáže aplikace při příštím otevření.",
-    "The timetable is published until %@.": "Jízdní řád je zveřejněn do %@.",
-    "New reminder": "Nová připomínka",
-    "Reminder": "Připomínka",
-    "Delete reminder": "Smazat připomínku",
-    "Notifications are turned off for this app, so no reminder can arrive. Turn them on in the system settings.":
-        "Oznámení jsou pro tuto aplikaci vypnutá, takže žádná připomínka nedorazí. Zapněte je v nastavení systému.",
-    "Line %@ has no timetable on this device, so its reminders cannot be scheduled.":
-        "Linka %@ nemá v zařízení jízdní řád, takže její připomínky nelze naplánovat.",
     "Missing timetables": "Chybějící jízdní řády",
-    "Reminders are worked out from the downloaded timetables, so they follow the service's own days: no weekends on a school run, no public holidays, and nothing after the timetable ends.":
-        "Připomínky se počítají ze stažených jízdních řádů, takže respektují dny spoje: školní spoj nejezdí o víkendu ani o svátcích a po konci platnosti řádu se nic nenaplánuje.",
     "Line %@ · service %@": "Linka %@ · spoj %@",
     "%@ from %@": "%@ ze zastávky %@",
     "Warnings before a service reaches your stop": "Upozornění před příjezdem spoje na vaši zastávku",
