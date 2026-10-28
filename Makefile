@@ -98,7 +98,7 @@ EXPORT_OPTIONS := $(DERIVED_DATA)/ExportOptions.plist
 # mentioned, so the number printed at the end of an upload could differ from the one
 # inside the archive - and the printed one is what a person carries to App Store
 # Connect.
-VERSION ?= 1.0
+VERSION ?= 1.1
 BUILD := $(if $(BUILD),$(BUILD),$(shell date +%y%m%d%H%M))
 
 # Where 'make shots' puts the App Store screenshots, and the devices it takes them

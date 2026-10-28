@@ -36,6 +36,26 @@ available, the published archive has been rebuilt and the app's line list is out
 of date: tap **Check for updates**, and if that does not help, the fix comes with
 the next release of the app.
 
+### A notification does not arrive
+
+Notifications are set up in one place: **Settings → Notifications**, with the
+**+** button. You pick a stop, then a line that calls there, then the service, and
+finally how early you want to be warned and which days you want to skip. Swiping a
+row to the left removes it.
+
+If nothing arrives:
+
+- check that iOS is allowed to notify you — Settings → Notifications (the app
+  tells you at the top of the screen when it is not);
+- check that the line's timetable has been downloaded, under
+  Settings → Timetables: a notification is worked out from the timetable, so a
+  line with no timetable on the phone cannot be scheduled;
+- remember the warning follows the **timetable's** time. A late bus is not waited
+  for; the app shows the live delay the next time you open it.
+
+Unlike the rest of the app, a notification is worked out on the phone from the
+downloaded timetable, so it arrives even when the app is closed.
+
 ### The map goes grey
 
 Grey markers mean the app has not heard from those vehicles since it last
@@ -81,6 +101,25 @@ funguje i bez sítě. Pokud u linky i tak stojí, že jízdní řád není k dis
 znamená to, že zveřejněný archiv byl přestavěn a seznam linek v aplikaci je
 zastaralý: klepněte na **Zkontrolovat aktualizace**, a pokud to nepomůže, oprava
 přijde s dalším vydáním aplikace.
+
+### Oznámení nedorazí
+
+Oznámení se nastavují na jednom místě: **Nastavení → Upozornění**, tlačítkem
+**+**. Vyberete zastávku, potom linku, která tam zastavuje, potom spoj a nakonec
+s jakým předstihem a které dny vynechat. Přejetím řádku doleva oznámení odeberete.
+
+Pokud nic nedorazí:
+
+- zkontrolujte, že iOS aplikaci povoluje oznámení — Nastavení → Oznámení (pokud
+  ne, aplikace to napíše v horní části obrazovky);
+- zkontrolujte, že je stažený jízdní řád linky, v Nastavení → Jízdní řády:
+  oznámení se počítá z jízdního řádu, takže linka bez staženého řádu naplánovat
+  nelze;
+- upozornění vychází z času v **jízdním řádu**. Na zpožděný spoj se nečeká; živé
+  zpoždění ukáže aplikace při příštím otevření.
+
+Na rozdíl od zbytku aplikace se oznámení počítá v telefonu ze staženého jízdního
+řádu, takže dorazí i při zavřené aplikaci.
 
 ### Mapa zešedne
 
