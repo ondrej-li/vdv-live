@@ -69,7 +69,7 @@ make shots                   # iPhone 6.9" and iPad 13" screenshots
 make shots-watch             # and the watch one
 ```
 
-`make archive` stamps the build number from the clock (`VERSION=1.0`,
+`make archive` stamps the build number from the clock (`VERSION=1.1`,
 `BUILD=yyMMddHHmm`), so no upload can repeat the one before it. Override either:
 
 ```sh
