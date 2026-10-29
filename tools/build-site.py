@@ -12,6 +12,7 @@ Screenshots come from `screenshots/` in the repository and are downscaled with
 """
 
 import argparse
+import hashlib
 import pathlib
 import shutil
 import subprocess
@@ -348,6 +349,19 @@ NOTES = [
 
 # ------------------------------------------------------------------------ helpers
 
+# Content hash per asset file, filled in before any page is written. Browsers hold
+# a stylesheet for as long as the server says, so the URL has to change when the
+# file does - otherwise a published fix is invisible to anyone who visited before.
+ASSET_VERSIONS = {}
+
+
+def asset_url(prefix, relative):
+    """`assets/style.css?v=abc123` - a URL that changes when the file changes."""
+    version = ASSET_VERSIONS.get(relative)
+    query = f"?v={version}" if version else ""
+    return f"{prefix}{relative}{query}"
+
+
 def esc(text):
     return (text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
 
@@ -369,9 +383,9 @@ def head(lang, title, description, canonical, assets, alt_cs, alt_en):
 <link rel="alternate" hreflang="cs" href="{alt_cs}">
 <link rel="alternate" hreflang="en" href="{alt_en}">
 <link rel="alternate" hreflang="x-default" href="{alt_cs}">
-<link rel="icon" href="{assets}assets/icon-300.png" type="image/png">
-<link rel="apple-touch-icon" href="{assets}assets/icon-300.png">
-<link rel="stylesheet" href="{assets}assets/style.css">
+<link rel="icon" href="{asset_url(assets, 'assets/icon-300.png')}" type="image/png">
+<link rel="apple-touch-icon" href="{asset_url(assets, 'assets/icon-300.png')}">
+<link rel="stylesheet" href="{asset_url(assets, 'assets/style.css')}">
 </head>"""
 
 
@@ -414,7 +428,7 @@ def header(t, page):
     return f"""<header class="site">
   <div class="wrap">
     <a class="brand" href="{page.nav}{'index.html' if page.stem != 'index' else './'}">
-      <img src="{page.assets}assets/icon-300.png" alt="" width="34" height="34">
+      <img src="{asset_url(page.assets, 'assets/icon-300.png')}" alt="" width="34" height="34">
       <span>{esc(t['site'])}</span>
     </a>
     <nav>{''.join(nav)}<a class="lang" href="{page.switch_href}" hreflang="{page.switch_lang}">{esc(t['switch'])}</a></nav>
@@ -520,7 +534,7 @@ def landing(lang, t, canonical_base):
         ("iphone-02-settings.jpg", t["shot_3"]),
     ]
     shot_html = "".join(
-        f"""<figure class="phone"><img src="{assets}assets/shots/{name}" alt="{esc(cap)}"
+        f"""<figure class="phone"><img src="{asset_url(assets, f"assets/shots/{name}")}" alt="{esc(cap)}"
              width="620" loading="lazy"><figcaption>{esc(cap)}</figcaption></figure>"""
         for name, cap in shots
     )
@@ -541,7 +555,7 @@ def landing(lang, t, canonical_base):
   <section class="hero">
     <div class="glow"></div>
     <div class="wrap hero-inner">
-      <img class="app-icon" src="{assets}assets/icon-300.png" alt="" width="96" height="96">
+      <img class="app-icon" src="{asset_url(assets, 'assets/icon-300.png')}" alt="" width="96" height="96">
       <p class="eyebrow">{esc(t['hero_eyebrow'])}</p>
       <h1>{t['hero_title']}</h1>
       <p class="lede">{esc(t['hero_lede'])}</p>
@@ -574,7 +588,7 @@ def landing(lang, t, canonical_base):
         <p class="lede">{esc(t['watch_lede'])}</p>
       </div>
       <figure class="watch-figure">
-        <img src="{assets}assets/shots/watch-main.jpg" alt="VDV Live on Apple Watch"
+        <img src="{asset_url(assets, 'assets/shots/watch-main.jpg')}" alt="VDV Live on Apple Watch"
              width="420" loading="lazy">
       </figure>
     </div>
@@ -631,6 +645,11 @@ def build(output: pathlib.Path):
 
     shutil.copy(ROOT / "tools" / "site" / "style.css", output / "assets" / "style.css")
     shutil.copy(output / "assets" / "icon-300.png", output / "favicon.ico")
+
+    for file in sorted(output.rglob("*")):
+        if file.is_file():
+            relative = file.relative_to(output).as_posix()
+            ASSET_VERSIONS[relative] = hashlib.sha256(file.read_bytes()).hexdigest()[:10]
 
     base = "https://vdv.ondralinek.cz/"
     for lang in ("cs", "en"):
