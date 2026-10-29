@@ -161,11 +161,10 @@ struct StopBoardSheet: View {
     }
 
     private var header: some View {
-        HStack(spacing: 0) {
-            Text("Line").frame(width: 64, alignment: .leading)
-            Text("Scheduled").frame(maxWidth: .infinity, alignment: .leading)
-            Text("Expected").frame(maxWidth: .infinity, alignment: .leading)
-            Text("Delay").frame(width: 84, alignment: .trailing)
+        HStack(spacing: 8) {
+            Text("Line").frame(width: 52, alignment: .leading)
+            Text("Destination").frame(maxWidth: .infinity, alignment: .leading)
+            Text("Expected").frame(width: 76, alignment: .trailing)
         }
         .font(.caption.weight(.semibold))
         .foregroundStyle(.secondary)
@@ -178,29 +177,42 @@ struct StopBoardSheet: View {
         let readAt = entry.expected ?? entry.scheduled
         let isPast = readAt < now
 
-        return HStack(spacing: 0) {
+        return HStack(spacing: 8) {
             Text(LineCode(raw: entry.lineNumber).number)
                 .font(.subheadline.weight(.semibold).monospacedDigit())
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(Color.accentColor.opacity(0.15), in: Capsule())
-                .frame(width: 64, alignment: .leading)
+                .frame(width: 52, alignment: .leading)
 
-            Text(entry.scheduled.text)
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            // The destination leads, because it is the question a board answers:
+            // which bus, going where. The timetable's own time and the delay follow
+            // underneath, where they are read second.
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.destination.map(displayName) ?? String(localized: "Destination not in the timetable"))
+                    .font(.subheadline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .foregroundStyle(entry.destination == nil ? Color.secondary : Color.primary)
+
+                HStack(spacing: 6) {
+                    Text(String(format: String(localized: "scheduled %@"), entry.scheduled.text))
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+
+                    if entry.delayMinutes != nil {
+                        Text(delayText(entry))
+                            .font(.caption.monospacedDigit().weight(.semibold))
+                            .foregroundStyle(expectedColour(entry))
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(entry.expected?.text ?? "—")
                 .font(.subheadline.monospacedDigit().weight(entry.isOnTime ? .regular : .semibold))
                 .foregroundStyle(expectedColour(entry))
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Text(delayText(entry))
-                .font(.caption.monospacedDigit())
-                .foregroundStyle(expectedColour(entry))
-                .frame(width: 68, alignment: .trailing)
-
+                .frame(width: 76, alignment: .trailing)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -215,9 +227,17 @@ struct StopBoardSheet: View {
         let line = LineCode(raw: entry.lineNumber).number
         let expected = entry.expected.map { String(localized: "expected \($0.text)") }
             ?? String(localized: "not departed yet")
+        let to = entry.destination.map { String(format: String(localized: "to %@"), displayName($0)) }
+            ?? String(localized: "destination unknown")
         return String(
-            localized: "Line \(line), scheduled \(entry.scheduled.text), \(expected), \(delayText(entry))"
+            localized: "Line \(line), \(to), scheduled \(entry.scheduled.text), \(expected), \(delayText(entry))"
         )
+    }
+
+    /// The archive writes "Zašovice,Nová Brtnice"; a person reads a space after the
+    /// comma.
+    private func displayName(_ stop: String) -> String {
+        stop.replacingOccurrences(of: ",", with: ", ")
     }
 
     private func expectedColour(_ entry: StopBoardEntry) -> Color {
