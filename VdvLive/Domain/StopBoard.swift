@@ -15,6 +15,12 @@ struct StopBoardEntry: Identifiable, Hashable, Sendable {
     let scheduled: TimeOfDay
     /// What the live feed makes of it, when a vehicle of this run is reporting.
     let expected: TimeOfDay?
+    /// Where this run ends, which is what a passenger reads a board for.
+    ///
+    /// The last stop of the run, not the line's route name: two runs of one line can
+    /// go opposite ways, and "Třešť-Brtnice-Okříšky-Radonín" tells nobody which end
+    /// the bus in front of them is heading for.
+    let destination: String?
 
     var id: String { "\(lineNumber)/\(serviceNumber)/\(scheduled.minutes)" }
 
@@ -78,6 +84,7 @@ enum StopBoard {
                         serviceNumber: run.serviceNumber,
                         scheduled: scheduled,
                         call: call,
+                        destination: run.calls.last?.stopName,
                         isUnderWay: Self.isUnderWay(run, at: now),
                         // Only a delay the feed reports for this very run is this row's
                         // own business.
@@ -151,6 +158,7 @@ enum StopBoard {
         let serviceNumber: String
         let scheduled: TimeOfDay
         let call: ScheduledCall
+        let destination: String?
         let isUnderWay: Bool
         var delay: Int?
 
@@ -161,7 +169,8 @@ enum StopBoard {
             StopBoardEntry(lineNumber: lineNumber,
                            serviceNumber: serviceNumber,
                            scheduled: scheduled,
-                           expected: expected)
+                           expected: expected,
+                           destination: destination)
         }
     }
 

@@ -2591,6 +2591,56 @@
           }
         }
       }
+    },
+    "Destination" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cíl"
+          }
+        }
+      }
+    },
+    "Destination not in the timetable" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cíl není v jízdním řádu"
+          }
+        }
+      }
+    },
+    "scheduled %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "podle řádu %@"
+          }
+        }
+      }
+    },
+    "to %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "do %@"
+          }
+        }
+      }
+    },
+    "destination unknown" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cíl neznámý"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

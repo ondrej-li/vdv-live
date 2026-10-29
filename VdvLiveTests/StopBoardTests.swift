@@ -206,6 +206,32 @@ final class StopBoardTests: XCTestCase {
         XCTAssertTrue(board.isEmpty, "12:00 with no delay of its own is outside the hour")
     }
 
+    /// A board says where the bus is going, not just which line it is. Two runs of
+    /// one line can end in different places, and that difference is the whole reason
+    /// a passenger reads the board.
+    func testARowCarriesTheDestinationOfItsRun() {
+        let timetable = LineTimetable(
+            lineNumber: "764410",
+            displayNumber: "410",
+            routeName: "Třešť-Brtnice-Okříšky-Radonín",
+            operatorName: nil,
+            runs: [
+                ScheduledRun(serviceNumber: "1", calls: [
+                    call(1, departing: 15 * 60 + 5),
+                    call(2, at: "Telč,aut.nádr.", departing: 15 * 60 + 40)
+                ]),
+                ScheduledRun(serviceNumber: "2", calls: [
+                    call(1, departing: 15 * 60 + 20),
+                    call(2, at: "Třešť,nám.", departing: 15 * 60 + 55)
+                ])
+            ]
+        )
+
+        let board = StopBoard.entries(at: stop, in: [timetable], now: TimeOfDay(minutes: 15 * 60))
+
+        XCTAssertEqual(board.map(\.destination), ["Telč,aut.nádr.", "Třešť,nám."])
+    }
+
     /// The board opens where the reader is standing, so the clock has to be readable
     /// off the device's own time zone.
     func testReadsTheClockOffADate() throws {
