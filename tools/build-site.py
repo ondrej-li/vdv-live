@@ -21,6 +21,13 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 ACCENT = "#0f9b8e"
 
+# The App Store record. `APP_STORE_LIVE` is the one line to change when the app is
+# released: while it is False the button is drawn but does not link anywhere, because
+# a link to an app that is not published answers 404 and looks like a broken site.
+APP_STORE_ID = "6824945928"
+APP_STORE_LIVE = False
+APP_STORE_URL = f"https://apps.apple.com/app/id{APP_STORE_ID}"
+
 
 # --------------------------------------------------------------------------- text
 
@@ -41,6 +48,8 @@ TEXT = {
         "hero_lede": "Kde právě jsou, jak jsou zpožděné a kdy odjíždějí z vaší zastávky. Zdarma, bez účtu, bez reklam a bez sledování.",
         "hero_meta": "iPhone · iPad · Apple Watch",
         "hero_cta": "Podpora a časté dotazy",
+        "get_app": "Stáhnout v App Store",
+        "get_app_soon": "Již brzy v App Store",
         "shots_title": "Aplikace",
         "shots_lede": "Mapa, detail spoje, odjezdová tabule. Všechno v češtině, všechno funguje i offline.",
         "shot_1": "Živá mapa kraje",
@@ -96,6 +105,8 @@ TEXT = {
         "hero_lede": "Where they are right now, how late they run, and when they leave your stop. Free, no account, no ads, no tracking.",
         "hero_meta": "iPhone · iPad · Apple Watch",
         "hero_cta": "Support and common questions",
+        "get_app": "Download on the App Store",
+        "get_app_soon": "Coming soon to the App Store",
         "shots_title": "The app",
         "shots_lede": "The map, a service in detail, a stop's departure board. All in Czech and English, all working offline.",
         "shot_1": "The live map",
@@ -471,6 +482,30 @@ def doc_page(lang, t, stem, title, updated, blocks, canonical_base):
 
 # --------------------------------------------------------------------------- pages
 
+STORE_GLYPH = (
+    '<svg class="store-glyph" viewBox="0 0 24 24" aria-hidden="true" '
+    'width="19" height="19"><path fill="currentColor" '
+    'd="M12 3.2a1.3 1.3 0 0 0-1.3 1.3v8.2L8.4 10.4a1.3 1.3 0 1 0-1.85 1.84l4.5 4.5a1.3 1.3 0 0 0 1.9 0l4.5-4.5a1.3 1.3 0 0 0-1.85-1.84l-2.3 2.3V4.5A1.3 1.3 0 0 0 12 3.2Z"/>'
+    '<path fill="currentColor" d="M4.6 15.4a1.3 1.3 0 0 1 1.3 1.3v1.1c0 .2.2.4.4.4h11.4c.2 0 .4-.2.4-.4v-1.1a1.3 1.3 0 0 1 2.6 0v1.1a3 3 0 0 1-3 3H6.3a3 3 0 0 1-3-3v-1.1a1.3 1.3 0 0 1 1.3-1.3Z"/>'
+    '</svg>'
+)
+
+
+def store_button(t):
+    """The App Store button, live or not.
+
+    While the app is not published the button is a promise, not a link: it keeps the
+    shape of the real one so the page does not have to be redesigned later, but it
+    goes nowhere.
+    """
+    label = t["get_app"] if APP_STORE_LIVE else t["get_app_soon"]
+    if APP_STORE_LIVE:
+        return (f'<a class="button store" href="{APP_STORE_URL}">{STORE_GLYPH}'
+                f'<span>{esc(label)}</span></a>')
+    return (f'<span class="button store soon" aria-disabled="true">{STORE_GLYPH}'
+            f'<span>{esc(label)}</span></span>')
+
+
 def landing(lang, t, canonical_base):
     page = page_for(lang, "index")
     prefix = page.nav
@@ -511,7 +546,9 @@ def landing(lang, t, canonical_base):
       <h1>{t['hero_title']}</h1>
       <p class="lede">{esc(t['hero_lede'])}</p>
       <p class="meta">{esc(t['hero_meta'])}</p>
-      <p class="cta"><a class="button" href="{page.nav}support.html">{esc(t['hero_cta'])}</a></p>
+      <p class="cta store-cta">{store_button(t)}
+        <a class="quiet-link" href="{page.nav}support.html">{esc(t['hero_cta'])}</a>
+      </p>
     </div>
   </section>
 
