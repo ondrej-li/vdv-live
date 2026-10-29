@@ -311,6 +311,36 @@ shots: build
 	$(call capture-shot,$(SHOT_IPAD),ipad-13)
 	@echo "wrote $(APPSTORE_SHOTS) - iphone-6.3 is 1206x2622, ipad-13 is 2064x2752"
 
+# The public site: a landing page, the privacy policy and support, in Czech at the
+# root and English under /en/. Generated rather than hand-written, so the pages and
+# the screenshots stay in step with the app.
+SITE_DIR := $(DERIVED_DATA)/site
+# Where the site is served from. `make site-deploy` copies the build there.
+SITE_HOST ?= deploy@2.31.33.21
+
+## Build the public site into build/site.
+site:
+	@python3 tools/build-site.py --output '$(SITE_DIR)'
+	@echo "built $(SITE_DIR) - serve it with: make site-serve"
+
+## Look at the built site before publishing it.
+site-serve: site
+	@echo "http://127.0.0.1:8080/"
+	@cd '$(SITE_DIR)' && python3 -m http.server 8080
+
+## Publish the site. The old tree is kept as /var/www/vdvlive.old until the next deploy.
+site-deploy: site
+	rsync -az --delete -e ssh '$(SITE_DIR)/' '$(SITE_HOST):/tmp/site-deploy/'
+	ssh $(SITE_HOST) 'set -e; \
+		sudo rm -rf /var/www/vdvlive.new; sudo mkdir -p /var/www/vdvlive.new; \
+		sudo cp -r /tmp/site-deploy/. /var/www/vdvlive.new/; \
+		sudo chown -R www-data:www-data /var/www/vdvlive.new; \
+		sudo rm -rf /var/www/vdvlive.old; \
+		sudo mv /var/www/vdvlive /var/www/vdvlive.old 2>/dev/null || true; \
+		sudo mv /var/www/vdvlive.new /var/www/vdvlive; \
+		sudo nginx -t; sudo systemctl reload nginx'
+	@echo "published https://vdv.ondralinek.cz/"
+
 ## Draw the App Store creative assets: the icon as a bare PNG, and the two wide
 ## banners the App Store shows on the product page header and in search results.
 ## Both are optional, and irrelevant to the app icon field, which is 1024 x 1024.

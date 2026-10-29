@@ -95,17 +95,35 @@ Organizer and use *Distribute App → App Store Connect*.
 
 ### Hosting the privacy policy and support pages
 
-Both live in `docs/` and GitHub Pages renders them without a build step:
+They are served from the author's own server, as a small static site generated
+from this repository:
 
-1. Repository **Settings → Pages → Source: Deploy from a branch**, branch `main`,
-   folder `/docs`.
-2. After a minute the pages are at
-   `https://ondrej-li.github.io/vdv-live/privacy.html` and
-   `https://ondrej-li.github.io/vdv-live/support.html`.
+| Page | Czech (default) | English |
+| --- | --- | --- |
+| Landing | `https://vdv.ondralinek.cz/` | `https://vdv.ondralinek.cz/en/` |
+| Privacy | `https://vdv.ondralinek.cz/privacy.html` | `https://vdv.ondralinek.cz/en/privacy.html` |
+| Support | `https://vdv.ondralinek.cz/support.html` | `https://vdv.ondralinek.cz/en/support.html` |
 
-Use those two URLs in App Store Connect. Note that `/docs` also publishes the
-investigation notes (`api.md`, `timetables.md`, `stops.md`, `offline.md`); that is
-the same history the repository already carries in public.
+Use the privacy and support URLs in App Store Connect.
+
+```sh
+make site          # build/site
+make site-serve    # look at it on 127.0.0.1:8080
+make site-deploy   # publish to the server
+```
+
+`tools/build-site.py` writes the pages and converts the screenshots from
+`screenshots/`; `tools/site/style.css` is the only stylesheet. The content is in
+that script, not in `docs/*.md`: each page is written once per language, and no
+page is bilingual. Czech is the site root, English is under `/en/`, and the switch
+in the header goes to the same page in the other tree.
+
+The technical notes (`api.md`, `timetables.md`, `stops.md`, `offline.md`,
+`ship.md`, `stop-review.md`) are still rendered by GitHub Pages from `docs/`, and
+are republished on the server under `/docs/` as plain text.
+
+The server is nginx on Debian, serving `/var/www/vdvlive`, with a Let's Encrypt
+certificate that renews through `certbot.timer`. HTTP redirects to HTTPS.
 
 ## TestFlight, then review
 
