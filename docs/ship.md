@@ -123,7 +123,15 @@ The technical notes (`api.md`, `timetables.md`, `stops.md`, `offline.md`,
 are republished on the server under `/docs/` as plain text.
 
 The server is nginx on Debian, serving `/var/www/vdvlive`, with a Let's Encrypt
-certificate that renews through `certbot.timer`. HTTP redirects to HTTPS.
+certificate that renews through `certbot.timer`. HTTP redirects to HTTPS. The site
+block is kept in `deploy/nginx/vdvlive.conf` - it is the file in
+`/etc/nginx/sites-available/vdvlive`; copy it there and `nginx -s reload` after
+editing. Do not rewrite it from scratch: it holds the certificate paths certbot
+manages, and a version without them leaves the site on port 80 only.
+
+Pages are served `no-cache` and their assets are referenced with a content hash in
+the query string (`style.css?v=…`), so a deploy is visible immediately and a
+stylesheet can still be cached indefinitely.
 
 ## TestFlight, then review
 
