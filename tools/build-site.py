@@ -22,11 +22,11 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 ACCENT = "#0f9b8e"
 
-# The App Store record. `APP_STORE_LIVE` is the one line to change when the app is
-# released: while it is False the button is drawn but does not link anywhere, because
-# a link to an app that is not published answers 404 and looks like a broken site.
+# The App Store record. The app went live on 29 October 2026, so the hero button is a
+# real link. Set `APP_STORE_LIVE` back to False only if the app is ever withdrawn:
+# a link to an unpublished app answers 404 and looks like a broken site.
 APP_STORE_ID = "6824945928"
-APP_STORE_LIVE = False
+APP_STORE_LIVE = True
 APP_STORE_URL = f"https://apps.apple.com/app/id{APP_STORE_ID}"
 
 
