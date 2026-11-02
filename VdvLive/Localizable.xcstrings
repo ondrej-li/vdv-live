@@ -2641,6 +2641,26 @@
           }
         }
       }
+    },
+    "Load more" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Načíst další"
+          }
+        }
+      }
+    },
+    "Shows the departures after the ones already listed" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobrazí odjezdy po těch už vypsaných"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

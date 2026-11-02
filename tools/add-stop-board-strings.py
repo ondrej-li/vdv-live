@@ -100,6 +100,8 @@ TRANSLATIONS = {
     "Line %@ · service %@": "Linka %@ · spoj %@",
     "%@ from %@": "%@ ze zastávky %@",
     "service %@": "spoj %@",
+    "Load more": "Načíst další",
+    "Shows the departures after the ones already listed": "Zobrazí odjezdy po těch už vypsaných",
     "Destination": "Cíl",
     "Destination not in the timetable": "Cíl není v jízdním řádu",
     "scheduled %@": "podle řádu %@",

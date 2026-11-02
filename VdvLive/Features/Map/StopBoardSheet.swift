@@ -23,12 +23,19 @@ struct StopBoardSheet: View {
     @State private var hasScrolled = false
     /// Whether the board shows only the lines the user pinned.
     @State private var showsOnlyFavourites = false
+    /// How many extra hours the reader has asked for beyond the default window.
+    @State private var extraAheadHours = 0
+    /// Cleared once extending the window reveals nothing further, which is how the
+    /// board knows the timetable has run out.
+    @State private var canLoadMore = true
 
     private var entries: [StopBoardEntry] {
         let all = StopBoard.entries(at: stop.name,
                                     in: timetables,
                                     delays: viewModel.liveDelays,
-                                    now: now)
+                                    now: now,
+                                    lookAheadMinutes: StopBoard.lookAheadMinutes
+                                        + extraAheadHours * 60)
         guard showsOnlyFavourites else { return all }
         return all.filter { viewModel.favouriteLines.contains($0.lineNumber) }
     }
@@ -150,6 +157,10 @@ struct StopBoardSheet: View {
                             }
                         Divider()
                     }
+
+                    if canLoadMore {
+                        loadMoreButton
+                    }
                 }
             }
             .onAppear {
@@ -158,6 +169,30 @@ struct StopBoardSheet: View {
                 proxy.scrollTo(upcomingID ?? entries.first?.id, anchor: .center)
             }
         }
+    }
+
+    /// Extends the window by three more hours.
+    ///
+    /// A board read in the evening otherwise stops at midnight and looks empty, even
+    /// though the timetable has the rest of the night in it. When an extension
+    /// reveals nothing, the timetable is finished and the control goes away.
+    private var loadMoreButton: some View {
+        Button {
+            let before = entries.count
+            extraAheadHours += 3
+            if entries.count == before {
+                canLoadMore = false
+            }
+        } label: {
+            Label("Load more", systemImage: "plus.circle")
+                .font(.subheadline)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Color.accentColor)
+        .accessibilityHint(Text("Shows the departures after the ones already listed"))
     }
 
     private var header: some View {
