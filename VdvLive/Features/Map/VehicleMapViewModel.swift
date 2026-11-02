@@ -46,7 +46,24 @@ final class VehicleMapViewModel {
     private(set) var settings: AppSettings
 
     /// Marker the user tapped; owned by the view through a binding.
-    var selectedClusterID: String?
+    ///
+    /// Selecting anything else ends an isolation, so a vehicle opened out of a
+    /// group goes back into it as soon as the reader moves on.
+    var selectedClusterID: String? {
+        didSet {
+            guard let isolatedVehicleID,
+                  selectedClusterID != Self.singleVehicleClusterID(isolatedVehicleID) else { return }
+            self.isolatedVehicleID = nil
+            rebuildClusters()
+        }
+    }
+
+    /// The vehicle opened out of a group, drawn on its own until the selection
+    /// changes.
+    ///
+    /// A group's card can only summarise - a run timetable belongs to one vehicle -
+    /// so the way into a member is to draw that member alone and select it.
+    private(set) var isolatedVehicleID: Int?
 
     /// The marker a follow was asked for.
     ///
@@ -358,6 +375,22 @@ final class VehicleMapViewModel {
     /// The detail popup costs two requests, so it is only fetched for a marker
     /// that stands for a single vehicle: picking one of twenty buses parked in
     /// the same cell would be arbitrary.
+    /// Opens one vehicle out of a group.
+    ///
+    /// It leaves the group for as long as it is selected: the map draws it alone and
+    /// its own card follows, with the timetable, the next stop and follow - none of
+    /// which a group card can show.
+    func isolate(_ vehicle: Vehicle) {
+        isolatedVehicleID = vehicle.id
+        rebuildClusters()
+        selectedClusterID = Self.singleVehicleClusterID(vehicle.id)
+    }
+
+    /// The marker id a single vehicle has, in and out of a group.
+    private static func singleVehicleClusterID(_ vehicleID: Int) -> String {
+        "vehicle:\(vehicleID)"
+    }
+
     func selectionDidChange() async {
         guard let vehicle = selectedCluster?.singleVehicle else {
             clearVehicleDetail()
@@ -1013,11 +1046,18 @@ final class VehicleMapViewModel {
             vehicles: view.tracked.count,
             span: visibleRegion.span
         )
-        let markers = VehicleClusterer.markers(
-            view.tracked,
+        // The vehicle opened out of a group is drawn alone: grouping it again would
+        // put it back inside the marker the reader just asked to look past.
+        let grouped = view.tracked.filter { $0.id != isolatedVehicleID }
+        var markers = VehicleClusterer.markers(
+            grouped,
             in: visibleBounds,
             radiusMetres: radiusMetres
         )
+        if let isolated = view.tracked.first(where: { $0.id == isolatedVehicleID }),
+           let alone = VehicleCluster(vehicle: isolated) {
+            markers.append(alone)
+        }
         clusters = markers.map { marker in
             var marker = marker
             if let before = previous[marker.id],

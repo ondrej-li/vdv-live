@@ -232,6 +232,39 @@ final class StopBoardTests: XCTestCase {
         XCTAssertEqual(board.map(\.destination), ["Telč,aut.nádr.", "Třešť,nám."])
     }
 
+    /// The board reaches three hours ahead by default, and a reader can ask for more:
+    /// an evening board would otherwise stop at midnight and look empty.
+    func testAWidenedWindowReachesLaterDepartures() {
+        let timetable = LineTimetable(
+            lineNumber: "764410",
+            displayNumber: "410",
+            routeName: "někam",
+            operatorName: nil,
+            runs: [
+                ScheduledRun(serviceNumber: "1", calls: [
+                    call(1, departing: 20 * 60 + 30),
+                    call(2, at: "Telč,aut.nádr.", departing: 21 * 60)
+                ]),
+                ScheduledRun(serviceNumber: "2", calls: [
+                    call(1, departing: 23 * 60 + 30),
+                    call(2, at: "Telč,aut.nádr.", departing: 23 * 60 + 50)
+                ])
+            ]
+        )
+        let now = TimeOfDay(minutes: 20 * 60)
+
+        // 20:00 + 3 h stops at 23:00, short of the 23:30 service.
+        let narrow = StopBoard.entries(at: stop, in: [timetable], now: now)
+        XCTAssertEqual(narrow.map(\.serviceNumber), ["1"])
+
+        // Six more hours reach it.
+        let wide = StopBoard.entries(at: stop,
+                                     in: [timetable],
+                                     now: now,
+                                     lookAheadMinutes: StopBoard.lookAheadMinutes + 6 * 60)
+        XCTAssertEqual(wide.map(\.serviceNumber), ["1", "2"])
+    }
+
     /// The board opens where the reader is standing, so the clock has to be readable
     /// off the device's own time zone.
     func testReadsTheClockOffADate() throws {

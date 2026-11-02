@@ -71,6 +71,45 @@ final class VehicleGroupingTests: XCTestCase {
         XCTAssertEqual(viewModel.visibleVehicleCount, 3)
     }
 
+    // MARK: - Opening one vehicle out of a group
+
+    /// A group's card can summarise but not detail, so choosing a member draws it on
+    /// its own and selects it - which is what makes its run timetable reachable.
+    func testOpeningAVehicleOutOfAGroupDrawsItAlone() async throws {
+        let (viewModel, _) = makeViewModel(settings: settings(clusterRadiusMetres: 100),
+                                           vehicles: sampleVehicles)
+        await viewModel.load()
+
+        let group = try XCTUnwrap(viewModel.clusters.first { $0.count == 2 })
+        let member = try XCTUnwrap(group.vehicles.first)
+
+        viewModel.isolate(member)
+
+        XCTAssertEqual(viewModel.isolatedVehicleID, member.id)
+        XCTAssertEqual(viewModel.selectedClusterID, "vehicle:\(member.id)")
+        // The group loses a member - what is left of it becomes a marker of its own -
+        // and the vehicle gains one, which is what the card needs in order to show a
+        // single vehicle rather than a summary.
+        XCTAssertEqual(viewModel.clusters.count, 3)
+        XCTAssertTrue(viewModel.clusters.allSatisfy { $0.count == 1 })
+        XCTAssertEqual(viewModel.clusters.first { $0.id == "vehicle:\(member.id)" }?.count, 1)
+        XCTAssertEqual(viewModel.visibleVehicleCount, 3)
+    }
+
+    /// Moving on puts the vehicle back into its group.
+    func testSelectingSomethingElseEndsTheIsolation() async throws {
+        let (viewModel, _) = makeViewModel(settings: settings(clusterRadiusMetres: 100),
+                                           vehicles: sampleVehicles)
+        await viewModel.load()
+        let member = try XCTUnwrap(viewModel.clusters.first { $0.count == 2 }?.vehicles.first)
+
+        viewModel.isolate(member)
+        viewModel.selectedClusterID = nil
+
+        XCTAssertNil(viewModel.isolatedVehicleID)
+        XCTAssertEqual(viewModel.clusters.map(\.count).sorted(), [1, 2])
+    }
+
     // MARK: - A crowded map
 
     /// A hundred and sixty-nine vehicles inside five kilometres: a busy town centre

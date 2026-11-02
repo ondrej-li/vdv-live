@@ -62,11 +62,17 @@ enum StopBoard {
     ///   - delays: minutes late, keyed by `"<line>/<run>"`; anything missing is
     ///     drawn as not departed yet.
     ///   - now: the minute the board is read at, so that the window is testable.
+    ///   - lookBackMinutes: how far back the board reaches; the default is the hour
+    ///     that has passed.
+    ///   - lookAheadMinutes: how far forward it reaches. The caller can widen this -
+    ///     the board offers to load more - without losing the rest of the rules.
     static func entries(
         at stopName: String,
         in timetables: [LineTimetable],
         delays: [String: Int] = [:],
-        now: TimeOfDay
+        now: TimeOfDay,
+        lookBackMinutes: Int = StopBoard.lookBackMinutes,
+        lookAheadMinutes: Int = StopBoard.lookAheadMinutes
     ) -> [StopBoardEntry] {
         var rows: [Row] = []
 

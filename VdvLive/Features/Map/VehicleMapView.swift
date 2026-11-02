@@ -483,7 +483,12 @@ struct VehicleMapView: View {
                     viewModel.setFollowsSelectedVehicle(!viewModel.followsSelectedVehicle)
                 },
                 onToggleFavourite: { viewModel.toggleFavourite(line: $0) },
-                onSelectVehicle: focus,
+                onSelectVehicle: { vehicle in
+                    // The group's card can summarise but not detail, so choosing a
+                    // member draws it alone and selects it.
+                    viewModel.isolate(vehicle)
+                    focus(on: vehicle)
+                },
                 onDismiss: { viewModel.selectedClusterID = nil }
             )
             // A fresh card per vehicle: the drawer opens short again, and its two
