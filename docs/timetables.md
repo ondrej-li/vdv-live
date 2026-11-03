@@ -24,19 +24,19 @@ live sources on 2026-09-30; the commands to reproduce each claim are at the end.
 
 ## The official data
 
-| | |
-|---|---|
-| Dataset | *Jízdní řády veřejné linkové dopravy* |
-| Publisher | Ministerstvo dopravy (MD), IČO 66003008 |
-| Page | `data.gov.cz/zdroj/datové-sady/66003008/1463646434` |
-| Download | `https://portal.cisjr.cz/pub/JDF/JDF.zip` — **106,842,823 bytes** |
-| Format | JDF 1.11 (CIS JŘ fixed format), text, **CP1250** |
-| Contents | 13,259 entries, each a small zip with one line's timetable |
-| Cadence | **three times a week** (`last-modified` was 28 Sep 2026 19:00) |
-| Licence | CC BY 4.0 per the portal; the distribution carries the **sui generis**
-| | database right ("zvláštní právo pořizovatele databáze: obsahuje"), so |
-| | attribution is required and wholesale re-publication is not on. |
-| Server | supports ranges: `206`, `accept-ranges: bytes`, `ETag`, `Last-Modified` |
+|           |                                                                         |
+| --------- | ----------------------------------------------------------------------- |
+| Dataset   | _Jízdní řády veřejné linkové dopravy_                                   |
+| Publisher | Ministerstvo dopravy (MD), IČO 66003008                                 |
+| Page      | `data.gov.cz/zdroj/datové-sady/66003008/1463646434`                     |
+| Download  | `https://portal.cisjr.cz/pub/JDF/JDF.zip` — **106,842,823 bytes**       |
+| Format    | JDF 1.11 (CIS JŘ fixed format), text, **CP1250**                        |
+| Contents  | 13,259 entries, each a small zip with one line's timetable              |
+| Cadence   | **three times a week** (`last-modified` was 28 Sep 2026 19:00)          |
+| Licence   | CC BY 4.0 per the portal; the distribution carries the **sui generis**  |
+|           | database right ("zvláštní právo pořizovatele databáze: obsahuje"), so   |
+|           | attribution is required and wholesale re-publication is not on.         |
+| Server    | supports ranges: `206`, `accept-ranges: bytes`, `ETag`, `Last-Modified` |
 
 The server also answers a `HEAD`, and both it and a **one byte range** carry those
 three identifiers, which is what the app's "check for updates" is built on: asking
@@ -58,15 +58,15 @@ Also published, all worse for a phone:
 
 Line `764337` (the app's pinned line 337) is entry `853.zip`:
 
-| File | What it gives |
-|---|---|
-| `Linky.txt` | line number (`764337`), route name ("Třešť-Brtnice-Okříšky-Radonín"), operator id, validity dates |
-| `Spoje.txt` | the runs of the line (`spoj` numbers) |
-| `Zaslinky.txt` | the line's stops in order, with stop ids |
-| `Zastavky.txt` | stop id → municipality, part, district |
-| `Zasspoje.txt` | **the timetable itself**: run × stop → arrival and departure (`HHMM`) |
-| `Caskody.txt` | per-run day-type codes and validity dates |
-| `Dopravci.txt`, `LinExt.txt`, `Navaznosti.txt`, `Pevnykod.txt`, `Udaje.txt`, `VerzeJDF.txt` | operator, line extension, connections, codes, notes, version |
+| File                                                                                        | What it gives                                                                                     |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `Linky.txt`                                                                                 | line number (`764337`), route name ("Třešť-Brtnice-Okříšky-Radonín"), operator id, validity dates |
+| `Spoje.txt`                                                                                 | the runs of the line (`spoj` numbers)                                                             |
+| `Zaslinky.txt`                                                                              | the line's stops in order, with stop ids                                                          |
+| `Zastavky.txt`                                                                              | stop id → municipality, part, district                                                            |
+| `Zasspoje.txt`                                                                              | **the timetable itself**: run × stop → arrival and departure (`HHMM`)                             |
+| `Caskody.txt`                                                                               | per-run day-type codes and validity dates                                                         |
+| `Dopravci.txt`, `LinExt.txt`, `Navaznosti.txt`, `Pevnykod.txt`, `Udaje.txt`, `VerzeJDF.txt` | operator, line extension, connections, codes, notes, version                                      |
 
 `LinExt.txt` of that line carries the short number `631` next to `725631`, which
 is the licence-area rule the app already relies on (`764337` = licence area 764 /
@@ -110,16 +110,16 @@ app has to match the stop sequence or direction, not just the line number.
 
 ## What the app could do with it
 
-| # | Feature | Needs | Value | Effort |
-|---|---|---|---|---|
-| 1 | Reliable "last stop"/"next stop" for **every** vehicle | line + run + stop times | Fixes the line 420 hole, which the map's own endpoint cannot fill | Low |
-| 2 | Planned times and **how late** a vehicle actually is | above + scheduled times | The card finally says something about the future | Low |
-| 3 | Stops of a line, in order | `Zaslinky` + `Zastavky` | Position in the run, "3 stops to go" | Low |
-| 4 | Which runs exist today, and the next ones | day-type calendar | Pinned lines that are not running can still show "next departure 14:32" | Medium |
-| 5 | Departures from a stop | all lines' zips (Strategy B) | A genuinely useful second screen | Medium |
-| 6 | Search for a stop or a line | regional extract (B) | Discoverability, and pins by stop instead of by number | Medium |
-| 7 | Works with the feed down | regional extract (B) | Schedules are local, real-time is best effort | Medium |
-| 8 | Plausibility filter for jumps | **nothing from JDF** | Kills the "bus jumps several km" artefact | Low, separate |
+| #   | Feature                                                | Needs                        | Value                                                                   | Effort        |
+| --- | ------------------------------------------------------ | ---------------------------- | ----------------------------------------------------------------------- | ------------- |
+| 1   | Reliable "last stop"/"next stop" for **every** vehicle | line + run + stop times      | Fixes the line 420 hole, which the map's own endpoint cannot fill       | Low           |
+| 2   | Planned times and **how late** a vehicle actually is   | above + scheduled times      | The card finally says something about the future                        | Low           |
+| 3   | Stops of a line, in order                              | `Zaslinky` + `Zastavky`      | Position in the run, "3 stops to go"                                    | Low           |
+| 4   | Which runs exist today, and the next ones              | day-type calendar            | Pinned lines that are not running can still show "next departure 14:32" | Medium        |
+| 5   | Departures from a stop                                 | all lines' zips (Strategy B) | A genuinely useful second screen                                        | Medium        |
+| 6   | Search for a stop or a line                            | regional extract (B)         | Discoverability, and pins by stop instead of by number                  | Medium        |
+| 7   | Works with the feed down                               | regional extract (B)         | Schedules are local, real-time is best effort                           | Medium        |
+| 8   | Plausibility filter for jumps                          | **nothing from JDF**         | Kills the "bus jumps several km" artefact                               | Low, separate |
 
 Note the gap: JDF has **no coordinates and no route shapes**, so it cannot snap a
 vehicle to its route. Feature 8 therefore has to be physical (a vehicle that
@@ -165,15 +165,15 @@ people who want stop-level search.
 
 ## Risks
 
-| Risk | Mitigation |
-|---|---|
+| Risk                                | Mitigation                                                                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | Mapping stale after a republication | Verify `Linky.txt` per fetch, so a stale mapping loses a timetable rather than inventing one; `make mapping` re-derives it |
-| 106 MB download on mobile data | Strategy A needs no big download; B is opt-in and Wi-Fi only |
-| Attribution obligations | Credits screen naming MD ČR / CIS JŘ and the licence, in both languages |
-| CP1250 text | `String.Encoding.windowsCP1250` is available on iOS |
-| Zip reading with no dependencies | `Compression` framework for inflate, hand-written central directory reader |
-| Several entries per line | Pick by stop sequence, merge if needed |
-| Timetable validity dates | `Linky.txt` and `Caskody.txt` carry them; respect them |
+| 106 MB download on mobile data      | Strategy A needs no big download; B is opt-in and Wi-Fi only                                                               |
+| Attribution obligations             | Credits screen naming MD ČR / CIS JŘ and the licence, in both languages                                                    |
+| CP1250 text                         | `String.Encoding.windowsCP1250` is available on iOS                                                                        |
+| Zip reading with no dependencies    | `Compression` framework for inflate, hand-written central directory reader                                                 |
+| Several entries per line            | Pick by stop sequence, merge if needed                                                                                     |
+| Timetable validity dates            | `Linky.txt` and `Caskody.txt` carry them; respect them                                                                     |
 
 ## Suggested phases
 
@@ -200,7 +200,7 @@ gates them. See "What was built" below for how the delivery differs from the pla
 - Which dates does each day-type code cover, and does it need a file outside the
   per-line zip? `Caskody.txt` does carry a validity period per run — read since
   #94, which is what keeps a summer-only run out of an October map — but which
-  *weekdays* a code stands for is still not in the package, so a Monday-to-Friday
+  _weekdays_ a code stands for is still not in the package, so a Monday-to-Friday
   run and a Sunday run look alike to the app.
 - Meaning of the two unexplained numeric columns in `Zasspoje.txt`.
 - Does the NeTEx export carry route geometry (`RouteLink`) that JDF lacks? If it
@@ -213,15 +213,15 @@ gates them. See "What was built" below for how the delivery differs from the pla
 
 Implemented on 2026-09-30:
 
-| Piece | Where |
-|---|---|
-| Zip reader (central directory, entries, raw deflate) | `VdvLive/Data/ZipArchive.swift` |
-| JDF reader for one line | `VdvLive/Data/JDFTimetableParser.swift` |
-| Timetable model, including request stops | `VdvLive/Domain/LineTimetable.swift` |
-| Archive client (range requests) | `VdvLive/Data/TimetableArchiveClient.swift` |
-| Index, per-line fetch, disk cache, verification | `VdvLive/Data/LineTimetableStore.swift` |
-| Line to entry mapping (381 lines, 22 KB) | `VdvLive/Resources/jdf-lines.json`, generated by `tools/jdf_lines_mapping.py` |
-| Settings download, stops list with delays | `SettingsSheet`, `VehicleStopsView` |
+| Piece                                                | Where                                                                         |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Zip reader (central directory, entries, raw deflate) | `VdvLive/Data/ZipArchive.swift`                                               |
+| JDF reader for one line                              | `VdvLive/Data/JDFTimetableParser.swift`                                       |
+| Timetable model, including request stops             | `VdvLive/Domain/LineTimetable.swift`                                          |
+| Archive client (range requests)                      | `VdvLive/Data/TimetableArchiveClient.swift`                                   |
+| Index, per-line fetch, disk cache, verification      | `VdvLive/Data/LineTimetableStore.swift`                                       |
+| Line to entry mapping (381 lines, 22 KB)             | `VdvLive/Resources/jdf-lines.json`, generated by `tools/jdf_lines_mapping.py` |
+| Settings download, stops list with delays            | `SettingsSheet`, `VehicleStopsView`                                           |
 
 Two decisions differ from the plan, both in the app's favour:
 
@@ -242,12 +242,12 @@ reaches my stop" question, which needs the calendar plus a chosen stop.
 
 Implemented on 2026-10-20 (#94):
 
-| Piece | Where |
-|---|---|
-| Run validity periods, read from `Caskody.txt` | `ValidityPeriod`, `ServiceDay` in `VdvLive/Domain/LineTimetable.swift` |
-| Which lines should be out, and where | `ExpectedServices`, `ExpectedService` |
-| Reading the region's lines in the background | `LineTimetableStore.prefetchKnownLines` |
-| The setting, and the marker it draws | `AppSettings.showsCalculatedServices`, `CalculatedServiceAnnotationView` |
+| Piece                                         | Where                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| Run validity periods, read from `Caskody.txt` | `ValidityPeriod`, `ServiceDay` in `VdvLive/Domain/LineTimetable.swift`   |
+| Which lines should be out, and where          | `ExpectedServices`, `ExpectedService`                                    |
+| Reading the region's lines in the background  | `LineTimetableStore.prefetchKnownLines`                                  |
+| The setting, and the marker it draws          | `AppSettings.showsCalculatedServices`, `CalculatedServiceAnnotationView` |
 
 The cross-check is deliberately conservative, because what it draws is not a
 measurement:
