@@ -2879,6 +2879,26 @@
           }
         }
       }
+    },
+    "Touch and hold this widget, choose Edit Widget, then tap Stop." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podržte widget, zvolte Upravit widget a klepněte na Zastávka."
+          }
+        }
+      }
+    },
+    "A map of your surroundings" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa vašeho okolí"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

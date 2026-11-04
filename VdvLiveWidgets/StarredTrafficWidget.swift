@@ -1,10 +1,15 @@
 import SwiftUI
+import UIKit
 import WidgetKit
 
 /// One moment of the pinned lines' traffic around the reader.
 struct StarredTrafficEntry: TimelineEntry {
     let date: Date
     let state: WidgetTrafficState
+    /// The map drawn in place of an empty list, when the app knows where the reader
+    /// is. `nil` when there is something to list, or when Apple Maps could not be
+    /// reached - the widget then falls back to saying it found nothing.
+    let mapImage: UIImage?
 }
 
 struct StarredTrafficProvider: TimelineProvider {
@@ -21,24 +26,36 @@ struct StarredTrafficProvider: TimelineProvider {
     }
 
     func placeholder(in context: Context) -> StarredTrafficEntry {
-        StarredTrafficEntry(date: Date(), state: .needsPinnedLines)
+        StarredTrafficEntry(date: Date(), state: .needsPinnedLines, mapImage: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (StarredTrafficEntry) -> Void) {
         Task { @MainActor in
-            let state = await WidgetDataSource.trafficState(limit: Self.limit(for: context.family))
-            completion(StarredTrafficEntry(date: Date(), state: state))
+            completion(await Self.entry(for: context.family))
         }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<StarredTrafficEntry>) -> Void) {
         Task { @MainActor in
-            let now = Date()
-            let state = await WidgetDataSource.trafficState(limit: Self.limit(for: context.family))
-            let entry = StarredTrafficEntry(date: now, state: state)
-            let next = now.addingTimeInterval(TimeInterval(Self.refreshMinutes * 60))
+            let entry = await Self.entry(for: context.family)
+            let next = entry.date.addingTimeInterval(TimeInterval(Self.refreshMinutes * 60))
             completion(Timeline(entries: [entry], policy: .after(next)))
         }
+    }
+
+    @MainActor
+    private static func entry(for family: WidgetFamily) async -> StarredTrafficEntry {
+        let state = await WidgetDataSource.trafficState(limit: limit(for: family))
+        return StarredTrafficEntry(date: Date(), state: state, mapImage: await map(for: state, family: family))
+    }
+
+    /// A map when there is nothing to list, because "nothing nearby" reads better as
+    /// the neighbourhood than as a sentence about it.
+    @MainActor
+    private static func map(for state: WidgetTrafficState, family: WidgetFamily) async -> UIImage? {
+        guard case .vehicles(let vehicles) = state, vehicles.isEmpty,
+              let coordinate = LastKnownPositionStore().load() else { return nil }
+        return await WidgetMap.image(around: coordinate, family: family)
     }
 }
 
@@ -48,7 +65,15 @@ struct StarredTrafficWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: Self.kind, provider: StarredTrafficProvider()) { entry in
             StarredTrafficWidgetView(entry: entry)
-                .containerBackground(.fill.tertiary, for: .widget)
+                .containerBackground(for: .widget) {
+                    if let map = entry.mapImage {
+                        Image(uiImage: map)
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Rectangle().fill(.fill.tertiary)
+                    }
+                }
         }
         .configurationDisplayName("Starred traffic")
         .description("The pinned lines' vehicles nearest to where you were.")
@@ -72,13 +97,22 @@ struct StarredTrafficWidgetView: View {
                        detail: "Open VDV Live once near where you travel, and the widget finds what is close.")
         case .vehicles(let vehicles):
             if vehicles.isEmpty {
-                emptyNearby
+                // The map is the widget; only a snapshot that could not be drawn
+                // leaves anything to say.
+                if entry.mapImage == nil {
+                    emptyNearby
+                } else {
+                    Color.clear
+                        .accessibilityLabel(Text("A map of your surroundings"))
+                }
             } else {
                 list(vehicles)
             }
         }
     }
 
+    /// Shown only when the map could not be drawn: no network, or no position to draw
+    /// around. The normal empty answer is the map itself.
     private var emptyNearby: some View {
         WidgetNote(icon: "checkmark.circle",
                    title: "Nothing nearby",

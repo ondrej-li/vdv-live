@@ -252,19 +252,22 @@ sudo xcodebuild -license accept
 `VdvLiveWidgets` is an extension with two widgets, both in the three home-screen
 sizes, on the iPhone and the iPad.
 
-- **Departure board.** Configure it with a stop - the picker searches the same
-  shipped stop table the app does, and offers the stops you starred first - and it
-  shows the next departures as the board sheet draws them: line, destination,
-  expected time, and the delay in the same colours the map uses. Until a stop is
-  chosen it says so, which is also what a freshly placed widget looks like: there
-  is no sensible default stop, and guessing one would be a board about somebody
-  else's journey. It needs the timetable index the settings screen downloads; when
-  that is missing it says where to get it rather than showing an empty board.
+- **Departure board.** Touch and hold the widget, choose Edit Widget, and pick a
+  stop: the picker searches the same shipped stop table the app does and opens on
+  the stops you starred, then the stops of your pinned lines. It shows the next
+  departures as the board sheet draws them: line, destination, expected time, and
+  the delay in the same colours the map uses. Until a stop is chosen it says so,
+  which is also what a freshly placed widget looks like: there is no sensible
+  default stop, and guessing one would be a board about somebody else's journey.
+  It needs the timetable index the settings screen downloads; when that is missing
+  it says where to get it rather than showing an empty board.
 - **Starred traffic.** The vehicles of the lines you pinned, nearest first, with
-  how late each is and how far away. Pinned lines only: the widget never widens
-  to other lines, because an empty answer is a true one - the "nothing nearby"
-  state names the ten kilometre radius it looked in. With nothing pinned it asks
-  for a pin, and with no position it says the app has not had a fix yet.
+  how late each is and how far away. Pinned lines only: the widget never widens to
+  other lines, because an empty answer is a true one. When nothing of yours is
+  within the ten kilometre radius the widget draws the map around where you were
+  rather than a sentence about emptiness - the neighbourhood shows the answer. It
+  needs a position, so with none it says the app has not had a fix yet, and with
+  nothing pinned it asks for a pin.
 
 Both widgets run out of process, so they cannot read the app's `UserDefaults` or
 its caches. Everything they share lives behind `SharedContainer`: the group

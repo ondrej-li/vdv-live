@@ -67,4 +67,48 @@ enum WidgetContent {
                                                 from: coordinate,
                                                 limit: limit))
     }
+
+    /// The stops the widget's configuration offers before anything is typed.
+    ///
+    /// A picker that opens on an empty list looks broken, so this always answers with
+    /// something: the starred stops first - the ones the reader already said they care
+    /// about - then the stops of the lines they pinned, then the busiest stops in the
+    /// table so that there is a way in even before the app has been used.
+    static func suggestedStops(in table: StopPositions,
+                               starred: StarredStops = StarredStops(),
+                               pinned: FavouriteLines = FavouriteLines(),
+                               limit: Int = 20) -> [String] {
+        guard limit > 0 else { return [] }
+
+        // A stop nothing calls at would be a board with no rows for ever.
+        let served = table.allNames.filter { !table.lines(atStopNamed: $0).isEmpty }
+        var chosen: [String] = []
+        var seen: Set<String> = []
+
+        func add(_ name: String) {
+            guard chosen.count < limit else { return }
+            let key = StarredStops.key(for: name)
+            guard !key.isEmpty, seen.insert(key).inserted else { return }
+            chosen.append(name)
+        }
+
+        for name in starred.orderedForDisplay { add(name) }
+        for name in served where table.lines(atStopNamed: name).contains(where: pinned.contains) {
+            add(name)
+        }
+
+        let lineCounts = served.reduce(into: [String: Int]()) { counts, name in
+            counts[name] = table.lines(atStopNamed: name).count
+        }
+        for name in served.sorted(by: { left, right in
+            let leftCount = lineCounts[left] ?? 0
+            let rightCount = lineCounts[right] ?? 0
+            if leftCount != rightCount { return leftCount > rightCount }
+            return left.localizedStandardCompare(right) == .orderedAscending
+        }) {
+            add(name)
+        }
+
+        return chosen
+    }
 }
