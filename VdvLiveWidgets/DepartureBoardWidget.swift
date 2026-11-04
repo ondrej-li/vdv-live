@@ -34,11 +34,15 @@ struct DepartureBoardProvider: AppIntentTimelineProvider {
     private static let horizonMinutes = 30
 
     /// Rows a family has room for.
+    ///
+    /// Counted against the content area each family leaves after the system's
+    /// margins: a medium widget fits three two-line rows and a header, four would be
+    /// clipped - and a clipped row reads as a board that lost a bus.
     static func limit(for family: WidgetFamily) -> Int {
         switch family {
         case .systemSmall: return 3
         case .systemLarge, .systemExtraLarge: return 7
-        default: return 4
+        default: return 3
         }
     }
 
@@ -103,7 +107,7 @@ struct DepartureBoardWidgetView: View {
     }
 
     private func board(stopName: String, rows: [StopBoardEntry]) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             header(stopName)
             if rows.isEmpty {
                 Spacer(minLength: 0)
@@ -112,14 +116,24 @@ struct DepartureBoardWidgetView: View {
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
             } else {
-                ForEach(rows) { row in
-                    DepartureRow(entry: row, isCompact: family == .systemSmall)
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                        if index > 0 {
+                            Divider().opacity(0.4)
+                        }
+                        DepartureRow(entry: row, isCompact: family == .systemSmall)
+                    }
                 }
                 Spacer(minLength: 0)
             }
         }
     }
 
+    /// The stop, and nothing else.
+    ///
+    /// The clock that used to sit on the right read as another departure time, which
+    /// is the one thing a board must not be ambiguous about. The status bar already
+    /// carries the time of day.
     private func header(_ stopName: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: "bus")
@@ -130,53 +144,99 @@ struct DepartureBoardWidgetView: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 0)
-            Text(entry.date, style: .time)
-                .font(.caption2.monospacedDigit())
-                .foregroundStyle(.secondary)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Departures from \(stopName)"))
     }
 }
 
-/// One departure, the way the board sheet draws it: line, destination, expected time.
+/// One departure: which line, where to, when it leaves and how it stands.
+///
+/// Every row carries a time, even before a vehicle reports - the timetable's own -
+/// and spells the delay out in words, because a colour alone does not say "3 minutes
+/// late" to somebody glancing at their home screen.
 private struct DepartureRow: View {
     let entry: StopBoardEntry
     let isCompact: Bool
 
-    var body: some View {
-        HStack(spacing: 6) {
-            Text(LineCode(raw: entry.lineNumber).number)
-                .font(.caption.weight(.semibold).monospacedDigit())
-                .padding(.horizontal, 5)
-                .padding(.vertical, 1)
-                .background(Color.accentColor.opacity(0.18), in: Capsule())
+    private var time: TimeOfDay { entry.departureTime }
+    private var tint: Color { WidgetPalette.statusTint(entry.status) }
 
-            if isCompact {
-                Spacer(minLength: 0)
-            } else {
-                Text(entry.destination.map { $0.replacingOccurrences(of: ",", with: ", ") }
-                     ?? String(localized: "Destination not in the timetable"))
-                    .font(.caption)
+    var body: some View {
+        if isCompact {
+            HStack(spacing: 6) {
+                lineBadge
+                Text(destination)
+                    .font(.caption2)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                timeAndStatus(alignment: .trailing)
             }
-
-            Text(entry.expectedText)
-                .font(.caption.weight(.semibold).monospacedDigit())
-                .foregroundStyle(WidgetPalette.delayTint(minutes: entry.delayMinutes))
+            .padding(.vertical, 3)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(spokenLabel)
+        } else {
+            HStack(alignment: .center, spacing: 8) {
+                lineBadge
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(destination)
+                        .font(.caption)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Text(statusText)
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(tint)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                timeAndStatus(alignment: .trailing)
+            }
+            .padding(.vertical, 3)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(spokenLabel)
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(spokenLabel)
+    }
+
+    private var lineBadge: some View {
+        Text(LineCode(raw: entry.lineNumber).number)
+            .font(.caption.weight(.semibold).monospacedDigit())
+            .padding(.horizontal, 5)
+            .padding(.vertical, 1)
+            .background(Color.accentColor.opacity(0.18), in: Capsule())
+    }
+
+    private func timeAndStatus(alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 0) {
+            Text(time.text)
+                .font(.subheadline.weight(.semibold).monospacedDigit())
+                .foregroundStyle(entry.status == .scheduled ? Color.primary : tint)
+            if isCompact {
+                Text(statusText)
+                    .font(.caption2)
+                    .foregroundStyle(tint)
+            }
+        }
+    }
+
+    private var destination: String {
+        entry.destination.map { $0.replacingOccurrences(of: ",", with: ", ") }
+            ?? String(localized: "Destination not in the timetable")
+    }
+
+    /// `+3 min`, `včas`, or `podle řádu` while nothing is reporting.
+    private var statusText: String {
+        switch entry.status {
+        case .scheduled: return String(localized: "scheduled")
+        case .onTime: return VehicleDelay.minutes(0).displayText
+        case .late(let minutes): return VehicleDelay.minutes(minutes).displayText
+        case .early(let minutes): return VehicleDelay.minutes(-minutes).displayText
+        }
     }
 
     /// Built from translated pieces, so a Czech widget reads as Czech.
     private var spokenLabel: String {
         let line = LineCode(raw: entry.lineNumber).number
-        let to = entry.destination.map { String(format: String(localized: "to %@"), $0) }
-            ?? String(localized: "destination unknown")
-        return String(localized: "Line \(line), \(to), scheduled \(entry.scheduled.text), expected \(entry.expectedText)")
+        return String(localized: "Line \(line) to \(destination): \(time.text), \(statusText)")
     }
 }
 

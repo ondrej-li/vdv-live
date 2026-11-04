@@ -278,4 +278,34 @@ final class StopBoardTests: XCTestCase {
         XCTAssertEqual(TimeOfDay(date, calendar: calendar).text, "15:07")
         XCTAssertEqual(TimeOfDay(date, calendar: calendar).minutes, 15 * 60 + 7)
     }
+
+    // MARK: - What a row says about itself
+
+    private func row(scheduled: Int, expected: Int?) -> StopBoardEntry {
+        StopBoardEntry(lineNumber: "764410",
+                       serviceNumber: "1",
+                       scheduled: TimeOfDay(minutes: scheduled),
+                       expected: expected.map(TimeOfDay.init(minutes:)),
+                       destination: "Jihlava,aut.nádr.")
+    }
+
+    func testARowWithoutAVehicleStillHasATimeToShow() {
+        let entry = row(scheduled: 15 * 60, expected: nil)
+
+        XCTAssertEqual(entry.departureTime.text, "15:00")
+        XCTAssertEqual(entry.status, .scheduled)
+    }
+
+    func testAnExpectedTimeTakesOverFromTheTimetable() {
+        let entry = row(scheduled: 15 * 60, expected: 15 * 60 + 4)
+
+        XCTAssertEqual(entry.departureTime.text, "15:04")
+        XCTAssertEqual(entry.status, .late(4))
+    }
+
+    func testOnTimeEarlyAndLateAreThreeStates() {
+        XCTAssertEqual(row(scheduled: 900, expected: 900).status, .onTime)
+        XCTAssertEqual(row(scheduled: 900, expected: 903).status, .late(3))
+        XCTAssertEqual(row(scheduled: 900, expected: 897).status, .early(3))
+    }
 }

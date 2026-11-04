@@ -32,6 +32,31 @@ struct StopBoardEntry: Identifiable, Hashable, Sendable {
     }
 
     var isOnTime: Bool { delayMinutes == 0 }
+
+    /// The moment a reader plans by.
+    ///
+    /// The expected time once a vehicle of this run reports, the timetable's before
+    /// that. A board that shows nothing in the expected column until a bus happens to
+    /// be reporting reads as a board with no departures, which is what a widget has
+    /// no room to explain away.
+    var departureTime: TimeOfDay { expected ?? scheduled }
+
+    /// How the row stands against its timetable.
+    enum Status: Equatable, Sendable {
+        /// Nothing of this run is reporting, so the timetable is all there is.
+        case scheduled
+        case onTime
+        /// Minutes ahead of the timetable.
+        case early(Int)
+        /// Minutes behind it.
+        case late(Int)
+    }
+
+    var status: Status {
+        guard let delayMinutes else { return .scheduled }
+        if delayMinutes == 0 { return .onTime }
+        return delayMinutes > 0 ? .late(delayMinutes) : .early(-delayMinutes)
+    }
 }
 
 /// What a stop's board shows, and which departures belong on it.

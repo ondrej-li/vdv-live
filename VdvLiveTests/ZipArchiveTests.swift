@@ -16,14 +16,9 @@ final class ZipArchiveTests: XCTestCase {
         return try Data(contentsOf: url)
     }
 
-    /// The name the fixture archive lists its one entry under: the last name the
-    /// shipped mapping gives for line 764337, which is the entry the fixture
-    /// holds. Taking it from the mapping rather than spelling it out is what keeps
-    /// the two in step - the id is opaque and moves on every republication, so
-    /// anybody refreshing the mapping refreshes the fixture with it.
-    private func fixtureEntryName() throws -> String {
-        let mapping = LineTimetableStore.bundledMapping()
-        return try XCTUnwrap(mapping["764337"]?.last, "the mapping no longer names line 764337")
+    /// The name the fixture archive lists its one entry under.
+    private func fixtureEntryName() -> String {
+        StubTimetableArchive.fixtureEntryName
     }
 
     func testReadsTheCentralDirectory() throws {
@@ -31,7 +26,7 @@ final class ZipArchiveTests: XCTestCase {
 
         let entries = try ZipArchive.entries(in: archive)
 
-        XCTAssertEqual(entries.map(\.name), [try fixtureEntryName()])
+        XCTAssertEqual(entries.map(\.name), [fixtureEntryName()])
         let entry = try XCTUnwrap(entries.first)
         // The sample was written with `zip`, which stores an already compressed
         // entry rather than deflating it again. Both methods are exercised here:
@@ -50,7 +45,7 @@ final class ZipArchiveTests: XCTestCase {
 
         let entries = try ZipArchive.entries(inTail: Data(tail), archiveSize: archive.count)
 
-        XCTAssertEqual(entries.map(\.name), [try fixtureEntryName()])
+        XCTAssertEqual(entries.map(\.name), [fixtureEntryName()])
     }
 
     func testRefusesATailThatMissesTheDirectory() throws {

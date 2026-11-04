@@ -115,12 +115,23 @@ APPSTORE_SHOTS := $(DERIVED_DATA)/appstore
 # tab that has to be filled is the 6.1"/6.3" one ("iPhone with Dynamic Island,
 # medium display"), which takes 1179x2556 or 1206x2622. A 6.9" phone produces
 # 1320x2868, which that tab refuses.
-SHOT_IPHONE ?= Shot iPhone 6.3
+#
+# The shots get simulators of their own, made on demand, so that a device someone is
+# using - or an app left in the foreground on it - cannot end up in the App Store
+# artwork. Rename them with SHOT_IPHONE=/SHOT_IPAD=/SHOT_WATCH= if you prefer.
+SHOT_IPHONE ?= VDV Shot iPhone 6.3
 SHOT_IPHONE_TYPE ?= com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
 SHOT_IPHONE_RUNTIME ?= com.apple.CoreSimulator.SimRuntime.iOS-27-0
-SHOT_IPAD ?= iPad Pro 13-inch (M5)
-SHOT_WATCH ?= Apple Watch Ultra 4 (49mm)
-SHOT_DELAY ?= 12
+SHOT_IPAD ?= VDV Shot iPad 13
+SHOT_IPAD_TYPE ?= com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB
+SHOT_IPAD_RUNTIME ?= com.apple.CoreSimulator.SimRuntime.iOS-27-0
+SHOT_WATCH ?= VDV Shot Watch
+SHOT_WATCH_TYPE ?= com.apple.CoreSimulator.SimDeviceType.Apple-Watch-Ultra-4-49mm
+SHOT_WATCH_RUNTIME ?= com.apple.CoreSimulator.SimRuntime.watchOS-27-0
+SHOT_DELAY ?= 20
+# A simulator that has never drawn the map has no tiles and nothing in MapKit's
+# cache, so the first launch of a capture device is given time to fill both.
+SHOT_WARMUP ?= 45
 # The viewport the screenshots are taken in: the region itself, tightly enough that
 # the markers are readable. Seeded as the app's own saved map view, so the shot does
 # not depend on what the camera happens to fit on a given screen.
@@ -129,7 +140,11 @@ SHOT_LONGITUDE ?= 15.6
 SHOT_LATITUDE_DELTA ?= 0.62
 SHOT_LONGITUDE_DELTA ?= 0.95
 # The watch's map takes longer to draw its first tiles than the phone's.
-SHOT_WATCH_DELAY ?= 30
+SHOT_WATCH_DELAY ?= 40
+# A watch with no fix of its own opens on the whole region; seeding the position it
+# remembers puts the shot around the lines whose vehicles are being photographed.
+SHOT_WATCH_LATITUDE ?= 49.215
+SHOT_WATCH_LONGITUDE ?= 15.88
 # Rewrites a PNG with only the chunks App Store Connect accepts. `sips` and
 # ImageIO both stamp an eXIf chunk, and the uploader then refuses the file with
 # "File dimensions are invalid" about an image whose dimensions are correct.
@@ -296,6 +311,7 @@ mkdir -p "$$container/Library/Preferences"; \
 plutil -create xml1 "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert startsAtCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert showsCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert autoRefreshEnabled -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView -dictionary "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView.latitude -float $(SHOT_LATITUDE) "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView.longitude -float $(SHOT_LONGITUDE) "$$container/Library/Preferences/$(APP_ID).plist"; \
@@ -427,11 +443,14 @@ mkdir -p "$$container/Library/Preferences"; \
 plutil -create xml1 "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert startsAtCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert showsCurrentLocation -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
+plutil -insert autoRefreshEnabled -bool NO "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView -dictionary "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView.latitude -float $(2) "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView.longitude -float $(3) "$$container/Library/Preferences/$(APP_ID).plist"; \
 plutil -insert savedMapView.latitudeDelta -float $(4) "$$container/Library/Preferences/$(APP_ID).plist"; \
-plutil -insert savedMapView.longitudeDelta -float $(5) "$$container/Library/Preferences/$(APP_ID).plist"
+plutil -insert savedMapView.longitudeDelta -float $(5) "$$container/Library/Preferences/$(APP_ID).plist"; \
+xcrun simctl launch '$(1)' $(APP_ID) >/dev/null 2>&1 || true; \
+sleep $(SHOT_WARMUP)
 endef
 
 # capture-screen(device, path, delay, launch arguments): relaunch the installed app
@@ -453,6 +472,8 @@ screenshots: build watch
 	@mkdir -p '$(SCREENSHOT_DIR)/iphone' '$(SCREENSHOT_DIR)/ipad' '$(SCREENSHOT_DIR)/watch'
 	@xcrun simctl list devices available | grep -q '$(SHOT_IPHONE) (' || \
 		xcrun simctl create '$(SHOT_IPHONE)' $(SHOT_IPHONE_TYPE) $(SHOT_IPHONE_RUNTIME)
+	@xcrun simctl list devices available | grep -q '$(SHOT_IPAD) (' || \
+		xcrun simctl create '$(SHOT_IPAD)' $(SHOT_IPAD_TYPE) $(SHOT_IPAD_RUNTIME)
 	$(call prepare-shot-device,$(SHOT_IPHONE),$(SHOT_LATITUDE),$(SHOT_LONGITUDE),$(SHOT_LATITUDE_DELTA),$(SHOT_LONGITUDE_DELTA))
 	$(call capture-screen,$(SHOT_IPHONE),$(SCREENSHOT_DIR)/iphone/01-main.png,$(SCREENSHOT_DELAY),$(SCREENSHOT_ARGS))
 	$(call capture-screen,$(SHOT_IPHONE),$(SCREENSHOT_DIR)/iphone/02-settings.png,$(SCREENSHOT_DELAY),$(SCREENSHOT_ARGS) -screenshotSettings)
@@ -469,6 +490,8 @@ screenshots: build watch
 # The watch shots: the map, and the detail sheet `-watchSelectFirst` opens. The
 # watch reads its pinned lines from its own defaults on a Mac, so two are seeded.
 define capture-watch-screens
+xcrun simctl list devices available | grep -q '$(SHOT_WATCH) (' || \
+	xcrun simctl create '$(SHOT_WATCH)' $(SHOT_WATCH_TYPE) $(SHOT_WATCH_RUNTIME); \
 xcrun simctl boot '$(SHOT_WATCH)' >/dev/null 2>&1 || true; \
 xcrun simctl bootstatus '$(SHOT_WATCH)' -b >/dev/null 2>&1 || true; \
 xcrun simctl status_bar '$(SHOT_WATCH)' override --time '9:41' --batteryState charged --batteryLevel 100 >/dev/null 2>&1 || true; \
@@ -476,6 +499,8 @@ xcrun simctl terminate '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null 2>&1 || true; \
 xcrun simctl uninstall '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null 2>&1 || true; \
 xcrun simctl spawn '$(SHOT_WATCH)' defaults write $(WATCH_ID) favouriteLines \
 	-array 358300 764330; \
+xcrun simctl spawn '$(SHOT_WATCH)' defaults write $(WATCH_ID) lastKnownPosition \
+	-dict latitude -float $(SHOT_WATCH_LATITUDE) longitude -float $(SHOT_WATCH_LONGITUDE); \
 xcrun simctl install '$(SHOT_WATCH)' '$(WATCH_APP)'; \
 xcrun simctl launch '$(SHOT_WATCH)' $(WATCH_ID) >/dev/null; \
 sleep $(SCREENSHOT_WATCH_DELAY); \
