@@ -9,6 +9,12 @@ struct DepartureBoardIntent: WidgetConfigurationIntent {
 
     @Parameter(title: "Stop")
     var stop: StopEntity?
+
+    /// The configuration sheet shows what the summary names, so the parameter has
+    /// to be in it or the sheet has nothing to edit.
+    static var parameterSummary: some ParameterSummary {
+        Summary("Departures from \(\.$stop)")
+    }
 }
 
 /// One moment of a stop's board.
@@ -86,7 +92,7 @@ struct DepartureBoardWidgetView: View {
         case .needsStop:
             WidgetMessage(icon: "mappin.and.ellipse",
                           title: "Choose a stop",
-                          detail: "Edit this widget and pick the stop whose departures you want.")
+                          detail: "Touch and hold this widget, choose Edit Widget, then tap Stop.")
         case .needsTimetables:
             WidgetMessage(icon: "arrow.down.circle",
                           title: "Timetables not downloaded",

@@ -116,4 +116,87 @@ final class WidgetContentTests: XCTestCase {
         XCTAssertEqual(rows.first?.delayMinutes, 8)
         XCTAssertEqual(rows.first?.expected?.text, "15:08")
     }
+
+    // MARK: - What the stop picker offers
+
+    /// A table the picker can be tested against: each stop with the lines that call
+    /// at it, keyed the way the shipped file is.
+    private func table(_ stops: [(name: String, lines: [String])]) -> StopPositions {
+        var positions: [String: StopPosition] = [:]
+        var lines: [String: [String]] = [:]
+        for (index, stop) in stops.enumerated() {
+            let key = StopPositions.lookupKey(for: stop.name)
+            positions[key] = StopPosition(name: stop.name,
+                                          latitude: 49.1 + Double(index) / 100,
+                                          longitude: 15.4,
+                                          match: .name,
+                                          accuracyMetres: 20)
+            lines[key] = stop.lines
+        }
+        return StopPositions(positions: positions, lines: lines)
+    }
+
+    func testThePickerStartsWithTheStarredStops() {
+        let table = table([
+            ("Telč,aut.nádr.", ["764410", "764420"]),
+            ("Jihlava,aut.nádr.", ["764410"]),
+            ("Třebíč,aut.nádr.", ["764420"])
+        ])
+
+        let suggested = WidgetContent.suggestedStops(in: table,
+                                                     starred: StarredStops(["Třebíč,aut.nádr."]),
+                                                     pinned: FavouriteLines(["420"]))
+
+        XCTAssertEqual(suggested.first, "Třebíč,aut.nádr.")
+    }
+
+    func testThenTheStopsOfThePinnedLines() {
+        let table = table([
+            ("Telč,aut.nádr.", ["764410"]),
+            ("Jihlava,aut.nádr.", ["764420"]),
+            ("Třebíč,aut.nádr.", ["764420"])
+        ])
+
+        let suggested = WidgetContent.suggestedStops(in: table,
+                                                     pinned: FavouriteLines(["420"]))
+
+        XCTAssertEqual(suggested.prefix(2), ["Jihlava,aut.nádr.", "Třebíč,aut.nádr."])
+    }
+
+    func testAFreshInstallStillGetsAListToPickFrom() {
+        let table = table([
+            ("A", ["1"]),
+            ("B", ["1", "2", "3"]),
+            ("C", ["1", "2"])
+        ])
+
+        let suggested = WidgetContent.suggestedStops(in: table, limit: 2)
+
+        // Busiest first, so the list is useful rather than alphabetical noise.
+        XCTAssertEqual(suggested, ["B", "C"])
+    }
+
+    func testAStopNothingCallsAtIsNeverOffered() {
+        let table = table([
+            ("A", []),
+            ("B", ["1"])
+        ])
+
+        XCTAssertEqual(WidgetContent.suggestedStops(in: table), ["B"])
+    }
+
+    func testTheListIsLimitedAndHasNoRepeats() {
+        let table = table([
+            ("A", ["1"]),
+            ("B", ["1"]),
+            ("C", ["1"])
+        ])
+
+        let suggested = WidgetContent.suggestedStops(in: table,
+                                                     starred: StarredStops(["A"]),
+                                                     pinned: FavouriteLines(["1"]),
+                                                     limit: 2)
+
+        XCTAssertEqual(suggested, ["A", "B"])
+    }
 }
