@@ -100,6 +100,7 @@ draws them on a map that is framed - and locked - to the region.
 
   The radius is a distance on the ground, not a size on screen: raising it groups
   more, while zooming out does not group anything that a closer look would not.
+
 - **Detail card.** Tap a marker for the line, destination, traction and delay.
   The line is shown the way a passenger knows it - `815` rather than `795815`,
   with `795` named as the licence area - and for a single vehicle the app also
@@ -130,37 +131,37 @@ draws them on a map that is framed - and locked - to the region.
   written to `AppleLanguages` and shows up the next time the app is launched,
   which is what the screen says.
 - **Official timetables, on demand.** The settings screen downloads the index of
-the Ministry of Transport's timetable archive (a couple of megabytes, once).
-After that, the card of a selected bus lists **all the stops of its run** with the
-times they are actually expected - the published time moved by the delay the feed
-reports - and marks the stop the vehicle was last seen at. Request stops, which
-the archive marks with `<`, are labelled as such instead of being given a time.
-Each line's timetable is then fetched on its own, a few kilobytes at a time, and
-kept on disk, so it works offline afterwards. The Ministry rebuilds the archive
-three times a week, so the screen also manages it: **check for updates** asks the
-archive which version it is offering - one range request, about a kilobyte, and
-no download - and says whether the index in hand is still the published one,
-along with the date it was published. When it is not, **update** reads the index
-again. **Remove** deletes it, and with it the record of which archive it came
-from. `docs/timetables.md` has the whole investigation, including why the 106 MB
-archive is never downloaded.
+  the Ministry of Transport's timetable archive (a couple of megabytes, once).
+  After that, the card of a selected bus lists **all the stops of its run** with the
+  times they are actually expected - the published time moved by the delay the feed
+  reports - and marks the stop the vehicle was last seen at. Request stops, which
+  the archive marks with `<`, are labelled as such instead of being given a time.
+  Each line's timetable is then fetched on its own, a few kilobytes at a time, and
+  kept on disk, so it works offline afterwards. The Ministry rebuilds the archive
+  three times a week, so the screen also manages it: **check for updates** asks the
+  archive which version it is offering - one range request, about a kilobyte, and
+  no download - and says whether the index in hand is still the published one,
+  along with the date it was published. When it is not, **update** reads the index
+  again. **Remove** deletes it, and with it the record of which archive it came
+  from. `docs/timetables.md` has the whole investigation, including why the 106 MB
+  archive is never downloaded.
 - **Lines the feed has gone quiet about.** The regional feed drops whole lines for
-stretches of the day, and the map then shows a town with nothing running while the
-buses are out. With **fill in lines the feed leaves out** switched on - off by
-default, on the timetables screen - the app reads every regional line's timetable
-in the background, a few kilobytes at a time and cached on disk, and after each
-payload compares what the timetables expect with what the feed reports. A line
-that should be running and reports nothing gets one marker, at the stop its run
-is due at: the call nearest the clock, placed with the shipped stop positions.
-It is drawn as a dashed amber badge with an exclamation triangle, it never moves,
-and it cannot be selected - it is a published stop, not a measurement, and
-`docs/timetables.md` records what the archive cannot tell the app about it.
+  stretches of the day, and the map then shows a town with nothing running while the
+  buses are out. With **fill in lines the feed leaves out** switched on - off by
+  default, on the timetables screen - the app reads every regional line's timetable
+  in the background, a few kilobytes at a time and cached on disk, and after each
+  payload compares what the timetables expect with what the feed reports. A line
+  that should be running and reports nothing gets one marker, at the stop its run
+  is due at: the call nearest the clock, placed with the shipped stop positions.
+  It is drawn as a dashed amber badge with an exclamation triangle, it never moves,
+  and it cannot be selected - it is a published stop, not a measurement, and
+  `docs/timetables.md` records what the archive cannot tell the app about it.
 - **Acknowledgements, and who to complain to.** The same screen names every source
-the app depends on - the region's live feed, the Ministry of Transport's timetable
-dataset with its licence and database right, and Apple Maps - and says who wrote
-the app, with the address to send feedback, bug reports and feature requests to.
-It is all static text, so it reads offline, and the address opens a message with
-the subject already filled in.
+  the app depends on - the region's live feed, the Ministry of Transport's timetable
+  dataset with its licence and database right, and Apple Maps - and says who wrote
+  the app, with the address to send feedback, bug reports and feature requests to.
+  It is all static text, so it reads offline, and the address opens a message with
+  the subject already filled in.
 - **Offline, and honest about it.** Losing the network does not empty the map. The
   last payload is kept on disk and comes back on the next launch, drawn grey until
   a live payload replaces it, because a position from an hour ago is not the map.

@@ -8,7 +8,7 @@ The commands to reproduce each claim are at the end.
 
 - **The timetables ship stop names but no positions.** JDF's `Zastavky.txt` has no
   coordinate columns at all - its columns 7-12 are tariff zones - and the ministry's NeTEx
-  export of the same data has an *empty* `<Location />` for all 327,110 of its scheduled
+  export of the same data has an _empty_ `<Location />` for all 327,110 of its scheduled
   stop points. There is nothing to switch on.
 - **The region publishes nothing.** Kraj Vysočina's own open-data catalogue holds three
   datasets and none of them is transport, and the region is not among the providers of the
@@ -32,14 +32,14 @@ The commands to reproduce each claim are at the end.
 
 ## What each source actually has
 
-| Source | Stop names | Stop positions | Notes |
-|---|---|---|---|
-| JDF archive (`Zastavky.txt`) | yes | **no** | 309,789 stop rows; columns 7-12 hold only 2-digit tariff zones; 0 coordinate-shaped cells |
-| NeTEx export (same ministry, 190 MB) | yes | **no** | 309,789 `StopPlace`, 327,110 `ScheduledStopPoint`, 0 `Latitude`, every `<Location />` empty |
-| Live feed (`mapavdv`) | current stop only | vehicles only | 6 Ajax endpoints in the whole site, none stop-based; no coordinates in the info-window or timetable HTML |
-| Kraj Vysočina | — | — | ArcGIS Hub catalogue: 3 datasets, 0 transport |
-| ČÚZK ZABAGED | rail | rail | 149 layers; "Železniční stanice, zastávka" exists, no bus-stop layer |
-| **OpenStreetMap** | yes | **yes** | 6,437 named stops with positions in the region, 3,616 distinct names |
+| Source                               | Stop names        | Stop positions | Notes                                                                                                    |
+| ------------------------------------ | ----------------- | -------------- | -------------------------------------------------------------------------------------------------------- |
+| JDF archive (`Zastavky.txt`)         | yes               | **no**         | 309,789 stop rows; columns 7-12 hold only 2-digit tariff zones; 0 coordinate-shaped cells                |
+| NeTEx export (same ministry, 190 MB) | yes               | **no**         | 309,789 `StopPlace`, 327,110 `ScheduledStopPoint`, 0 `Latitude`, every `<Location />` empty              |
+| Live feed (`mapavdv`)                | current stop only | vehicles only  | 6 Ajax endpoints in the whole site, none stop-based; no coordinates in the info-window or timetable HTML |
+| Kraj Vysočina                        | —                 | —              | ArcGIS Hub catalogue: 3 datasets, 0 transport                                                            |
+| ČÚZK ZABAGED                         | rail              | rail           | 149 layers; "Železniční stanice, zastávka" exists, no bus-stop layer                                     |
+| **OpenStreetMap**                    | yes               | **yes**        | 6,437 named stops with positions in the region, 3,616 distinct names                                     |
 
 The JDF stop ids are per line (`Zaslinky.txt` refers to `Zastavky.txt` by a number that
 restarts on every line), so no external dataset can be joined by id either. **The name is
@@ -51,14 +51,14 @@ Stops are kept when their JDF district is one of JI, TR, PE, HB, ZR: 3,521 stops
 1,033 lines, 2,590 distinct display names. Each one is matched in this order, and the result
 carries which rule matched and how close it is likely to be:
 
-| Match | Rule | Accuracy |
-|---|---|---|
-| `osm-name` | the name in the forms a timetable prints it in | ~40 m |
-| `osm-village` | OSM name starts with the village and carries our local name | ~150 m |
-| `osm-near` | a hamlet stop, filed in OSM under the hamlet alone, within 5 km of the village | ~250 m |
-| `osm-similar` | an OSM stop whose name contains ours, near the line ("Barum", "Husova", "KD Ostrov") | ~250 m |
-| `place` | the centre of the stops already placed in the village, or the village node | 300-600 m |
-| `route` | on the straight line between the two placed stops either side, at the fraction the timetable's own distances give | ~800 m |
+| Match         | Rule                                                                                                              | Accuracy  |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- | --------- |
+| `osm-name`    | the name in the forms a timetable prints it in                                                                    | ~40 m     |
+| `osm-village` | OSM name starts with the village and carries our local name                                                       | ~150 m    |
+| `osm-near`    | a hamlet stop, filed in OSM under the hamlet alone, within 5 km of the village                                    | ~250 m    |
+| `osm-similar` | an OSM stop whose name contains ours, near the line ("Barum", "Husova", "KD Ostrov")                              | ~250 m    |
+| `place`       | the centre of the stops already placed in the village, or the village node                                        | 300-600 m |
+| `route`       | on the straight line between the two placed stops either side, at the fraction the timetable's own distances give | ~800 m    |
 
 Four things keep this honest, and each of them was added because the join got it wrong:
 
@@ -95,13 +95,13 @@ dropped, and the names two different places answer to. Corrections go in
 
 Red flags the last stage prints, and what they should read:
 
-| Reading | Healthy |
-|---|---|
-| `osm-name` | the largest single group, ~1,500 rows |
-| name-based kinds together | ~1,950 rows |
-| `dropped by guards` | low hundreds, not thousands |
-| `unplaced` | tens |
-| `shipped rows` | ~2,500 |
+| Reading                            | Healthy                                          |
+| ---------------------------------- | ------------------------------------------------ |
+| `osm-name`                         | the largest single group, ~1,500 rows            |
+| name-based kinds together          | ~1,950 rows                                      |
+| `dropped by guards`                | low hundreds, not thousands                      |
+| `unplaced`                         | tens                                             |
+| `shipped rows`                     | ~2,500                                           |
 | names shared by more than one stop | hundreds; shipping none of them should be 0 or 1 |
 
 ## Drawing them
