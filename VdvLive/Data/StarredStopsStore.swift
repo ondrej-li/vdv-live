@@ -17,7 +17,8 @@ struct UserDefaultsStarredStopsStore: StarredStopsPersisting, @unchecked Sendabl
     private let key: String
     private let lock = NSLock()
 
-    init(defaults: UserDefaults = .standard, key: String = UserDefaultsStarredStopsStore.defaultKey) {
+    init(defaults: UserDefaults = SharedContainer.defaults,
+         key: String = UserDefaultsStarredStopsStore.defaultKey) {
         self.defaults = defaults
         self.key = key
     }

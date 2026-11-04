@@ -22,6 +22,9 @@ struct VdvLiveApp: App {
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
             return
         }
+        // What earlier versions kept in the app's own defaults is copied into the
+        // group the widgets read, so a pin made before the update is still a pin.
+        SharedContainer.copyDefaultsFromAppIfNeeded()
         LanguageOverride.apply(UserDefaultsAppSettingsStore().load().language)
         watchFavourites.start()
     }

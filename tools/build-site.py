@@ -69,6 +69,8 @@ TEXT = {
         "f5_d": "Vozidla oblíbených linek na zápěstí, obarvená podle zpoždění. Hodinky si data stahují samy, telefon nepotřebují.",
         "f6_t": "Nic se nesbírá",
         "f6_d": "Bez účtu, bez analytiky, bez reklam a bez SDK třetích stran. Poloha zůstává v zařízení a nikam se neposílá.",
+        "f7_t": "Widgety",
+        "f7_d": "Odjezdová tabule zastávky, kterou si vyberete, a nejbližší vozidla oblíbených linek na ploše.",
         "watch_title": "Na zápěstí",
         "watch_lede": "Jen to, co vás zajímá: oblíbené linky a jejich vozidla.",
         "data_title": "Odkud data pocházejí",
@@ -126,6 +128,8 @@ TEXT = {
         "f5_d": "The vehicles of your pinned lines on your wrist, coloured by delay. The watch fetches its own data and does not need the phone.",
         "f6_t": "Nothing is collected",
         "f6_d": "No account, no analytics, no ads, no third-party SDKs. Your position stays on the device.",
+        "f7_t": "Widgets",
+        "f7_d": "A departure board for the stop you choose, and the pinned lines' vehicles nearest to you, on the home screen.",
         "watch_title": "On the wrist",
         "watch_lede": "Only what you care about: your pinned lines and their vehicles.",
         "data_title": "Where the data comes from",
@@ -180,14 +184,15 @@ PRIVACY = {
         ("h", "Vaše poloha"),
         ("p", "Mapa se může otevřít na vaší poloze a sledovat ji. Je to volitelné a vypnuté, "
               "dokud o to nepožádáte. Poloha se čte v zařízení a slouží jen k určení středu "
-              "mapy. Nikam se neposílá a nezapisuje se do logu, a neukládá se nikde jinde než "
-              "v tomto zařízení: poslední použitá poloha se pamatuje, aby se mapa příště "
+              "mapy a k tomu, aby widget poznal, která z vašich oblíbených vozidel jsou "
+              "poblíž. Nikam se neposílá a nezapisuje se do logu, a neukládá se nikde jinde "
+              "než v tomto zařízení: poslední použitá poloha se pamatuje, aby se mapa příště "
               "otevřela na správném místě, a zmizí spolu s aplikací."),
         ("h", "Co zůstává v zařízení"),
         ("p", "Nastavení, oblíbené linky, poslední přijaté polohy (aby mapa nezůstala "
               "prázdná, když není síť), stažené jízdní řády a nastavené připomínky jsou "
-              "uložené v úložišti aplikace. Jiné aplikace je nepřečtou a smažou se společně "
-              "s aplikací."),
+              "uložené v úložišti aplikace, které sdílí se svými widgety. Jiné aplikace je "
+              "nepřečtou a smažou se společně s aplikací."),
         ("h", "Děti"),
         ("p", "Aplikace neshromažďuje údaje o nikom."),
         ("h", "Změny"),
@@ -223,15 +228,17 @@ PRIVACY = {
         ("h", "Your location"),
         ("p", "The map can open on your position and follow it. That is optional and off "
               "unless you ask for it. The position is read on the device and used only to "
-              "decide where the map points. It is never sent anywhere and never written to a "
-              "log, and it is not kept anywhere but on this device: the last position it "
+              "decide where the map points, and to tell the app's widget which of your "
+              "pinned vehicles are near you. It is never sent anywhere and never written to "
+              "a log, and it is not kept anywhere but on this device: the last position it "
               "used is remembered so that the map can open in the right place next time, and "
               "it goes when the app does."),
         ("h", "What is kept on your device"),
         ("p", "Settings, pinned lines, the last positions received (so the map is not empty "
               "when the network is down), downloaded timetables and the reminders you set "
-              "are stored inside the app's own storage. They are not readable by other apps "
-              "and they go away when you delete the app."),
+              "are stored inside the app's own storage, which it shares with its own "
+              "widgets. They are not readable by other apps and they go away when you "
+              "delete the app."),
         ("h", "Children"),
         ("p", "The app collects nothing, from anyone."),
         ("h", "Changes"),
@@ -541,7 +548,7 @@ def landing(lang, t, canonical_base):
 
     features = "".join(
         f"""<article><h3>{esc(t[f'{n}_t'])}</h3><p>{esc(t[f'{n}_d'])}</p></article>"""
-        for n in ("f1", "f2", "f3", "f4", "f5", "f6")
+        for n in ("f1", "f2", "f3", "f4", "f5", "f6", "f7")
     )
 
     sources = "".join(

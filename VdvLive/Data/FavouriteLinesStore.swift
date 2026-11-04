@@ -27,7 +27,7 @@ struct UserDefaultsFavouriteLinesStore: FavouriteLinesPersisting, @unchecked Sen
     private let showsOnlyFavouritesKey: String
 
     init(
-        defaults: UserDefaults = .standard,
+        defaults: UserDefaults = SharedContainer.defaults,
         key: String = UserDefaultsFavouriteLinesStore.defaultKey,
         showsOnlyFavouritesKey: String = UserDefaultsFavouriteLinesStore.showsOnlyFavouritesKey
     ) {

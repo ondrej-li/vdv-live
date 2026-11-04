@@ -20,6 +20,8 @@ APP_ID := cz.ondralinek.VdvLive
 # 'make deploy'.
 WATCH_SIMULATOR ?= VDV Watch
 WATCH_ID := cz.ondralinek.VdvLive.watchkitapp
+# The widget extension, embedded in the app, and the App Group both read.
+WIDGET_ID := cz.ondralinek.VdvLive.widgets
 WATCH_DEVICE_TYPE ?= com.apple.CoreSimulator.SimDeviceType.Apple-Watch-Series-11-46mm
 WATCH_RUNTIME ?= com.apple.CoreSimulator.SimRuntime.watchOS-27-0
 WATCH_APP := $(DERIVED_DATA)/Build/Products/$(CONFIGURATION)-watchsimulator/VdvLive Watch.app
@@ -80,6 +82,11 @@ LIVE_DIR := $(DERIVED_DATA)/live
 # Width the mirrored frames are downscaled to before they reach the browser.
 LIVE_WIDTH ?= 720
 APP_SOURCES := $(shell find VdvLive -name '*.swift' | sort)
+# The widget is a module of its own: it compiles the shared layers - which is what
+# lets it read the timetable store and the feed client - plus its own files, and
+# nothing from the screens.
+SHARED_SOURCES := $(shell find VdvLive/Domain VdvLive/Data -name '*.swift' | sort)
+WIDGET_SOURCES := $(shell find VdvLiveWidgets -name '*.swift' | sort)
 TEST_SOURCES := $(shell find VdvLiveTests -name '*.swift' | sort)
 
 # Where the national timetable archive comes from, for 'make mapping'.
@@ -98,7 +105,7 @@ EXPORT_OPTIONS := $(DERIVED_DATA)/ExportOptions.plist
 # mentioned, so the number printed at the end of an upload could differ from the one
 # inside the archive - and the printed one is what a person carries to App Store
 # Connect.
-VERSION ?= 1.2
+VERSION ?= 1.3
 BUILD := $(if $(BUILD),$(BUILD),$(shell date +%y%m%d%H%M))
 
 # Where 'make shots' puts the App Store screenshots, and the devices it takes them
@@ -148,6 +155,7 @@ typecheck:
 	@mkdir -p $(TYPECHECK_DIR)
 	$(SWIFTC) -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -D DEBUG -enable-testing -module-name VdvLive -emit-module -emit-module-path $(TYPECHECK_DIR)/VdvLive.swiftmodule $(APP_SOURCES)
 	$(SWIFTC) -typecheck -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -D DEBUG $(APP_SOURCES)
+	$(SWIFTC) -typecheck -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -D DEBUG -parse-as-library -module-name VdvLiveWidgets $(SHARED_SOURCES) $(WIDGET_SOURCES)
 	$(SWIFTC) -typecheck -sdk '$(IOS_SIMULATOR_SDK)' -target $(SWIFT_TARGET) -swift-version 5 -enable-testing -module-name VdvLiveTests -I $(TYPECHECK_DIR) -I '$(IOS_SIMULATOR_PLATFORM)/usr/lib' -F '$(IOS_SIMULATOR_PLATFORM)/Library/Frameworks' $(TEST_SOURCES)
 	@echo "type check passed"
 
@@ -230,7 +238,7 @@ endef
 check-release:
 	@echo "team:     $(if $(TEAM),$(TEAM),NOT SET - put the paid Team ID in .team)"
 	@echo "version:  $(VERSION) ($(BUILD))"
-	@echo "bundles:  $(APP_ID), $(WATCH_ID)"
+	@echo "bundles:  $(APP_ID), $(WATCH_ID), $(WIDGET_ID)"
 	@echo "team ids on this Mac:"
 	@for f in "$(HOME)"/Library/Developer/Xcode/UserData/Provisioning\ Profiles/*.mobileprovision; do \
 		[ -f "$$f" ] && security cms -D -i "$$f" 2>/dev/null | plutil -extract TeamIdentifier.0 raw - 2>/dev/null; \

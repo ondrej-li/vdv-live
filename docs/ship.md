@@ -16,6 +16,7 @@ tested in `VdvLiveTests/AppStoreRequirementsTests.swift`:
 | App and watch icons, single 1024 px each, no alpha channel | `Assets.xcassets/AppIcon.appiconset` |
 | Location permission purpose string | `INFOPLIST_KEY_NSLocationWhenInUseUsageDescription` |
 | Attributed data sources, in both languages | Settings → Acknowledgements |
+| The App Group the widgets read the app's pins, stars and timetables through | `Config/VdvLive.entitlements`, `Config/VdvLiveWidgets.entitlements` |
 
 ## One-time setup
 
@@ -45,12 +46,20 @@ tested in `VdvLiveTests/AppStoreRequirementsTests.swift`:
 3. If there is no distribution identity, **Xcode → Settings → Accounts** → the Apple
    ID → *Manage Certificates* → `+` → **Apple Distribution**. Automatic signing does
    the rest per upload.
-4. **developer.apple.com → Identifiers**: `cz.ondralinek.VdvLive` and
-   `cz.ondralinek.VdvLive.watchkitapp`. An upgraded team keeps the app ids it had, so
-   they are normally already there; register any that are missing.
-5. **App Store Connect → Business**: accept the *Free Applications* agreement. A
+4. **developer.apple.com → Identifiers**: `cz.ondralinek.VdvLive`,
+   `cz.ondralinek.VdvLive.watchkitapp` and `cz.ondralinek.VdvLive.widgets`. An
+   upgraded team keeps the app ids it had, so they are normally already there;
+   register any that are missing.
+5. **developer.apple.com → Identifiers → App Groups**: `group.cz.ondralinek.VdvLive`,
+   ticked for the app and the widget. The extension reads the pinned lines, the
+   starred stops, the last position and the downloaded timetables from this group;
+   without it a widget shows the message that it has nothing to read. Automatic
+   signing registers the group on the first archive that needs it, so this is only
+   a check before the first upload - and an app id without the group cannot be
+   signed with an entitlement that asks for it.
+6. **App Store Connect → Business**: accept the *Free Applications* agreement. A
    free app needs no banking or tax details.
-6. **App Store Connect → My Apps → +**: new app, platform iOS, primary language
+7. **App Store Connect → My Apps → +**: new app, platform iOS, primary language
    **Czech**, the bundle id above, a SKU (`vdvlive`), and a name. Names are unique
    across the store and at most 30 characters.
 
@@ -69,11 +78,11 @@ make shots                   # iPhone 6.9" and iPad 13" screenshots
 make shots-watch             # and the watch one
 ```
 
-`make archive` stamps the build number from the clock (`VERSION=1.2`,
+`make archive` stamps the build number from the clock (`VERSION=1.3`,
 `BUILD=yyMMddHHmm`), so no upload can repeat the one before it. Override either:
 
 ```sh
-make upload VERSION=1.2          # a new marketing version
+make upload VERSION=1.3          # a new marketing version
 make upload BUILD=42             # a specific build number
 ```
 
