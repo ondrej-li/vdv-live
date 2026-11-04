@@ -24,11 +24,17 @@ enum WidgetPalette {
         if minutes >= VehicleDelay.badlyLateMinutes { return .red }
         return minutes > 0 ? .orange : .green
     }
-}
 
-extension StopBoardEntry {
-    /// What the expected column says, which is the same wording as the board sheet.
-    var expectedText: String { expected?.text ?? "—" }
+    /// The colour of a row's status: the same scale as the map, and grey while the
+    /// timetable is all the widget has to go on.
+    static func statusTint(_ status: StopBoardEntry.Status) -> Color {
+        switch status {
+        case .scheduled: return .secondary
+        case .onTime, .early: return .green
+        case .late(let minutes):
+            return minutes >= VehicleDelay.badlyLateMinutes ? .red : .orange
+        }
+    }
 }
 
 extension NearbyVehicle {

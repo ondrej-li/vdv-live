@@ -22,6 +22,7 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
     private func makeStore(downloaded: Bool) async throws -> LineTimetableStore {
         let store = LineTimetableStore(
             client: try StubTimetableArchive.fromFixture(),
+            mapping: StubTimetableArchive.fixtureMapping,
             files: TimetableFiles(directory: directory)
         )
         if downloaded {

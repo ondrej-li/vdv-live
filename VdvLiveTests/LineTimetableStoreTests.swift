@@ -52,6 +52,7 @@ final class LineTimetableStoreTests: XCTestCase {
                 serverVersion: version,
                 versionFails: versionFails
             ),
+            mapping: StubTimetableArchive.fixtureMapping,
             files: TimetableFiles(directory: directory)
         )
     }
@@ -77,7 +78,7 @@ final class LineTimetableStoreTests: XCTestCase {
         XCTAssertTrue(store.isReady)
         XCTAssertNotNil(store.downloadedAt)
         XCTAssertNil(store.errorMessage)
-        XCTAssertEqual(store.knownLineCount, 381)
+        XCTAssertEqual(store.knownLineCount, StubTimetableArchive.fixtureMapping.count)
 
         // A second store, as if the app had been launched again, reads it back.
         let reopened = try makeStore()
@@ -111,6 +112,7 @@ final class LineTimetableStoreTests: XCTestCase {
         // the entry is already on disk - only the index has to be in memory.
         let offline = LineTimetableStore(
             client: StubTimetableArchive(archive: Data(), failures: ["*"]),
+            mapping: StubTimetableArchive.fixtureMapping,
             files: TimetableFiles(directory: directory)
         )
         let fetched = try await offline.timetable(forLine: "764337")
@@ -184,12 +186,14 @@ final class LineTimetableStoreTests: XCTestCase {
         XCTAssertFalse(mapping.isEmpty)
         XCTAssertEqual(mapping.count, 381)
 
-        // One line of it, against the archive the other tests use: the mapping
-        // has to name the entry the archive really holds the line in, and it has
-        // to offer a candidate before that one, so the fallback is exercised.
-        let candidates = try XCTUnwrap(mapping["764337"])
-        XCTAssertTrue(candidates.contains(try fixtureEntryName()), "\(candidates)")
-        XCTAssertGreaterThan(candidates.count, 1)
+        // Every line has to name entries that look like the archive's, and a line
+        // worth falling back for has more than one: the archive renumbers its
+        // entries when it is republished, so the app tries them in turn.
+        for (line, entries) in mapping {
+            XCTAssertFalse(entries.isEmpty, line)
+            XCTAssertTrue(entries.allSatisfy { $0.hasSuffix(".zip") }, "\(line): \(entries)")
+        }
+        XCTAssertGreaterThanOrEqual(mapping.values.map(\.count).max() ?? 0, 2)
     }
 
     // MARK: - Is the index still the published one?

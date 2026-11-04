@@ -1,18 +1,42 @@
+import AppIntents
 import SwiftUI
 import UIKit
 import WidgetKit
+
+/// The place a traffic widget looks around.
+///
+/// Empty means the reader's own position, which is what a widget added without any
+/// configuration has to fall back on. Naming a stop makes the widget about that
+/// stop's traffic, which is the question somebody planning a journey actually asks.
+struct StarredTrafficIntent: WidgetConfigurationIntent {
+    static let title: LocalizedStringResource = "Starred traffic"
+    static let description = IntentDescription("The pinned lines' vehicles nearest to a place you choose.")
+
+    @Parameter(title: "Around",
+               description: "A stop to look around. Leave it empty to use your last known position.")
+    var stop: StopEntity?
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Traffic around \(\.$stop)")
+    }
+}
 
 /// One moment of the pinned lines' traffic around the reader.
 struct StarredTrafficEntry: TimelineEntry {
     let date: Date
     let state: WidgetTrafficState
-    /// The map drawn in place of an empty list, when the app knows where the reader
-    /// is. `nil` when there is something to list, or when Apple Maps could not be
-    /// reached - the widget then falls back to saying it found nothing.
+    /// The stop being looked around, `nil` when the widget is about the reader.
+    let originName: String?
+    /// The map drawn in place of an empty list, around the same place the vehicles
+    /// were ranked from. `nil` when there is something to list, or when Apple Maps
+    /// could not be reached - the widget then falls back to saying it found nothing.
     let mapImage: UIImage?
+
+    /// What the header calls the place.
+    var originLabel: String { originName ?? String(localized: "Near you") }
 }
 
-struct StarredTrafficProvider: TimelineProvider {
+struct StarredTrafficProvider: AppIntentTimelineProvider {
     /// Traffic moves, so this asks again in a few minutes. WidgetKit decides how
     /// often it really grants that; the entries say what was true when asked.
     private static let refreshMinutes = 10
@@ -26,35 +50,42 @@ struct StarredTrafficProvider: TimelineProvider {
     }
 
     func placeholder(in context: Context) -> StarredTrafficEntry {
-        StarredTrafficEntry(date: Date(), state: .needsPinnedLines, mapImage: nil)
+        StarredTrafficEntry(date: Date(), state: .needsPinnedLines, originName: nil, mapImage: nil)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (StarredTrafficEntry) -> Void) {
-        Task { @MainActor in
-            completion(await Self.entry(for: context.family))
-        }
+    func snapshot(for configuration: StarredTrafficIntent, in context: Context) async -> StarredTrafficEntry {
+        await Self.entry(for: configuration, family: context.family)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<StarredTrafficEntry>) -> Void) {
-        Task { @MainActor in
-            let entry = await Self.entry(for: context.family)
-            let next = entry.date.addingTimeInterval(TimeInterval(Self.refreshMinutes * 60))
-            completion(Timeline(entries: [entry], policy: .after(next)))
-        }
+    func timeline(for configuration: StarredTrafficIntent,
+                  in context: Context) async -> Timeline<StarredTrafficEntry> {
+        let entry = await Self.entry(for: configuration, family: context.family)
+        let next = entry.date.addingTimeInterval(TimeInterval(Self.refreshMinutes * 60))
+        return Timeline(entries: [entry], policy: .after(next))
     }
 
     @MainActor
-    private static func entry(for family: WidgetFamily) async -> StarredTrafficEntry {
-        let state = await WidgetDataSource.trafficState(limit: limit(for: family))
-        return StarredTrafficEntry(date: Date(), state: state, mapImage: await map(for: state, family: family))
+    private static func entry(for configuration: StarredTrafficIntent,
+                              family: WidgetFamily) async -> StarredTrafficEntry {
+        let origin = WidgetOrigin.resolve(stopNamed: configuration.stop?.name,
+                                          in: StopPositions.shipped,
+                                          position: LastKnownPositionStore().load())
+        let state = await WidgetDataSource.trafficState(around: origin, limit: limit(for: family))
+        return StarredTrafficEntry(date: Date(),
+                                   state: state,
+                                   originName: origin.name,
+                                   mapImage: await map(for: state, from: origin, family: family))
     }
 
     /// A map when there is nothing to list, because "nothing nearby" reads better as
-    /// the neighbourhood than as a sentence about it.
+    /// the neighbourhood than as a sentence about it. It is drawn around the same
+    /// place the vehicles were ranked from, so the two cannot disagree.
     @MainActor
-    private static func map(for state: WidgetTrafficState, family: WidgetFamily) async -> UIImage? {
+    private static func map(for state: WidgetTrafficState,
+                            from origin: WidgetOrigin,
+                            family: WidgetFamily) async -> UIImage? {
         guard case .vehicles(let vehicles) = state, vehicles.isEmpty,
-              let coordinate = LastKnownPositionStore().load() else { return nil }
+              let coordinate = origin.coordinate else { return nil }
         return await WidgetMap.image(around: coordinate, family: family)
     }
 }
@@ -63,7 +94,9 @@ struct StarredTrafficWidget: Widget {
     static let kind = "cz.ondralinek.VdvLive.widget.traffic"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: Self.kind, provider: StarredTrafficProvider()) { entry in
+        AppIntentConfiguration(kind: Self.kind,
+                               intent: StarredTrafficIntent.self,
+                               provider: StarredTrafficProvider()) { entry in
             StarredTrafficWidgetView(entry: entry)
                 .containerBackground(for: .widget) {
                     if let map = entry.mapImage {
@@ -92,9 +125,15 @@ struct StarredTrafficWidgetView: View {
                        title: "No pinned lines",
                        detail: "Star a line in VDV Live and its vehicles appear here.")
         case .needsPosition:
-            WidgetNote(icon: "location",
-                       title: "Position not known yet",
-                       detail: "Open VDV Live once near where you travel, and the widget finds what is close.")
+            if let name = entry.originName {
+                WidgetNote(icon: "mappin.slash",
+                           title: "Stop not on the map",
+                           detail: "The stop table has no position for \(name), so there is nothing to measure from.")
+            } else {
+                WidgetNote(icon: "location",
+                           title: "Position not known yet",
+                           detail: "Open VDV Live once near where you travel, and the widget finds what is close.")
+            }
         case .vehicles(let vehicles):
             if vehicles.isEmpty {
                 // The map is the widget; only a snapshot that could not be drawn
@@ -122,16 +161,19 @@ struct StarredTrafficWidgetView: View {
     private func list(_ vehicles: [NearbyVehicle]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 4) {
-                Image(systemName: "star.fill")
+                Image(systemName: entry.originName == nil ? "star.fill" : "mappin.and.ellipse")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                Text("Near you")
+                Text(entry.originLabel)
                     .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 Spacer(minLength: 0)
                 Text(entry.date, style: .time)
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
 
             if family == .systemSmall, let nearest = vehicles.first {
                 NearestVehicleView(vehicle: nearest, others: vehicles.count - 1)

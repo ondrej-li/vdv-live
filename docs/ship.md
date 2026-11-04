@@ -74,8 +74,9 @@ make check-release           # team, version, bundles, available identities
 make archive                 # build/VdvLive.xcarchive, Release, for a device
 make upload                  # exports and sends it to App Store Connect
 make ipa                     # ...or just export the .ipa without sending it
-make shots                   # iPhone 6.9" and iPad 13" screenshots
+make shots                   # iPhone 6.3" and iPad 13" screenshots
 make shots-watch             # and the watch one
+make screenshots             # the same frames, written into screenshots/
 ```
 
 `make archive` stamps the build number from the clock (`VERSION=1.3`,
@@ -99,8 +100,10 @@ Organizer and use *Distribute App → App Store Connect*.
 | Age rating | 4+. No objectionable content, no user-generated content, no ads |
 | Price | Free, availability as you like |
 | Content rights | The app shows third-party data (the region's feed, the Ministry's timetables); it has the right to, and attributes it in the app |
-| Screenshots | `make shots` and `make shots-watch` |
-| Review notes | Say that no account is needed, that positions come from the region's public map, and what the exclamation triangle means |
+| Description, subtitle, keywords, promotional text | `docs/app-store.md`, Czech and English, with the character counts |
+| What's New | `docs/app-store.md` — the widgets, for 1.3 |
+| Screenshots | `screenshots/`, refreshed with `make screenshots`; the order to use is in `docs/app-store.md` |
+| Review notes | `docs/app-store.md` — no account is needed, where the data comes from, and what the exclamation triangle means |
 
 ### Hosting the privacy policy and support pages
 

@@ -51,11 +51,11 @@ enum WidgetDataSource {
                                       delays: delays(of: await vehicles()))
     }
 
-    /// The pinned lines' traffic, and the reasons there might be none.
-    static func trafficState(limit: Int) async -> WidgetTrafficState {
+    /// The pinned lines' traffic around a place, and the reasons there might be none.
+    static func trafficState(around origin: WidgetOrigin, limit: Int) async -> WidgetTrafficState {
         WidgetContent.traffic(vehicles: await vehicles(),
                               pinnedTo: UserDefaultsFavouriteLinesStore().load(),
-                              from: LastKnownPositionStore().load(),
+                              from: origin.coordinate,
                               limit: limit)
     }
 

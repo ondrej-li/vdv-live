@@ -37,6 +37,18 @@ struct StubTimetableArchive: TimetableArchiveReading {
 }
 
 extension StubTimetableArchive {
+    /// The line the checked-in sample archive holds, and the entry it holds it in.
+    ///
+    /// Spelled out rather than read from the shipped mapping: the ministry
+    /// republishes the archive a few times a week and renumbers its entries, so a
+    /// test that took the name from the mapping would have to be re-cut every time
+    /// `make mapping` runs.
+    static let fixtureLineNumber = "764337"
+    static let fixtureEntryName = "7673.zip"
+    /// A mapping that points the fixture line at the fixture entry, so a store can
+    /// read the sample without depending on what the archive publishes today.
+    static let fixtureMapping = [fixtureLineNumber: [fixtureEntryName]]
+
     /// The archive sample checked in with the tests: one entry, for line 764337.
     static func fromFixture() throws -> StubTimetableArchive {
         let url = try XCTUnwrapFixture("jdf-archive-sample")

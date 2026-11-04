@@ -2702,16 +2702,6 @@
         }
       }
     },
-    "Edit this widget and pick the stop whose departures you want." : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Upravte widget a vyberte zastávku, jejíž odjezdy chcete vidět."
-          }
-        }
-      }
-    },
     "Open VDV Live, then Settings, and download the timetables." : {
       "localizations" : {
         "cs" : {
@@ -2758,16 +2748,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oblíbené spoje"
-          }
-        }
-      }
-    },
-    "The pinned lines' vehicles nearest to where you were." : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nejbližší vozidla oblíbených linek k vaší poloze."
           }
         }
       }
@@ -2896,6 +2876,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mapa vašeho okolí"
+          }
+        }
+      }
+    },
+    "scheduled" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "podle řádu"
+          }
+        }
+      }
+    },
+    "Around" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kde"
+          }
+        }
+      }
+    },
+    "A stop to look around. Leave it empty to use your last known position." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávka, kolem které se widget dívá. Nechte prázdné a použije se poslední známá poloha."
+          }
+        }
+      }
+    },
+    "Traffic around %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Provoz kolem %@"
+          }
+        }
+      }
+    },
+    "The pinned lines' vehicles nearest to a place you choose." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nejbližší vozidla oblíbených linek kolem zvoleného místa."
+          }
+        }
+      }
+    },
+    "Line %@ to %@: %@, %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka %@ do %@: %@, %@"
+          }
+        }
+      }
+    },
+    "Stop not on the map" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávka není na mapě"
+          }
+        }
+      }
+    },
+    "The stop table has no position for %@, so there is nothing to measure from." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabulka zastávek nemá pro %@ polohu, takže není od čeho měřit."
           }
         }
       }

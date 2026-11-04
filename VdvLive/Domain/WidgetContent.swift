@@ -14,6 +14,44 @@ enum WidgetBoardState: Equatable, Sendable {
     case board(stopName: String, rows: [StopBoardEntry])
 }
 
+/// Where a widget is looking from.
+///
+/// The traffic widget used to look from one place only - the last fix the app took -
+/// which made it a map of wherever the reader happened to be when they last opened
+/// the app. A place can be named instead: a stop from the shipped table, which is
+/// what the app itself is built around and what somebody planning a journey cares
+/// about. Naming nothing keeps the old behaviour, so a widget picked for "around me"
+/// still works without configuration.
+struct WidgetOrigin: Equatable, Sendable {
+    /// The middle of the question, `nil` when nothing can place it.
+    let coordinate: CLLocationCoordinate2D?
+    /// The stop it was asked about, `nil` when it is the reader's own position.
+    let name: String?
+
+    /// The origin a configuration describes.
+    ///
+    /// - Parameters:
+    ///   - stopName: the stop chosen in the widget's configuration, if any.
+    ///   - table: the shipped stop positions, which is where a stop's own position
+    ///     comes from - the timetable archive publishes none.
+    ///   - position: the last fix the app took, used when no stop was chosen.
+    static func resolve(stopNamed stopName: String?,
+                        in table: StopPositions,
+                        position: CLLocationCoordinate2D?) -> WidgetOrigin {
+        guard let stopName, !stopName.isEmpty else {
+            return WidgetOrigin(coordinate: position, name: nil)
+        }
+        return WidgetOrigin(coordinate: table.position(forStopNamed: stopName)?.coordinate,
+                            name: stopName)
+    }
+
+    static func == (lhs: WidgetOrigin, rhs: WidgetOrigin) -> Bool {
+        lhs.name == rhs.name
+            && lhs.coordinate?.latitude == rhs.coordinate?.latitude
+            && lhs.coordinate?.longitude == rhs.coordinate?.longitude
+    }
+}
+
 /// What the starred traffic widget has to say.
 enum WidgetTrafficState: Equatable, Sendable {
     /// Nothing is pinned, so there is no traffic of the reader's own to show.

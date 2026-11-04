@@ -199,4 +199,44 @@ final class WidgetContentTests: XCTestCase {
 
         XCTAssertEqual(suggested, ["A", "B"])
     }
+
+    // MARK: - Where the traffic widget looks from
+
+    private var table: StopPositions {
+        StopPositions(
+            positions: [StopPositions.lookupKey(for: stop): StopPosition(name: stop,
+                                                                        latitude: 49.1842,
+                                                                        longitude: 15.4528,
+                                                                        match: .name,
+                                                                        accuracyMetres: 20)],
+            lines: [StopPositions.lookupKey(for: stop): ["764410"]]
+        )
+    }
+
+    func testAChosenStopIsTheMiddleOfTheQuestion() {
+        let origin = WidgetOrigin.resolve(stopNamed: stop,
+                                          in: table,
+                                          position: CLLocationCoordinate2D(latitude: 49.0, longitude: 15.0))
+
+        XCTAssertEqual(origin.name, stop)
+        XCTAssertEqual(origin.coordinate?.latitude ?? 0, 49.1842, accuracy: 0.000001)
+    }
+
+    func testWithNoStopTheLastPositionIsTheMiddle() {
+        let position = CLLocationCoordinate2D(latitude: 49.0, longitude: 15.0)
+
+        let origin = WidgetOrigin.resolve(stopNamed: nil, in: table, position: position)
+
+        XCTAssertNil(origin.name)
+        XCTAssertEqual(origin.coordinate?.latitude ?? 0, 49.0, accuracy: 0.000001)
+    }
+
+    func testAStopTheTableCannotPlaceIsNotAnOrigin() {
+        let origin = WidgetOrigin.resolve(stopNamed: "Nikde,nic",
+                                          in: table,
+                                          position: CLLocationCoordinate2D(latitude: 49.0, longitude: 15.0))
+
+        XCTAssertEqual(origin.name, "Nikde,nic")
+        XCTAssertNil(origin.coordinate)
+    }
 }
