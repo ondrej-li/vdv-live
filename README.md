@@ -26,8 +26,9 @@ draws them on a map that is framed - and locked - to the region.
 - **Your own position.** The map draws the system's blue dot, with its accuracy
   ring, where you are. It is on by default and switched off in the settings. It
   needs the same permission as opening the map at your location, so iOS is not
-  asked for anything unless one of the two wants it, and the position is never
-  stored or sent anywhere - MapKit draws the dot and keeps it up to date.
+  asked for anything unless one of the two wants it. The position never leaves
+  the device: MapKit draws the dot, and the last fix is kept in the app's own
+  storage so that the widget knows what is near you. See "Widgets" below.
 - **A glass bar, and a quiet strip.** The map is the screen: navigation floats over
   it as one translucent bar - Lines, Stations, Reload, Settings - with the search
   circle beside it, clear of the bar because finding a line is not a place to be.
@@ -170,6 +171,10 @@ draws them on a map that is framed - and locked - to the region.
   `docs/offline.md` records what and why.
 - **Honest failure handling.** Errors keep the last good data on screen and show
   a banner with a retry button.
+- **Two home-screen widgets.** A departure board for a stop you choose, and the
+  pinned lines' vehicles nearest to you. Both read what the app already knows -
+  the pins, the starred stops, the last position and the downloaded timetables -
+  through an App Group, and fetch the live feed themselves. See "Widgets" below.
 
 ## Getting started
 
@@ -242,6 +247,43 @@ refuses to run with a licence message, accept it once:
 sudo xcodebuild -license accept
 ```
 
+## Widgets
+
+`VdvLiveWidgets` is an extension with two widgets, both in the three home-screen
+sizes, on the iPhone and the iPad.
+
+- **Departure board.** Configure it with a stop - the picker searches the same
+  shipped stop table the app does, and offers the stops you starred first - and it
+  shows the next departures as the board sheet draws them: line, destination,
+  expected time, and the delay in the same colours the map uses. Until a stop is
+  chosen it says so, which is also what a freshly placed widget looks like: there
+  is no sensible default stop, and guessing one would be a board about somebody
+  else's journey. It needs the timetable index the settings screen downloads; when
+  that is missing it says where to get it rather than showing an empty board.
+- **Starred traffic.** The vehicles of the lines you pinned, nearest first, with
+  how late each is and how far away. Pinned lines only: the widget never widens
+  to other lines, because an empty answer is a true one - the "nothing nearby"
+  state names the ten kilometre radius it looked in. With nothing pinned it asks
+  for a pin, and with no position it says the app has not had a fix yet.
+
+Both widgets run out of process, so they cannot read the app's `UserDefaults` or
+its caches. Everything they share lives behind `SharedContainer`: the group
+`group.cz.ondralinek.VdvLive`, the shared defaults for pins, stars and the last
+position, and the timetable cache moved into the group's container so a board is
+built from the archive the app downloaded rather than a second copy. The first
+launch after the update copies what was in the app's own defaults into the group,
+once, without overwriting anything already there - otherwise the update would
+forget every pin.
+
+The board timeline carries an entry every five minutes for half an hour, so the
+times tick down on screen without a new fetch; the traffic widget asks again every
+ten minutes, and WidgetKit decides what it grants. Starring a stop, pinning a line,
+taking a fix, or downloading the timetable index asks WidgetKit to reload.
+
+The extension compiles the shared `Domain` and `Data` layers and nothing from the
+screens, so the rules it applies are the same ones the app applies - and they are
+tested in `VdvLiveTests`, not through a widget host.
+
 ## Apple Watch
 
 `VdvLiveWatch` is a companion app with one screen: the lines pinned on the phone,
@@ -300,6 +342,9 @@ VdvLive/
   Localizable.xcstrings   English source strings with Czech translations
 VdvLiveWatch/      the watch app: the map, its model, and the session that
                    receives the pinned lines from the phone
+VdvLiveWidgets/    the home-screen widgets: the board and the starred traffic,
+                   plus the stop picker their configuration offers
+Config/            the App Group entitlements and the widget's Info.plist
 VdvLiveTests/      unit tests plus JSON fixtures captured from the live feed
 tools/            the app icon generator, the live mirror page, and the JDF
                   investigation scripts (see docs/timetables.md)
@@ -361,6 +406,9 @@ a network.
 - the crown's zoom: the two ends of the range, the span only ever growing, the
   same proportion per step, values outside the range being clamped, and the map
   opening on the region it is about
+- the widgets: pinned lines only and never a guess without a position, ordering
+  by distance, the radius and the row limit, the rows a board keeps once their
+  time has passed, and the copy of the app's defaults into the App Group
 
 ## Ship it
 

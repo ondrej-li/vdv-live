@@ -78,6 +78,8 @@ final class VehicleMapViewModel {
     private let starredStopsStore: StarredStopsPersisting
     private let settingsStore: AppSettingsStoring
     private let locationProvider: LocationProviding
+    /// Where the last fix is kept, which is what the "around my position" widget reads.
+    private let positionStore: LastKnownPositionStore
     /// Defaults the language override is written to; injected so that tests do
     /// not change the language of the app they run inside.
     private let languageDefaults: UserDefaults
@@ -126,6 +128,7 @@ final class VehicleMapViewModel {
         starredStopsStore: StarredStopsPersisting = UserDefaultsStarredStopsStore(),
         settingsStore: AppSettingsStoring = UserDefaultsAppSettingsStore(),
         locationProvider: LocationProviding = SystemLocationProvider(),
+        positionStore: LastKnownPositionStore = LastKnownPositionStore(),
         languageDefaults: UserDefaults = .standard,
         detailFetcher: VehicleDetailFetching = VehicleDetailClient(),
         timetables: LineTimetableStore? = nil,
@@ -139,6 +142,7 @@ final class VehicleMapViewModel {
         self.starredStopsStore = starredStopsStore
         self.settingsStore = settingsStore
         self.locationProvider = locationProvider
+        self.positionStore = positionStore
         self.languageDefaults = languageDefaults
         self.detailFetcher = detailFetcher
         self.timetables = timetables ?? LineTimetableStore()
@@ -567,6 +571,7 @@ final class VehicleMapViewModel {
         favouriteLines = lines
         favouriteLinesStore.save(lines)
         rebuildClusters()
+        SharedContainer.reloadWidgets()
     }
 
     // MARK: - Where the map opens
@@ -590,6 +595,7 @@ final class VehicleMapViewModel {
     func currentLocationRegion() async -> MKCoordinateRegion? {
         guard settings.savedMapView == nil, settings.startsAtCurrentLocation else { return nil }
         guard let coordinate = await locationProvider.requestCurrentCoordinate() else { return nil }
+        recordPosition(coordinate)
         guard RegionOfInterest.vysocina.contains(coordinate) else { return nil }
 
         return MapRegion.region(
@@ -609,12 +615,24 @@ final class VehicleMapViewModel {
     /// show you something you recognise.
     func focusedRegionOnCurrentLocation() async -> MKCoordinateRegion? {
         guard let coordinate = await locationProvider.requestCurrentCoordinate() else { return nil }
+        recordPosition(coordinate)
 
         return MapRegion.region(
             around: coordinate,
             widthMetres: MapRegion.focusMetres,
             heightMetres: MapRegion.focusMetres
         )
+    }
+
+    /// Keeps the last fix where the widgets can read it.
+    ///
+    /// A widget cannot ask for a position - it has no way to put a permission
+    /// prompt on screen - so "around my position" means the place the app last
+    /// knew. Written on the two occasions the app asks for a fix anyway, which
+    /// costs one small plist write and keeps the widget's answer recent.
+    private func recordPosition(_ coordinate: CLLocationCoordinate2D) {
+        positionStore.save(coordinate)
+        SharedContainer.reloadWidgets()
     }
 
     /// Remembers the viewport on screen, or forgets it when the map already
@@ -906,6 +924,9 @@ final class VehicleMapViewModel {
     func toggleStarredStop(named name: String) -> Bool {
         let isStarred = starredStops.toggle(name)
         starredStopsStore.save(starredStops)
+        // A board widget may offer the starred stops first, so its configuration
+        // sheet should hear about a new one.
+        SharedContainer.reloadWidgets()
         return isStarred
     }
 

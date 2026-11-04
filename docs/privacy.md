@@ -41,14 +41,17 @@ The map can open on your position and follow it. That is optional and off unless
 you ask for it. The position is read on the device and used only to decide where
 the map points. It is never sent anywhere and never written to a log, and it is
 not kept anywhere but on this device: the last position it used is remembered so
-that the map can open in the right place next time, and it goes when the app does.
+that the map can open in the right place next time and so that the app's widget
+can tell which of your pinned vehicles are near you, and it goes when the app
+does.
 
 ### What is kept on your device
 
 Settings, pinned lines, the last positions received (so the map is not empty when
 the network is down), and any downloaded timetables are stored inside the app's
-own storage. They are not readable by other apps and they go away when you delete
-the app.
+own storage, which it shares with its own widgets so that they can show what the
+app already knows. They are not readable by other apps and they go away when you
+delete the app.
 
 ### Children
 
@@ -98,13 +101,15 @@ Mapa se může otevřít na vaší poloze a sledovat ji. Je to volitelné a vypn
 dokud o to nepožádáte. Poloha se čte v zařízení a slouží jen k určení středu mapy.
 Nikam se neposílá a nezapisuje se do logu, a neukládá se nikde jinde než v tomto
 zařízení: poslední použitá poloha se pamatuje, aby se mapa příště otevřela na
-správném místě, a zmizí spolu s aplikací.
+správném místě a aby widget poznal, která z vašich oblíbených vozidel jsou
+poblíž, a zmizí spolu s aplikací.
 
 ### Co zůstává v zařízení
 
 Nastavení, oblíbené linky, poslední přijaté polohy (aby mapa nezůstala prázdná,
-když není síť) a stažené jízdní řády jsou uložené v úložišti aplikace. Jiné
-aplikace je nepřečtou a smažou se společně s aplikací.
+když není síť) a stažené jízdní řády jsou uložené v úložišti aplikace, které
+aplikace sdílí se svými widgety, aby ukázaly, co už zná. Jiné aplikace je
+nepřečtou a smažou se společně s aplikací.
 
 ### Děti
 

@@ -93,6 +93,8 @@ final class LineTimetableStore {
             // say whether it is still the published one.
             await recordVersion()
             update = storedVersion == nil ? .cannotTell : .upToDate
+            // A board widget could not be built before this index existed; it can now.
+            SharedContainer.reloadWidgets()
         } catch {
             errorMessage = (error as? TimetableError)?.errorDescription ?? error.localizedDescription
         }
@@ -283,13 +285,7 @@ struct TimetableFiles: Sendable {
     let directory: URL
 
     init(directory: URL? = nil) {
-        if let directory {
-            self.directory = directory
-        } else {
-            let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-                ?? URL(fileURLWithPath: NSTemporaryDirectory())
-            self.directory = base.appendingPathComponent("timetables", isDirectory: true)
-        }
+        self.directory = directory ?? SharedContainer.timetableDirectory
     }
 
     private var indexURL: URL { directory.appendingPathComponent("index.json") }

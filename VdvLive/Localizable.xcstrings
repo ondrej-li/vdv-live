@@ -2661,6 +2661,224 @@
           }
         }
       }
+    },
+    "Departure board" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjezdová tabule"
+          }
+        }
+      }
+    },
+    "What is leaving a stop you choose, with the feed's delays." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Co odjíždí ze zastávky, kterou si vyberete, s aktuálním zpožděním."
+          }
+        }
+      }
+    },
+    "The next departures from a stop you choose." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nejbližší odjezdy ze zastávky, kterou si vyberete."
+          }
+        }
+      }
+    },
+    "Choose a stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vyberte zastávku"
+          }
+        }
+      }
+    },
+    "Edit this widget and pick the stop whose departures you want." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravte widget a vyberte zastávku, jejíž odjezdy chcete vidět."
+          }
+        }
+      }
+    },
+    "Open VDV Live, then Settings, and download the timetables." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřete VDV Live, přejděte do Nastavení a stáhněte jízdní řády."
+          }
+        }
+      }
+    },
+    "No departures in the next three hours" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žádné odjezdy v příštích třech hodinách"
+          }
+        }
+      }
+    },
+    "Departures from %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjezdy ze zastávky %@"
+          }
+        }
+      }
+    },
+    "Line %@, %@, scheduled %@, expected %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka %@, %@, podle řádu %@, očekáváno %@"
+          }
+        }
+      }
+    },
+    "Starred traffic" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oblíbené spoje"
+          }
+        }
+      }
+    },
+    "The pinned lines' vehicles nearest to where you were." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nejbližší vozidla oblíbených linek k vaší poloze."
+          }
+        }
+      }
+    },
+    "No pinned lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žádné oblíbené linky"
+          }
+        }
+      }
+    },
+    "Star a line in VDV Live and its vehicles appear here." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidejte linku mezi oblíbené ve VDV Live a její vozidla se objeví tady."
+          }
+        }
+      }
+    },
+    "Position not known yet" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poloha zatím není známá"
+          }
+        }
+      }
+    },
+    "Open VDV Live once near where you travel, and the widget finds what is close." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otevřete VDV Live v místě, kde cestujete, a widget najde, co je poblíž."
+          }
+        }
+      }
+    },
+    "Nothing nearby" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nic poblíž"
+          }
+        }
+      }
+    },
+    "No vehicle of your pinned lines is within ten kilometres." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Žádné vozidlo oblíbených linek není blíž než deset kilometrů."
+          }
+        }
+      }
+    },
+    "Near you" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poblíž vás"
+          }
+        }
+      }
+    },
+    "%.1f km" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%.1f km"
+          }
+        }
+      }
+    },
+    "and %lld more nearby" : {
+      "localizations" : {
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld další poblíž"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld další poblíž"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld dalších poblíž"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

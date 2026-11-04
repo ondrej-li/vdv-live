@@ -24,7 +24,8 @@ struct LastKnownPositionStore: @unchecked Sendable {
     private let defaults: UserDefaults
     private let key: String
 
-    init(defaults: UserDefaults = .standard, key: String = LastKnownPositionStore.defaultKey) {
+    init(defaults: UserDefaults = SharedContainer.defaults,
+         key: String = LastKnownPositionStore.defaultKey) {
         self.defaults = defaults
         self.key = key
     }
