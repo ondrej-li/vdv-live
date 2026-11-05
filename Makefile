@@ -353,7 +353,11 @@ site-serve: site
 	@cd '$(SITE_DIR)' && python3 -m http.server 8080
 
 ## Publish the site. The old tree is kept as /var/www/vdvlive.old until the next deploy.
-site-deploy: site
+##
+## The mapping is rebuilt first, because the site serves it: an app whose bundled
+## mapping has gone stale across a republication fetches it from here, so deploying
+## without refreshing would publish yesterday's answers to today's archive.
+site-deploy: mapping site
 	rsync -az --delete -e ssh '$(SITE_DIR)/' '$(SITE_HOST):/tmp/site-deploy/'
 	ssh $(SITE_HOST) 'set -e; \
 		sudo rm -rf /var/www/vdvlive.new; sudo mkdir -p /var/www/vdvlive.new; \
@@ -588,6 +592,10 @@ $(REGION_MAP):
 ARCHIVE ?= /tmp/jdf/JDF.zip
 mapping:
 	@mkdir -p $(dir $(ARCHIVE))
+	@# The cache is worth six hours and no more: the ministry republishes three
+	@# times a week, and a mapping built from yesterday's archive points at entries
+	@# that no longer hold the lines it names.
+	@find "$(ARCHIVE)" -mmin -360 -print -quit 2>/dev/null | grep -q . || rm -f "$(ARCHIVE)"
 	@[ -f "$(ARCHIVE)" ] || curl -sS -L -o "$(ARCHIVE)" $(ARCHIVE_URL)
 	python3 tools/jdf_lines_mapping.py "$(ARCHIVE)" VdvLive/Resources/jdf-lines.json
 

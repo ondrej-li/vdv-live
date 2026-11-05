@@ -44,8 +44,14 @@ final class LineTimetableStore {
     private(set) var isCheckingForUpdates = false
     /// Which publication the index was read from, when it is known.
     private var storedVersion: ArchiveVersion?
-    /// Lines the shipped mapping knows about.
-    let knownLineCount: Int
+    /// Lines the mapping knows about.
+    var knownLineCount: Int { mapping.count }
+    /// Where the mapping in force came from.
+    private(set) var mappingSource: TimetableDiagnostics.MappingSource = .bundled
+    /// True while a fresher mapping is being fetched.
+    private(set) var isRefreshingMapping = false
+    /// Why the last refresh did not happen, when it did not.
+    private(set) var mappingErrorMessage: String?
 
     /// Whether a line's timetable can be fetched at all.
     var isReady: Bool { !index.isEmpty }
@@ -53,24 +59,82 @@ final class LineTimetableStore {
     var archivePublishedAt: Date? { storedVersion?.lastModified }
 
     private let client: TimetableArchiveReading
-    private let mapping: [String: [String]]
+    private let mappingFetcher: TimetableMappingFetching
+    private let mappingFiles: TimetableMappingFiles
     private let files: TimetableFiles
+    private var mapping: [String: [String]]
     private var index: [String: ZipArchive.Entry] = [:]
     private var timetables: [String: LineTimetable] = [:]
+    /// The last thing each line did, kept on disk so the screen can explain itself
+    /// long after the session that saw it.
+    private var lineRecords: [String: TimetableLineRecord] = [:]
+    /// A refresh is tried once per line that cannot be resolved, and once per
+    /// session at most through this flag - a mapping that is already current must
+    /// not be asked for again on every tap.
+    private var hasTriedRefresh = false
 
     init(
         client: TimetableArchiveReading = HTTPTimetableArchive(),
         mapping: [String: [String]]? = nil,
-        files: TimetableFiles = TimetableFiles()
+        files: TimetableFiles = TimetableFiles(),
+        mappingFetcher: TimetableMappingFetching = HTTPTimetableMapping(),
+        mappingFiles: TimetableMappingFiles = TimetableMappingFiles()
     ) {
-        let mapping = mapping ?? LineTimetableStore.bundledMapping()
         self.client = client
-        self.mapping = mapping
+        self.mappingFetcher = mappingFetcher
+        self.mappingFiles = mappingFiles
         self.files = files
-        self.knownLineCount = mapping.count
         self.index = files.loadIndex()
         self.downloadedAt = files.loadDownloadDate()
         self.storedVersion = files.loadVersion()
+        self.lineRecords = files.loadLineRecords()
+
+        if let mapping {
+            self.mapping = mapping
+            self.mappingSource = .bundled
+        } else if let data = mappingFiles.load(),
+                  let published = TimetableMappingDocument.decode(data) {
+            // A copy fetched from the project's site outranks the one in the app:
+            // the bundle cannot know that the archive was republished on Monday.
+            self.mapping = published
+            self.mappingSource = .published(mappingFiles.modifiedAt() ?? Date())
+        } else {
+            self.mapping = LineTimetableStore.bundledMapping()
+            self.mappingSource = .bundled
+        }
+    }
+
+    // MARK: - The line mapping
+
+    /// Fetches the mapping the project publishes for the current archive.
+    ///
+    /// - Returns: whether a fresher mapping is now in force.
+    @discardableResult
+    func refreshMapping() async -> Bool {
+        guard !isRefreshingMapping else { return false }
+        isRefreshingMapping = true
+        mappingErrorMessage = nil
+        defer { isRefreshingMapping = false }
+
+        do {
+            let data = try await mappingFetcher.latestMapping()
+            guard let published = TimetableMappingDocument.decode(data) else {
+                mappingErrorMessage = String(localized: "The published mapping could not be read.")
+                return false
+            }
+            mappingFiles.save(data)
+            mapping = published
+            mappingSource = .published(Date())
+            // Every parsed timetable was read through the old mapping, and the
+            // archive does not change - only which entry holds which line does.
+            timetables.removeAll()
+            SharedContainer.reloadWidgets()
+            return true
+        } catch {
+            mappingErrorMessage = (error as? TimetableError)?.errorDescription
+                ?? error.localizedDescription
+            return false
+        }
     }
 
     // MARK: - The index
@@ -104,11 +168,48 @@ final class LineTimetableStore {
     func forgetIndex() {
         index.removeAll()
         timetables.removeAll()
+        lineRecords.removeAll()
         downloadedAt = nil
         errorMessage = nil
         storedVersion = nil
         update = .unchecked
+        hasTriedRefresh = false
         files.removeAll()
+    }
+
+    // MARK: - What the screen can say about itself
+
+    /// The archive, the mapping, the cache and every line's last attempt.
+    ///
+    /// Built on demand rather than kept in sync: it reads the index in memory, the
+    /// files on disk and the records, so it describes the device rather than this
+    /// session - which is what answers "why did it say the line is not published".
+    func diagnostics() -> TimetableDiagnostics {
+        let onDisk = files.cachedEntryNames()
+        let lines = mapping.keys
+            .sorted { $0.compare($1, options: .numeric) == .orderedAscending }
+            .map { line in
+                let candidates = (mapping[line] ?? []).map { name in
+                    TimetableDiagnostics.Candidate(entryName: name,
+                                                   isInIndex: index[name] != nil,
+                                                   isOnDisk: onDisk.contains(name))
+                }
+                return TimetableDiagnostics.Line(lineNumber: line,
+                                                 record: lineRecords[line],
+                                                 candidates: candidates,
+                                                 isInMemory: timetables[line] != nil)
+            }
+
+        return TimetableDiagnostics(
+            archive: .init(entryCount: index.count,
+                           publishedAt: storedVersion?.lastModified,
+                           downloadedAt: downloadedAt,
+                           etag: storedVersion?.etag),
+            mapping: .init(lineCount: mapping.count, source: mappingSource),
+            cacheEntryCount: onDisk.count,
+            cacheBytes: files.cachedBytes(),
+            lines: lines
+        )
     }
 
     // MARK: - Is this index still current?
@@ -167,9 +268,39 @@ final class LineTimetableStore {
             return cached
         }
         guard isReady else { throw TimetableError.notDownloaded }
+
+        do {
+            if let timetable = try await resolve(lineNumber: lineNumber, serviceNumber: serviceNumber) {
+                return timetable
+            }
+            return nil
+        } catch let error as TimetableError {
+            // A line the mapping cannot resolve may simply have moved: the archive
+            // is republished three times a week and renumbers every entry, which
+            // leaves the mapping in the app naming entries that now hold other
+            // lines. Ask once for the mapping the project publishes, then try the
+            // same line again with it.
+            if case .lineNotInArchive = error, !hasTriedRefresh {
+                hasTriedRefresh = true
+                if await refreshMapping() {
+                    return try await timetable(forLine: lineNumber, serviceNumber: serviceNumber)
+                }
+            }
+            remember(.failed(line: lineNumber,
+                             reason: error.errorDescription ?? String(describing: error),
+                             at: Date()),
+                     for: lineNumber)
+            throw error
+        }
+    }
+
+    /// The line's timetable through the mapping in force, or `nil` when the mapping
+    /// does not name the line at all - which is the answer for anything outside the
+    /// region this app covers.
+    private func resolve(lineNumber: String, serviceNumber: String?) async throws -> LineTimetable? {
         guard let candidates = mapping[lineNumber], !candidates.isEmpty else { return nil }
 
-        var fallback: LineTimetable?
+        var fallback: (timetable: LineTimetable, entryName: String)?
         for name in candidates {
             guard let entry = index[name] else { continue }
             let timetable = try await timetable(of: entry)
@@ -180,16 +311,32 @@ final class LineTimetableStore {
 
             if serviceNumber == nil || timetable.run(serviceNumber: serviceNumber) != nil {
                 timetables[lineNumber] = timetable
+                remember(.downloaded(line: lineNumber,
+                                     entry: entry.name,
+                                     declared: timetable.lineNumber,
+                                     at: Date()),
+                         for: lineNumber)
                 return timetable
             }
-            fallback = fallback ?? timetable
+            fallback = fallback ?? (timetable, entry.name)
         }
 
         guard let fallback else {
             throw TimetableError.lineNotInArchive(lineNumber)
         }
-        timetables[lineNumber] = fallback
-        return fallback
+        timetables[lineNumber] = fallback.timetable
+        remember(.downloaded(line: lineNumber,
+                             entry: fallback.entryName,
+                             declared: fallback.timetable.lineNumber,
+                             at: Date()),
+                 for: lineNumber)
+        return fallback.timetable
+    }
+
+    /// Keeps what a line's last attempt did, for the diagnostics screen.
+    private func remember(_ record: TimetableLineRecord, for line: String) {
+        lineRecords[line] = record
+        files.saveLineRecords(lineRecords)
     }
 
     private func timetable(of entry: ZipArchive.Entry) async throws -> LineTimetable {        let inner = try await files.entryArchive(entry) {            try await client.contents(of: entry)
@@ -268,15 +415,10 @@ final class LineTimetableStore {
     /// The line to archive entry mapping that ships with the app.
     static func bundledMapping(in bundle: Bundle = .main) -> [String: [String]] {
         guard let url = bundle.url(forResource: "jdf-lines", withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let document = try? JSONDecoder().decode(MappingDocument.self, from: data) else {
+              let data = try? Data(contentsOf: url) else {
             return [:]
         }
-        return document.lines
-    }
-
-    private struct MappingDocument: Decodable {
-        let lines: [String: [String]]
+        return TimetableMappingDocument.decode(data, minimumLines: 1) ?? [:]
     }
 }
 
@@ -291,6 +433,7 @@ struct TimetableFiles: Sendable {
     private var indexURL: URL { directory.appendingPathComponent("index.json") }
     private var dateURL: URL { directory.appendingPathComponent("index-date.txt") }
     private var versionURL: URL { directory.appendingPathComponent("index-version.json") }
+    private var recordsURL: URL { directory.appendingPathComponent("lines.json") }
 
     func loadIndex() -> [String: ZipArchive.Entry] {
         guard let data = try? Data(contentsOf: indexURL),
@@ -345,6 +488,42 @@ struct TimetableFiles: Sendable {
         let data = try await fetch()
         try? data.write(to: url, options: .atomic)
         return data
+    }
+
+    /// What each line's last attempt did, keyed by line number.
+    func loadLineRecords() -> [String: TimetableLineRecord] {
+        guard let data = try? Data(contentsOf: recordsURL),
+              let records = try? JSONDecoder().decode([String: TimetableLineRecord].self, from: data) else {
+            return [:]
+        }
+        return records
+    }
+
+    func saveLineRecords(_ records: [String: TimetableLineRecord]) {
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        guard let data = try? JSONEncoder().encode(records) else { return }
+        try? data.write(to: recordsURL, options: .atomic)
+    }
+
+    /// The entry files on disk, by the name the archive knows them under.
+    ///
+    /// The cache is keyed by entry name rather than by line, because that is what
+    /// has to be fetched; which line an entry holds is a property of the archive
+    /// that day, and is what the records remember.
+    func cachedEntryNames() -> Set<String> {
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
+        return Set(names.filter { $0.hasPrefix("entry-") }
+                        .map { String($0.dropFirst("entry-".count)) })
+    }
+
+    func cachedBytes() -> Int {
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
+        return names.reduce(0) { total, name in
+            let attributes = try? FileManager.default.attributesOfItem(
+                atPath: directory.appendingPathComponent(name).path
+            )
+            return total + ((attributes?[.size] as? Int) ?? 0)
+        }
     }
 
     func removeAll() {

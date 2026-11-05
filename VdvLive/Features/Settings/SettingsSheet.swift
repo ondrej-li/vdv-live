@@ -51,6 +51,11 @@ struct SettingsSheet: View {
     let onCheckTimetables: () -> Void
     let onForgetTimetables: () -> Void
     let onSetShowsCalculatedServices: (Bool) -> Void
+    /// The timetables screen's diagnostics, and the mapping refresh behind it.
+    let makeTimetableDiagnostics: () -> TimetableDiagnostics
+    let isRefreshingTimetableMapping: Bool
+    let timetableMappingErrorMessage: String?
+    let onRefreshTimetableMapping: () -> Void
 
     /// Needed only by the starred stops screen, which has to load a stop's board.
     var viewModel: VehicleMapViewModel? = nil
@@ -134,7 +139,11 @@ struct SettingsSheet: View {
                             onDownload: onDownloadTimetables,
                             onCheckForUpdates: onCheckTimetables,
                             onForget: onForgetTimetables,
-                            onSetShowsCalculatedServices: onSetShowsCalculatedServices
+                            onSetShowsCalculatedServices: onSetShowsCalculatedServices,
+                            makeDiagnostics: makeTimetableDiagnostics,
+                            isRefreshingMapping: isRefreshingTimetableMapping,
+                            mappingErrorMessage: timetableMappingErrorMessage,
+                            onRefreshMapping: onRefreshTimetableMapping
                         )
                     } label: {
                         SettingsRow(

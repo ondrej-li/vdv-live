@@ -23,6 +23,11 @@ struct TimetablesView: View {
     let onCheckForUpdates: () -> Void
     let onForget: () -> Void
     let onSetShowsCalculatedServices: (Bool) -> Void
+    /// The archive, the mapping and each line's last attempt, built on demand.
+    let makeDiagnostics: () -> TimetableDiagnostics
+    let isRefreshingMapping: Bool
+    let mappingErrorMessage: String?
+    let onRefreshMapping: () -> Void
 
     var body: some View {
         Form {
@@ -53,6 +58,15 @@ struct TimetablesView: View {
                         .disabled(isDownloading || isCheckingForUpdates)
 
                     Button("Remove", role: .destructive, action: onForget)
+
+                    NavigationLink {
+                        TimetableDiagnosticsView(makeDiagnostics: makeDiagnostics,
+                                                 isRefreshingMapping: isRefreshingMapping,
+                                                 mappingErrorMessage: mappingErrorMessage,
+                                                 onRefreshMapping: onRefreshMapping)
+                    } label: {
+                        Label("Diagnostics", systemImage: "stethoscope")
+                    }
                 } else {
                     Button("Download timetables", action: onDownload)
                         .disabled(isDownloading)

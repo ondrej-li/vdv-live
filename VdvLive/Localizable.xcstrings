@@ -2959,6 +2959,226 @@
           }
         }
       }
+    },
+    "Diagnostics" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostika"
+          }
+        }
+      }
+    },
+    "Archive" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archiv"
+          }
+        }
+      }
+    },
+    "Entries" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Položek"
+          }
+        }
+      }
+    },
+    "Mapping" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapování linek"
+          }
+        }
+      }
+    },
+    "Source" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdroj"
+          }
+        }
+      }
+    },
+    "In the app" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V aplikaci"
+          }
+        }
+      }
+    },
+    "From the site, %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ze serveru, %@"
+          }
+        }
+      }
+    },
+    "Lines in the mapping" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linek v mapování"
+          }
+        }
+      }
+    },
+    "Refreshing…" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obnovuji…"
+          }
+        }
+      }
+    },
+    "Refresh mapping" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obnovit mapování"
+          }
+        }
+      }
+    },
+    "Files" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Souborů"
+          }
+        }
+      }
+    },
+    "Size" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velikost"
+          }
+        }
+      }
+    },
+    "Downloaded lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stažené linky"
+          }
+        }
+      }
+    },
+    "Failed" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chyba"
+          }
+        }
+      }
+    },
+    "Not downloaded" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nestaženo"
+          }
+        }
+      }
+    },
+    "Copy diagnostics" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopírovat diagnostiku"
+          }
+        }
+      }
+    },
+    "%@ → %@ · archive: %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ → %@ · archiv: %@"
+          }
+        }
+      }
+    },
+    "archive: %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "archiv: %@"
+          }
+        }
+      }
+    },
+    "The published mapping could not be read." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zveřejněné mapování se nepodařilo přečíst."
+          }
+        }
+      }
+    },
+    "The index the app read from the ministry's archive. \"Entries\" is how many lines' timetables the archive held when the index was read; a republication replaces them, and renumbers every one." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Index, který aplikace přečetla z archivu ministerstva. „Položek“ je, kolik jízdních řádů archiv při čtení indexu obsahoval; nové zveřejnění je nahradí a všechny přečísluje."
+          }
+        }
+      }
+    },
+    "Which archive entry holds each line. The copy inside the app goes stale every time the ministry republishes the archive - that is what makes every line look \"not in the published timetable\" at once. Refreshing downloads the mapping published at vdv.ondralinek.cz." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Která položka archivu drží kterou linku. Kopie v aplikaci zastará při každém zveřejnění archivu – proto najednou vypadá, že „linka není ve zveřejněném jízdním řádu“. Obnovení stáhne mapování zveřejněné na vdv.ondralinek.cz."
+          }
+        }
+      }
+    },
+    "One row per line the mapping knows. A downloaded line names the entry it came from and the line number that entry declares; a failed one says what went wrong." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Řádek pro každou linku, kterou mapování zná. Stažená linka uvádí položku, ze které pochází, a číslo linky, které tato položka deklaruje; u chyby je napsáno, co se pokazilo."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

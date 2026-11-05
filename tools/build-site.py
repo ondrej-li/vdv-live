@@ -171,6 +171,9 @@ PRIVACY = {
               "webový prohlížeč, a podkladovou mapu kreslí MapKit od Apple:"),
         ("table", [["Server", "Co se požaduje", "Proč"],
                    ["mapavdv.kr-vysocina.cz", "aktuální polohy vozidel", "mapa"],
+                   ["vdv.ondralinek.cz", "soubor, který říká, ve které položce archivu je která "
+                                        "linka",
+                    "aby přečíslovaný archiv jízdních řádů aplikaci nerozbil"],
                    ["portal.cisjr.cz", "index archivu jízdních řádů a jednotlivé linky, "
                                        "pokud si jízdní řády stáhnete",
                     "časy zastávek a doplnění linek, které živý zdroj vynechal"],
@@ -216,6 +219,9 @@ PRIVACY = {
               "and the base map is drawn by Apple's MapKit:"),
         ("table", [["Server", "What is requested", "Why"],
                    ["mapavdv.kr-vysocina.cz", "the current vehicle positions", "the map"],
+                   ["vdv.ondralinek.cz", "the file that says which archive entry holds each "
+                                        "line", "so a republished timetable archive does not "
+                                                "break the app"],
                    ["portal.cisjr.cz", "the timetable archive's index and individual lines, "
                                        "when you download timetables",
                     "stop times, and filling in lines the live feed has dropped"],
@@ -652,6 +658,12 @@ def build(output: pathlib.Path):
 
     shutil.copy(ROOT / "tools" / "site" / "style.css", output / "assets" / "style.css")
     shutil.copy(output / "assets" / "icon-300.png", output / "favicon.ico")
+
+    # The line-to-entry mapping, which every installed app reads from here when the
+    # ministry republishes the archive and renumbers its entries. It is published at
+    # the site root rather than under assets/ because it is a document, not a
+    # versioned asset: clients ask for it by name and must not be given a stale URL.
+    shutil.copy(ROOT / "VdvLive" / "Resources" / "jdf-lines.json", output / "jdf-lines.json")
 
     for file in sorted(output.rglob("*")):
         if file.is_file():

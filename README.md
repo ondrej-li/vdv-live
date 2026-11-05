@@ -144,7 +144,11 @@ draws them on a map that is framed - and locked - to the region.
   no download - and says whether the index in hand is still the published one,
   along with the date it was published. When it is not, **update** reads the index
   again. **Remove** deletes it, and with it the record of which archive it came
-  from. `docs/timetables.md` has the whole investigation, including why the 106 MB
+  from. The line-to-entry mapping the app ships with ages every time the ministry
+  republishes the archive, so a stale copy is replaced from the project's site,
+  and the timetables screen has a **Diagnostics** view that says which mapping is
+  in force, what it names, and what each line's last download did.
+  `docs/timetables.md` has the whole investigation, including why the 106 MB
   archive is never downloaded.
 - **Lines the feed has gone quiet about.** The regional feed drops whole lines for
   stretches of the day, and the map then shows a town with nothing running while the

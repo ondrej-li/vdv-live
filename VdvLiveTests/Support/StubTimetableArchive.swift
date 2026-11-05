@@ -65,3 +65,32 @@ private func XCTUnwrapFixture(_ name: String) throws -> URL {
 }
 
 private final class StubTimetableArchiveBundleMarker {}
+
+/// Serves a mapping instead of the project's site, so a refresh can be tested
+/// without a network and without publishing anything.
+struct StubTimetableMapping: TimetableMappingFetching, @unchecked Sendable {
+    var data: Data
+    var failure: Error?
+    /// How many times the mapping was asked for.
+    final class Calls: @unchecked Sendable {
+        private(set) var count = 0
+        func record() { count += 1 }
+    }
+    var calls = Calls()
+
+    func latestMapping() async throws -> Data {
+        calls.record()
+        if let failure { throw failure }
+        return data
+    }
+
+    /// A mapping document for a line, padded so it looks like the region's own:
+    /// a refresh that carried three lines would be rejected as a bad download.
+    static func document(_ lines: [String: [String]], padding: Int = 120) -> Data {
+        var all = lines
+        for index in 0..<padding {
+            all["9\(index)"] = ["1.zip"]
+        }
+        return (try? JSONEncoder().encode(["lines": all])) ?? Data()
+    }
+}

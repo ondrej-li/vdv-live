@@ -43,7 +43,9 @@ final class LineTimetableStoreTests: XCTestCase {
     private func makeStore(
         failures: Set<String> = [],
         version: ArchiveVersion = firstPublication,
-        versionFails: Bool = false
+        versionFails: Bool = false,
+        mapping: [String: [String]] = StubTimetableArchive.fixtureMapping,
+        published: StubTimetableMapping? = nil
     ) throws -> LineTimetableStore {
         LineTimetableStore(
             client: StubTimetableArchive(
@@ -52,8 +54,11 @@ final class LineTimetableStoreTests: XCTestCase {
                 serverVersion: version,
                 versionFails: versionFails
             ),
-            mapping: StubTimetableArchive.fixtureMapping,
-            files: TimetableFiles(directory: directory)
+            mapping: mapping,
+            files: TimetableFiles(directory: directory),
+            mappingFetcher: published ?? StubTimetableMapping(data: Data(),
+                                                              failure: TimetableError.transport("offline")),
+            mappingFiles: TimetableMappingFiles(directory: directory)
         )
     }
 
