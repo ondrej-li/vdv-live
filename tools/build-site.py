@@ -13,6 +13,7 @@ Screenshots come from `screenshots/` in the repository and are downscaled with
 
 import argparse
 import hashlib
+import json
 import pathlib
 import shutil
 import subprocess
@@ -621,6 +622,90 @@ def landing(lang, t, canonical_base):
                 alt_cs, alt_en) + "\n" + body
 
 
+# The app the shared links belong to. Spelled out rather than read from the
+# project: this script writes a file another system (iOS) parses, and a silent
+# default is worse than a visible constant.
+APP_TEAM_ID = "B592D69P29"
+APP_BUNDLE_ID = "cz.ondralinek.VdvLive"
+SHARE_PATH = "/s/*"
+
+
+def write_universal_links(output: pathlib.Path):
+    """Writes the association file and the page a shared link falls back to.
+
+    The association file has to be at exactly this path, served as JSON and with no
+    redirect - iOS caches it, and a mistake here keeps shared links broken on that
+    device until the app is reinstalled. The page under /s/ is for everybody else:
+    it says what was shared, and offers the app.
+    """
+    well_known = output / ".well-known"
+    well_known.mkdir(parents=True, exist_ok=True)
+    association = {
+        "applinks": {
+            "details": [
+                {
+                    "appIDs": [f"{APP_TEAM_ID}.{APP_BUNDLE_ID}"],
+                    "components": [{"/": SHARE_PATH, "comment": "Shared stop boards and vehicles"}],
+                }
+            ]
+        }
+    }
+    (well_known / "apple-app-site-association").write_text(
+        json.dumps(association, indent=2) + "\n", encoding="utf-8"
+    )
+
+    share = output / "s"
+    share.mkdir(parents=True, exist_ok=True)
+    (share / "index.html").write_text(share_page(), encoding="utf-8")
+
+
+def share_page() -> str:
+    """The page a shared link opens when the app is not there to take it."""
+    store = (f'<a class="button" href="{APP_STORE_URL}">App Store</a>'
+             if APP_STORE_LIVE else "")
+    return f"""<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VDV Live</title>
+<meta name="theme-color" content="#07100f">
+<link rel="icon" href="/assets/icon-300.png" type="image/png">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap narrow">
+  <img src="/assets/icon-300.png" alt="" width="88" height="88">
+  <h1 id="heading">Sdílený odkaz z VDV Live</h1>
+  <p id="detail" class="lede">Aplikace VDV Live otevře odkaz přímo na zastávce nebo spoji.</p>
+  <p class="lede">This link opens in the VDV Live app. Download it to see the board,
+  the vehicle and its delay.</p>
+  <p>{store}</p>
+  <p><a href="/">VDV Live</a> · <a href="/privacy.html">Zásady ochrany osobních údajů</a></p>
+</div>
+<script>
+  // The link carries either a stop or a line; say which, so the page is not
+  // useless to somebody who does have the app but opened the link in a browser.
+  (function () {{
+    var params = new URLSearchParams(location.search);
+    var stop = params.get("stop");
+    var line = params.get("line");
+    var heading = document.getElementById("heading");
+    var detail = document.getElementById("detail");
+    if (stop) {{
+      heading.textContent = "Odjezdy ze zastávky " + stop.replace(/,/g, ", ");
+      detail.textContent = "Otevřete odkaz v aplikaci VDV Live a uvidíte tabuli zastávky.";
+    }} else if (line) {{
+      heading.textContent = "Linka " + line;
+      detail.textContent = "Otevřete odkaz v aplikaci VDV Live a uvidíte spoj na mapě.";
+    }}
+  }})();
+</script>
+</body>
+</html>
+"""
+
+
 def build(output: pathlib.Path):
     output = output.resolve()
     if output.exists():
@@ -664,6 +749,10 @@ def build(output: pathlib.Path):
     # the site root rather than under assets/ because it is a document, not a
     # versioned asset: clients ask for it by name and must not be given a stale URL.
     shutil.copy(ROOT / "VdvLive" / "Resources" / "jdf-lines.json", output / "jdf-lines.json")
+
+    # Universal links: the association file makes a shared /s/ link open the app
+    # instead of this site, and the page under it is what everyone else gets.
+    write_universal_links(output)
 
     for file in sorted(output.rglob("*")):
         if file.is_file():

@@ -173,6 +173,11 @@ draws them on a map that is framed - and locked - to the region.
   The status line says `Offline · last 12:34` in place of the vehicle count, and
   the banner says what is on screen and offers a retry. Nothing else is kept, and
   `docs/offline.md` records what and why.
+- **Sharing.** The open vehicle and the open stop board can be shared through the
+  system share sheet: line, destination, delay and stops for a vehicle, the next
+  five departures for a board. The message carries a universal link, so a tap
+  opens the same thing in the app - or, for someone without it, a page that
+  offers it. See `docs/share.md`.
 - **Honest failure handling.** Errors keep the last good data on screen and show
   a banner with a retry button.
 - **Two home-screen widgets.** A departure board for a stop you choose, and the

@@ -3179,6 +3179,76 @@
           }
         }
       }
+    },
+    "%@ → %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ → %@"
+          }
+        }
+      }
+    },
+    "%@ · as of %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · aktuální k %@"
+          }
+        }
+      }
+    },
+    "Last seen %@ · next %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naposledy %@ · příští %@"
+          }
+        }
+      }
+    },
+    "Last seen %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naposledy %@"
+          }
+        }
+      }
+    },
+    "Departures from %@ (%@)" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odjezdy ze zastávky %@ (%@)"
+          }
+        }
+      }
+    },
+    "Share this vehicle" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sdílet vozidlo"
+          }
+        }
+      }
+    },
+    "Share this board" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sdílet tabuli"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

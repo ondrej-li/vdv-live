@@ -17,6 +17,7 @@ tested in `VdvLiveTests/AppStoreRequirementsTests.swift`:
 | Location permission purpose string | `INFOPLIST_KEY_NSLocationWhenInUseUsageDescription` |
 | Attributed data sources, in both languages | Settings → Acknowledgements |
 | The App Group the widgets read the app's pins, stars and timetables through | `Config/VdvLive.entitlements`, `Config/VdvLiveWidgets.entitlements` |
+| Associated Domains, so a shared `vdv.ondralinek.cz/s/` link opens the app | `Config/VdvLive.entitlements`; the server side is `docs/share.md` |
 
 ## One-time setup
 
@@ -50,16 +51,19 @@ tested in `VdvLiveTests/AppStoreRequirementsTests.swift`:
    `cz.ondralinek.VdvLive.watchkitapp` and `cz.ondralinek.VdvLive.widgets`. An
    upgraded team keeps the app ids it had, so they are normally already there;
    register any that are missing.
-5. **developer.apple.com → Identifiers → App Groups**: `group.cz.ondralinek.VdvLive`,
+5. **developer.apple.com → Identifiers → Associated Domains**: the app id must allow
+   `applinks:vdv.ondralinek.cz`. Automatic signing enables it with the entitlement;
+   the domain side is `docs/share.md`.
+6. **developer.apple.com → Identifiers → App Groups**: `group.cz.ondralinek.VdvLive`,
    ticked for the app and the widget. The extension reads the pinned lines, the
    starred stops, the last position and the downloaded timetables from this group;
    without it a widget shows the message that it has nothing to read. Automatic
    signing registers the group on the first archive that needs it, so this is only
    a check before the first upload - and an app id without the group cannot be
    signed with an entitlement that asks for it.
-6. **App Store Connect → Business**: accept the *Free Applications* agreement. A
+7. **App Store Connect → Business**: accept the *Free Applications* agreement. A
    free app needs no banking or tax details.
-7. **App Store Connect → My Apps → +**: new app, platform iOS, primary language
+8. **App Store Connect → My Apps → +**: new app, platform iOS, primary language
    **Czech**, the bundle id above, a SKU (`vdvlive`), and a name. Names are unique
    across the store and at most 30 characters.
 

@@ -8,6 +8,9 @@ struct VehicleDetailCard: View {
     /// Detail popup of the shown vehicle, once it has been fetched.
     var detail: VehicleDetail?
     var isLoadingDetail = false
+    /// When the feed these positions came from was read, which is the only honest
+    /// time to put on a shared vehicle.
+    var observedAt: Date?
     /// Published timetable of the line, once the timetable index is downloaded.
     var timetable: LineTimetable?
     var isLoadingTimetable = false
@@ -363,6 +366,17 @@ struct VehicleDetailCard: View {
             if let vehicle = cluster.singleVehicle {
                 followButton
                 favouriteButton(for: vehicle.line)
+                if let content = shareContent {
+                    ShareLink(item: content.url,
+                              subject: Text(content.title),
+                              message: Text(content.body)) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.title3)
+                            .foregroundStyle(Color.cardSecondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text("Share this vehicle"))
+                }
             }
 
             Button(action: onDismiss) {
@@ -373,6 +387,19 @@ struct VehicleDetailCard: View {
             .buttonStyle(.plain)
             .accessibilityLabel(String(localized: "Close details"))
         }
+    }
+
+    /// What the share sheet gets for this vehicle, or `nil` for a group of them:
+    /// a group has no single position or delay to report.
+    private var shareContent: ShareContent? {
+        guard let vehicle = cluster.singleVehicle else { return nil }
+        return ShareComposer.vehicle(line: vehicle.line,
+                                     destination: vehicle.destination,
+                                     delayMinutes: vehicle.delay.minutes,
+                                     observedAt: observedAt ?? Date(),
+                                     lastStop: detail?.stop?.name,
+                                     nextStop: detail?.nextStop?.name,
+                                     serviceNumber: detail?.serviceNumber)
     }
 
     private var titleText: String {
