@@ -405,6 +405,12 @@ struct VehicleMapView: View {
             },
             onForgetTimetables: { viewModel.forgetTimetables() },
             onSetShowsCalculatedServices: { viewModel.setShowsCalculatedServices($0) },
+            makeTimetableDiagnostics: { viewModel.timetables.diagnostics() },
+            isRefreshingTimetableMapping: viewModel.timetables.isRefreshingMapping,
+            timetableMappingErrorMessage: viewModel.timetables.mappingErrorMessage,
+            onRefreshTimetableMapping: {
+                Task { await viewModel.timetables.refreshMapping() }
+            },
             viewModel: viewModel
         )
     }

@@ -150,6 +150,26 @@ map's own endpoint, offer Strategy B) rather than a wrong timetable. The archive
 is republished a few times a week and reassigns the names when it is, so this is
 a matter of when, not if; `make mapping` re-derives it, in three seconds.
 
+That risk is not theoretical: on 4 November 2026 the portal published at 20:50,
+and an app built from that morning's mapping answered "line not in the published
+timetable" for **every** line, because every entry had been renumbered. Nothing
+was wrong with the app's reasoning - it refused to show another line's times -
+but the answer was useless on its own. Three things now follow from it:
+
+- **The mapping is also published on the project's site** (`jdf-lines.json` at the
+  site root, copied there by `tools/build-site.py`). An app whose mapping cannot
+  resolve a line fetches that file once per session and tries again, so a
+  republication can be answered without a new App Store build. `make site-deploy`
+  rebuilds the mapping first, which is what makes the published copy current.
+- **The timetables screen keeps a record.** Every attempt - which entry it read,
+  which line number that entry declared, or why it failed - is written to
+  `lines.json` next to the cached entries, and the new **Diagnostics** screen
+  shows the archive's publication date and entry count, which mapping is in force
+  and where it came from, the number of cached entries and their size, and a row
+  per line. The whole snapshot can be copied as text.
+- **A refresh is tried once per session, and only after a failure** - a mapping
+  that already works is never asked for again on every tap.
+
 **Strategy B — one regional extract, opt-in.**
 
 Download the 106 MB once, inflate the entries, keep only Vysočina: **1,051
@@ -225,13 +245,14 @@ Implemented on 2026-09-30:
 
 Two decisions differ from the plan, both in the app's favour:
 
-- **The line to entry mapping ships with the app.** Deriving it on the phone would
-  mean reading all 13,259 entries, which means the whole 106 MB. Baking in the
-  names (22 KB for the region) removes that download entirely. Every fetch still
-  checks the line number in the entry's own `Linky.txt` and refuses a mismatch, so
-  a stale mapping costs a missing timetable rather than a wrong one. The mapping
-  records the archive it was read from (`archive.date`), which makes a stale one
-  visible in the file, and `make mapping` refreshes it.
+- **The line to entry mapping ships with the app**, and is refreshed from the
+  project's site. Deriving it on the phone would mean reading all 13,259 entries,
+  which means the whole 106 MB. Baking in the names (22 KB for the region) removes
+  that download entirely, and publishing the same file lets a stale copy be
+  replaced with a 22 KB fetch. Every fetch still checks the line number in the
+  entry's own `Linky.txt` and refuses a mismatch, so a stale mapping costs a
+  missing timetable rather than a wrong one. The mapping records the archive it
+  was read from (`archive.date`), and `make mapping` re-derives it.
 - **The settings download is the central directory, about two megabytes**, not the
   archive. The directory says where every entry lives; a line is then a few
   kilobytes. The 106 MB regional extract stays available as the later, heavier

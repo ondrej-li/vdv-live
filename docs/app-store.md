@@ -198,7 +198,7 @@ rather than a mockup.
 Paste into *App Store Review Information → Notes*:
 
 ```
-No account or sign-in is needed. Vehicle positions come from the Vysocina Region's public map (mapavdv.kr-vysocina.cz), timetables from the Ministry of Transport's archive (portal.cisjr.cz), and the base map is Apple Maps. All three are attributed in Settings -> Acknowledgements.
+No account or sign-in is needed. Vehicle positions come from the Vysocina Region's public map (mapavdv.kr-vysocina.cz), timetables from the Ministry of Transport's archive (portal.cisjr.cz), the line-to-entry mapping from the project's own static site (vdv.ondralinek.cz), and the base map is Apple Maps. They are attributed in Settings -> Acknowledgements.
 
 The app collects nothing; there is no analytics and no tracking.
 

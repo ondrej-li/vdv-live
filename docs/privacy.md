@@ -27,6 +27,7 @@ the base map is drawn by Apple's MapKit:
 | Server | What is requested | Why |
 |---|---|---|
 | `mapavdv.kr-vysocina.cz` | the current vehicle positions | the map |
+| `vdv.ondralinek.cz` | the file that says which archive entry holds each line | so a republished timetable archive does not break the app |
 | `portal.cisjr.cz` | the timetable archive's index and individual lines, when you download timetables | stop times, and filling in lines the live feed has dropped |
 | Apple (MapKit) | the map tiles, and what MapKit needs to draw them | the base map |
 
@@ -86,6 +87,7 @@ webový prohlížeč, a podkladovou mapu kreslí MapKit od Apple:
 | Server | Co se požaduje | Proč |
 |---|---|---|
 | `mapavdv.kr-vysocina.cz` | aktuální polohy vozidel | mapa |
+| `vdv.ondralinek.cz` | soubor, který říká, ve které položce archivu je která linka | aby přečíslovaný archiv jízdních řádů aplikaci nerozbil |
 | `portal.cisjr.cz` | index archivu jízdních řádů a jednotlivé linky, pokud si jízdní řády stáhnete | časy zastávek a doplnění linek, které živý zdroj vynechal |
 | Apple (MapKit) | dlaždice mapy a to, co MapKit ke kreslení potřebuje | podkladová mapa |
 
