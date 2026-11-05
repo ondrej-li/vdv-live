@@ -1,11 +1,11 @@
-# App Store listing, version 1.3
+# App Store listing, version 1.4
 
 Everything the product page needs, written to be pasted into App Store Connect.
 Character counts are measured against Apple's limits, and the Czech copy is the
 primary language - English is the second localization, if one is enabled.
 
-The build this describes is **1.3** - the newest one in TestFlight, whose number is
-on `make check-release` and in App Store Connect. `docs/ship.md` covers the upload
+The build this describes is **1.4** - 1.3 was the widgets and the timetable
+repair; 1.4 adds sharing. The newest build number is on `make check-release`. `docs/ship.md` covers the upload
 itself; the privacy and support URLs are the ones hosted from `docs/privacy.md` and
 `docs/support.md`.
 
@@ -28,7 +28,7 @@ VDV Live
 Dá se změnit kdykoli bez nového review.
 
 ```
-Novinka ve verzi 1.3: widgety na plochu. Odjezdová tabule zvolené zastávky a nejbližší vozidla oblíbených linek – bez otevírání aplikace.
+Novinka ve verzi 1.4: sdílení. Pošlete odkaz na spoj s jeho polohou a zpožděním, nebo na tabuli zastávky – příjemci se otevře přímo v aplikaci.
 ```
 
 ### Klíčová slova (100 znaků, bez mezer za čárkami)
@@ -57,6 +57,9 @@ Stáhněte jednou index jízdních řádů Ministerstva dopravy a karta vozidla 
 UPOZORNĚNÍ PŘED ODJEZDEM
 Zvolte spoj, zastávku a jak dlouho předem chcete vědět. Upozornění respektuje dny, kdy spoj jede, státní svátky i konec platnosti řádu.
 
+SDÍLENÍ
+Pošlete odkaz na spoj s jeho polohou a zpožděním, nebo na odjezdovou tabuli zastávky. Odkaz se otevře přímo v aplikaci – na stejném spoji nebo zastávce.
+
 WIDGETY NA PLOCHU
 Odjezdová tabule zvolené zastávky: u každého odjezdu linka, cíl, čas a stav – včas, +3 min, nebo zatím jen podle řádu. Widget oblíbených spojů ukáže nejbližší vozidla vašich linek a dá se nastavit na zastávku, kolem které se má dívat, nebo nechat na vaší poloze. Oba widgety mají malou, střední i velkou velikost na iPhonu i iPadu a data si stahují samy.
 
@@ -76,13 +79,13 @@ Polohy vozidel pocházejí z veřejné mapy Kraje Vysočina, jízdní řády z a
 ### Co je nového (4000 znaků)
 
 ```
-WIDGETY NA PLOCHU
+SDÍLENÍ
 
-• Odjezdová tabule – podržte widget na ploše, zvolte Upravit widget a vyberte zastávku. U každého odjezdu vidíte cíl, čas a stav: včas, +3 min, nebo zatím jen podle řádu. Widget potřebuje stažené jízdní řády: Nastavení → Jízdní řády.
-• Oblíbené spoje – nejbližší vozidla vašich oblíbených linek seřazená podle vzdálenosti. Widget se dá nastavit na zastávku, kolem které se má dívat; bez nastavení použije vaši poslední polohu. Když poblíž žádné vozidlo není, ukáže mapu okolí.
-• Oba widgety mají malou, střední i velkou velikost na iPhonu i iPadu a samy si stahují aktuální data.
+• Spoj – na kartě vozidla klepněte na sdílení. Zpráva nese linku, cíl, zpoždění, čas načtení a zastávky, kde spoj byl a kam míří.
+• Zastávka – na tabuli zastávky klepněte na sdílení. Zpráva nese příštích pět odjezdů s časem a stavem: včas, +3 min, nebo zatím jen podle řádu.
+• Odkaz se otevře přímo v aplikaci – na stejném spoji nebo zastávce. Kdo aplikaci nemá, uvidí stránku s možností ji stáhnout. Spoj, který už dojel, otevře linku na mapě.
 
-Drobnosti: tabule zastávky ukazuje u každého odjezdu jeho cíl a seznam widgetů v galerii má české popisy.
+Také v této verzi: widgety na plochu a rychlejší obnova jízdních řádů, když je ministerstvo zveřejní znovu.
 ```
 
 ## English
@@ -102,7 +105,7 @@ Live bus and train map
 ### Promotional text (170 characters)
 
 ```
-New in 1.3: home screen widgets. A departure board for any stop, and the nearest vehicles of your pinned lines - without opening the app.
+New in 1.4: sharing. Send a link to a vehicle with its position and delay, or a stop's departure board - it opens in the app for whoever receives it.
 ```
 
 ### Keywords (100 characters, no spaces after commas)
@@ -131,6 +134,9 @@ Download the Ministry of Transport's timetable index once, and a vehicle's card 
 DEPARTURE REMINDERS
 Pick a service, a stop and how early you want to know. Reminders follow the days the service runs, public holidays, and the end of the timetable's validity.
 
+SHARING
+Send a link to a vehicle with its position and delay, or to a stop's departure board. The link opens in the app, on that same vehicle or board.
+
 HOME SCREEN WIDGETS
 A departure board for the stop you choose: every row has the line, where it goes, when it leaves and how it stands - on time, three minutes late, or still just the timetable's time. The starred traffic widget lists the nearest vehicles of your pinned lines, and can be pointed at a stop or left on your own position. Both come in small, medium and large, on iPhone and iPad, and fetch their own data.
 
@@ -150,13 +156,13 @@ Vehicle positions come from the region's public map, timetables from the Ministr
 ### What's New (4000 characters)
 
 ```
-HOME SCREEN WIDGETS
+SHARING
 
-• Departure board - touch and hold the widget, choose Edit Widget, then pick a stop. Each row shows where the service goes, when it leaves and how it stands: on time, three minutes late, or still just the timetable's time. The widget needs the timetables downloaded: Settings -> Timetables.
-• Starred traffic - the nearest vehicles of your pinned lines, ordered by distance. Point it at a stop to look around, or leave it empty for your last known position. When nothing of yours is nearby, it draws the map of that place.
-• Both widgets come in small, medium and large on iPhone and iPad, and fetch their own up-to-date data.
+• A vehicle - tap share on its card. The message carries the line, where it is going, its delay, when the app read the feed, and the stops it was last seen at and is heading for.
+• A stop - tap share on its departure board. The message carries the next five departures with their time and status: on time, +3 min, or still just the timetable's time.
+• The link opens in the app, on that vehicle or that board. People without the app see a page that offers it. A vehicle that has finished its run opens the line's traffic instead.
 
-Also in this release: the stop board shows each departure's destination, and the widget gallery is in Czech and English.
+Also in this release: home screen widgets, and timetables that keep working after the ministry republishes the archive.
 ```
 
 ## Screenshots
@@ -209,7 +215,7 @@ The amber exclamation badge on the map marks a line the live feed has stopped re
 
 ## Checklist before submitting
 
-- [ ] Version 1.3, with the newest build selected on the version page
+- [ ] Version 1.4, with the newest build selected on the version page
 - [ ] Promotional text, description, keywords and What's New pasted for Czech
 - [ ] English localization filled in, if enabled
 - [ ] iPhone 6.3" and iPad 13" screenshot tabs filled (four each, in the order above)
