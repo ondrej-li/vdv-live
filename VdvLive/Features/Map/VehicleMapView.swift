@@ -100,6 +100,9 @@ struct VehicleMapView: View {
             await applyScreenshotRoute()
         }
         .task { await reminders.scheduleAll() }
+        .onOpenURL { url in
+            openSharedLink(url)
+        }
         .onReceive(NotificationCenter.default.publisher(for: .reminderNotificationTapped)) { note in
             if let info = note.object as? [AnyHashable: Any] {
                 reminders.handleTap(userInfo: info)
@@ -472,6 +475,7 @@ struct VehicleMapView: View {
                 favouriteLines: viewModel.favouriteLines,
                 detail: viewModel.vehicleDetail,
                 isLoadingDetail: viewModel.isLoadingDetail,
+                observedAt: viewModel.lastUpdatedAt,
                 timetable: viewModel.lineTimetable,
                 isLoadingTimetable: viewModel.isLoadingTimetable,
                 timetableError: viewModel.timetableError,
@@ -517,6 +521,34 @@ struct VehicleMapView: View {
 
     /// Opens the thing a notification was about: the stop's board, which works from
     /// the cached timetable even offline, and the live vehicle when it is reporting.
+    /// Opens what a shared link points at: the board of a stop, or the vehicle on a
+    /// line and service.
+    ///
+    /// A vehicle link outlives its vehicle - a bus finishes its run - so a service
+    /// that is no longer reporting opens the line's traffic instead of an empty
+    /// card. Nothing here can fail loudly: a link the app cannot place is simply
+    /// not opened, because the person tapping it did not ask this app anything.
+    private func openSharedLink(_ url: URL) {
+        guard let target = ShareComposer.target(from: url) else { return }
+        switch target {
+        case .board(let stopName):
+            guard let stop = viewModel.position(forStopNamed: stopName) else { return }
+            boardStop = stop
+        case let .vehicle(line, serviceNumber):
+            Task {
+                // The service is what identifies a vehicle; without one, or when it
+                // has finished its run, the line's traffic is the honest answer.
+                if let serviceNumber,
+                   let cluster = await viewModel.selectVehicle(line: line,
+                                                               serviceNumber: serviceNumber) {
+                    focus(on: cluster.representative)
+                } else {
+                    focus(onLine: line)
+                }
+            }
+        }
+    }
+
     private func openReminderTarget(_ target: ReminderCenter.ReminderTarget) {
         reminders.pendingTarget = nil
         if let stop = viewModel.position(forStopNamed: target.stopName) {

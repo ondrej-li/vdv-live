@@ -88,6 +88,16 @@ struct StopBoardSheet: View {
                         .accessibilityLabel(isStarred ? Text("Remove from starred stops")
                                                       : Text("Star this stop"))
                     }
+                    if let content = shareContent {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            ShareLink(item: content.url,
+                                      subject: Text(content.title),
+                                      message: Text(content.body)) {
+                                Image(systemName: "square.and.arrow.up")
+                            }
+                            .accessibilityLabel(Text("Share this board"))
+                        }
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         // Plain text, like the rest of the app's Done buttons.
                         Button("Done") { dismiss() }
@@ -193,6 +203,12 @@ struct StopBoardSheet: View {
         .buttonStyle(.plain)
         .foregroundStyle(Color.accentColor)
         .accessibilityHint(Text("Shows the departures after the ones already listed"))
+    }
+
+    /// The five departures on screen, as a message somebody can act on.
+    private var shareContent: ShareContent? {
+        guard !entries.isEmpty else { return nil }
+        return ShareComposer.board(stopName: stop.name, rows: entries, readAt: Date())
     }
 
     private var header: some View {
