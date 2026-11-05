@@ -70,8 +70,8 @@
 		1A000000000000000000001B /* VdvLive Watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "VdvLive Watch.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A000000000000000000002A /* VdvLive/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = VdvLive/Localizable.xcstrings; sourceTree = "<group>"; };
 		2B0000000000000000000002 /* VdvLiveWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = VdvLiveWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		2B000000000000000000000E /* VdvLive/Resources/stop-positions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = VdvLive/Resources/stop-positions.json; sourceTree = "<group>"; };
-		2B0000000000000000000010 /* VdvLive/Resources/jdf-lines.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = VdvLive/Resources/jdf-lines.json; sourceTree = "<group>"; };
+		2B000000000000000000000E /* VdvLive/Resources/stop-positions.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "VdvLive/Resources/stop-positions.json"; sourceTree = "<group>"; };
+		2B0000000000000000000010 /* VdvLive/Resources/jdf-lines.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "VdvLive/Resources/jdf-lines.json"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -263,9 +263,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				2B0000000000000000000003 /* VdvLiveWidgets */,
 				1A0000000000000000000021 /* VdvLive/Domain */,
 				1A0000000000000000000022 /* VdvLive/Data */,
+				2B0000000000000000000003 /* VdvLiveWidgets */,
 			);
 			name = VdvLiveWidgets;
 			packageProductDependencies = (
@@ -543,7 +543,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -570,7 +570,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -585,7 +585,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLiveTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -601,7 +601,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLiveTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -624,7 +624,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The map draws your position, so a vehicle can be judged against where you are. It is used on the watch only.";
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = cz.ondralinek.VdvLive;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLive.watchkitapp;
 				PRODUCT_NAME = "VdvLive Watch";
 				SDKROOT = watchos;
@@ -649,7 +649,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The map draws your position, so a vehicle can be judged against where you are. It is used on the watch only.";
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = cz.ondralinek.VdvLive;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLive.watchkitapp;
 				PRODUCT_NAME = "VdvLive Watch";
 				SDKROOT = watchos;
@@ -669,10 +669,10 @@
 				DEVELOPMENT_TEAM = B592D69P29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Config/VdvLiveWidgets-Info.plist;
+				INFOPLIST_FILE = "Config/VdvLiveWidgets-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "VDV Live Widgets";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLive.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -690,10 +690,10 @@
 				DEVELOPMENT_TEAM = B592D69P29;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Config/VdvLiveWidgets-Info.plist;
+				INFOPLIST_FILE = "Config/VdvLiveWidgets-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "VDV Live Widgets";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = cz.ondralinek.VdvLive.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

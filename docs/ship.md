@@ -83,11 +83,11 @@ make shots-watch             # and the watch one
 make screenshots             # the same frames, written into screenshots/
 ```
 
-`make archive` stamps the build number from the clock (`VERSION=1.3`,
+`make archive` stamps the build number from the clock (`VERSION=1.4`,
 `BUILD=yyMMddHHmm`), so no upload can repeat the one before it. Override either:
 
 ```sh
-make upload VERSION=1.3          # a new marketing version
+make upload VERSION=1.4          # a new marketing version
 make upload BUILD=42             # a specific build number
 ```
 
