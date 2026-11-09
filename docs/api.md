@@ -178,3 +178,36 @@ confirm it.
 Until that is settled the app shows the number as reported, prefixed with `+`,
 and colours it as a delay. If it turns out to be a different quantity, only
 `VehicleDelay+Presentation.swift` and the detail row need to change.
+
+## How the board uses a delay
+
+A stop's departure board has rows, and a row is a run. The positions feed says
+which line a vehicle is on but not which run, so for a while the board fell back
+to the line's worst delay: it went on whichever row was nearest the clock. That put
+a bus going the other way - or one that had finished its journey an hour earlier
+and was standing at the terminus still reporting what it arrived with - on the row
+a reader was looking at, where the number then stayed put all morning.
+
+The board now asks the map's own popup (`/Ajax/OpenInfoWindow`, the one a marker
+tap shows) which run each vehicle of the lines it draws is working. That is the
+`Spoj` the timetables file runs under, so the delay goes on the row it was measured
+for and follows the vehicle as the feed changes. One request per vehicle, asked
+once and kept for as long as the vehicle keeps the same destination; a popup that
+cannot be read is not asked for again for ten minutes.
+
+Two things remain approximate, and only for vehicles whose run is not known yet
+(the widget builds its board this way, because a timeline cannot ask a request per
+vehicle):
+
+- The delay is placed by the destination the feed sends (`finalStopName`). Two runs
+  of one line pass the same stop in opposite directions, and the bus bound for
+  Třešť is not the one leaving for Telč; among the rows ending at that destination,
+  the one nearest the reader's moment and still under way takes the delay.
+- Records with no destination (`-1 N/a`) lend nothing, and values beyond two hours
+  in either direction are ignored: the countdown-shaped records described above are
+  indistinguishable from a real four-hour deviation, and a board that moves a bus
+  four hours is worse than one that admits it does not know.
+
+A vehicle the popup places at the stop its run ends at lends nothing either way: it
+has arrived, so what it reports is a memory of the journey rather than a forecast
+of it. See `StopBoard`, `LineDelay` and `VehicleRun`.

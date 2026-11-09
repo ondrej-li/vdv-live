@@ -76,18 +76,18 @@ enum WidgetContent {
     ///   - stopName: the stop chosen in the configuration, `nil` when none was.
     ///   - timetables: the lines serving the stop, or `nil` when they cannot be
     ///     read yet because the archive index has not been downloaded.
-    ///   - delays: minutes late by the feed's line code; a run's own delay is
-    ///     matched by `StopBoard`.
+    ///   - lineDelays: what the feed reports for the vehicles of those lines;
+    ///     `StopBoard` places each one on the run its destination names.
     ///   - limit: how many rows the widget family has room for.
     static func board(stopName: String?,
                       timetables: [LineTimetable]?,
-                      delays: [String: Int] = [:],
+                      lineDelays: [LineDelay] = [],
                       now: TimeOfDay,
                       limit: Int = 4) -> WidgetBoardState {
         guard let stopName, !stopName.isEmpty else { return .needsStop }
         guard let timetables else { return .needsTimetables }
 
-        let entries = StopBoard.entries(at: stopName, in: timetables, delays: delays, now: now)
+        let entries = StopBoard.entries(at: stopName, in: timetables, lineDelays: lineDelays, now: now)
             .filter { ($0.expected ?? $0.scheduled).minutes >= now.minutes - boardGraceMinutes }
         return .board(stopName: stopName, rows: Array(entries.prefix(max(limit, 0))))
     }

@@ -30,9 +30,12 @@ struct StopBoardSheet: View {
     @State private var canLoadMore = true
 
     private var entries: [StopBoardEntry] {
+        // The run a vehicle is on when it is known - which puts the delay on the row
+        // it was measured for - and the feed's own guess by destination for the rest.
         let all = StopBoard.entries(at: stop.name,
                                     in: timetables,
-                                    delays: viewModel.liveDelays,
+                                    delays: viewModel.liveRunDelays,
+                                    lineDelays: viewModel.liveLineDelays,
                                     now: now,
                                     lookAheadMinutes: StopBoard.lookAheadMinutes
                                         + extraAheadHours * 60)
@@ -106,10 +109,20 @@ struct StopBoardSheet: View {
         }
         .task { await loadTimetables() }
         .task {
+            // A board is read as a live thing, and it has no room to grey what it
+            // shows: asking once when it opens is what keeps last night's payload from
+            // being read as this morning's delays.
+            await viewModel.refreshIfStale()
+            await resolveRuns()
+        }
+        .task {
             // The board is live: a minute later the row that was due may have left.
+            // The runs are read again on the same beat, because a bus that has
+            // finished one and started the next is a different row's vehicle.
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30))
                 now = TimeOfDay(Date())
+                await resolveRuns()
             }
         }
     }
@@ -325,5 +338,15 @@ struct StopBoardSheet: View {
             }
         }
         timetables = loaded
+        await resolveRuns()
+    }
+
+    /// Asks which run each vehicle on the board's lines is working.
+    ///
+    /// Cheap after the first pass - the view model keeps the answers and only asks
+    /// about vehicles it has not seen - and what it buys is a delay that belongs to
+    /// a row rather than to the whole line.
+    private func resolveRuns() async {
+        await viewModel.resolveRuns(ofLines: Set(timetables.map(\.lineNumber)))
     }
 }

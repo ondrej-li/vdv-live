@@ -296,9 +296,22 @@ struct LineTimetable: Hashable, Sendable {
         _ call: ScheduledCall
     ) -> (call: ScheduledCall, score: Int)? {
         let name = comparableStopName(call.stopName)
-        let (shorter, longer) = wanted.count <= name.count ? (wanted, name) : (name, wanted)
-        guard shorter == longer || longer.hasPrefix(shorter + " ") else { return nil }
-        return (call, shorter.count)
+        guard stopNamesMatch(wanted, name) else { return nil }
+        return (call, min(wanted.count, name.count))
+    }
+
+    /// Whether two stop names, as two different sources write them, name the same stop.
+    ///
+    /// The feed names stops in more detail than the archive does, so a name that
+    /// starts with the whole of the other is the same stop - "Stonařov,Sokolíčko,rozc."
+    /// for the archive's "Stonařov,Sokolíčko". Plain names only: callers that already
+    /// hold comparable names can pass them, they compare the same either way.
+    static func stopNamesMatch(_ first: String, _ second: String) -> Bool {
+        let a = comparableStopName(first)
+        let b = comparableStopName(second)
+        guard !a.isEmpty, !b.isEmpty else { return false }
+        let (shorter, longer) = a.count <= b.count ? (a, b) : (b, a)
+        return shorter == longer || longer.hasPrefix(shorter + " ")
     }
 
     /// Stop names differ in small ways between the feed and the archive, so they

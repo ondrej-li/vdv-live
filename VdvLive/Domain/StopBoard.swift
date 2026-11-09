@@ -59,6 +59,23 @@ struct StopBoardEntry: Identifiable, Hashable, Sendable {
     }
 }
 
+/// A delay the feed reports for a vehicle, with the one thing that says which of a
+/// line's runs it belongs to: where the vehicle is going.
+///
+/// The positions feed names the line but not the run, so a delay is the line's rather
+/// than a run's - and two runs of one line pass the same stop in opposite directions.
+/// Lending the delay of the bus going the other way put a reader's own departure
+/// minutes off, so the destination is kept: it is what separates one direction from
+/// the other, and the timetable knows where each run ends.
+struct LineDelay: Hashable, Sendable {
+    /// Line as the feed and the archive both write it: `764337`.
+    let lineNumber: String
+    /// Minutes behind the timetable, as the feed reports it.
+    let minutes: Int
+    /// Final stop of the vehicle's run, as the feed names it.
+    let destination: String
+}
+
 /// What a stop's board shows, and which departures belong on it.
 ///
 /// The window reaches an hour back and three hours forward, but a late vehicle is
@@ -78,6 +95,15 @@ enum StopBoard {
     /// next service - which has not left the depot - does not inherit its delay.
     static let delayTailMinutes = 120
 
+    /// The largest delay the feed is taken at its word for on a board.
+    ///
+    /// The feed's `delay` is not always minutes behind the timetable: the records it
+    /// cannot place carry large round values that look like a countdown to the next
+    /// departure, and negatives of the same size, which `docs/api.md` records. A bus
+    /// moved four hours in either direction is worse than one whose delay the board
+    /// admits it does not know.
+    static let maximumPlausibleDelayMinutes = 120
+
     /// The rows of the board at a stop, earliest first.
     ///
     /// - Parameters:
@@ -86,6 +112,9 @@ enum StopBoard {
     ///   - timetables: whatever the app holds for the lines that serve the stop.
     ///   - delays: minutes late, keyed by `"<line>/<run>"`; anything missing is
     ///     drawn as not departed yet.
+    ///   - lineDelays: what the feed reports for the vehicles of those lines. A
+    ///     report is used for a row only when its destination is where that row
+    ///     ends, so the bus going the other way is not this row's business.
     ///   - now: the minute the board is read at, so that the window is testable.
     ///   - lookBackMinutes: how far back the board reaches; the default is the hour
     ///     that has passed.
@@ -95,6 +124,7 @@ enum StopBoard {
         at stopName: String,
         in timetables: [LineTimetable],
         delays: [String: Int] = [:],
+        lineDelays: [LineDelay] = [],
         now: TimeOfDay,
         lookBackMinutes: Int = StopBoard.lookBackMinutes,
         lookAheadMinutes: Int = StopBoard.lookAheadMinutes
@@ -126,7 +156,7 @@ enum StopBoard {
             }
         }
 
-        Self.lendLineDelays(to: &rows, delays: delays, now: now)
+        Self.lendLineDelays(to: &rows, lineDelays: lineDelays, now: now)
 
         return rows
             .filter {
@@ -143,32 +173,57 @@ enum StopBoard {
             }
     }
 
-    /// A line's delay, given to the one row the vehicle reporting it can be on.
+    /// The feed's delay for a line, given to the one row the vehicle reporting it can
+    /// be on.
     ///
-    /// The positions feed names the line but not the run, so a delay is the line's rather
-    /// than a run's. Lending it to every service of the line put delays on departures that
-    /// had not left yet - the bug this fixes - so it goes to the single nearest row of a
-    /// run that is actually under way, and to nothing else.
+    /// The positions feed names the line but not the run, so a delay has to be placed.
+    /// Two things narrow it down to a single row. The destination: a vehicle ending
+    /// somewhere else is on the other direction of the line, and its delay is not this
+    /// row's business - lending it there put the wrong number on the row a reader was
+    /// looking at, and kept it there for as long as that vehicle stayed late. The clock:
+    /// among the rows going that way, the one nearest the reader's moment takes it, and
+    /// only while its run is under way.
     private static func lendLineDelays(to rows: inout [Row],
-                                       delays: [String: Int],
+                                       lineDelays: [LineDelay],
                                        now: TimeOfDay) {
-        var owner: [String: Int] = [:]
+        let reports = lineDelays.filter {
+            abs($0.minutes) <= maximumPlausibleDelayMinutes
+        }
+        guard !reports.isEmpty else { return }
+
+        var owner: [Direction: (row: Int, delay: Int)] = [:]
 
         for index in rows.indices {
             let row = rows[index]
-            guard row.delay == nil, row.isUnderWay, delays[row.lineNumber] != nil else { continue }
-            guard let current = owner[row.lineNumber] else {
-                owner[row.lineNumber] = index
+            guard row.delay == nil, row.isUnderWay, let destination = row.destination else { continue }
+
+            let matching = reports.filter { report in
+                report.lineNumber == row.lineNumber
+                    && LineTimetable.stopNamesMatch(report.destination, destination)
+            }
+            guard let delay = matching.map(\.minutes).max() else { continue }
+
+            let direction = Direction(lineNumber: row.lineNumber,
+                                      destination: LineTimetable.comparableStopName(destination))
+            guard let current = owner[direction] else {
+                owner[direction] = (index, delay)
                 continue
             }
-            if Self.distance(rows[current].scheduled, now) > Self.distance(row.scheduled, now) {
-                owner[row.lineNumber] = index
+            if Self.distance(rows[current.row].scheduled, now) > Self.distance(row.scheduled, now) {
+                owner[direction] = (index, delay)
             }
         }
 
-        for (line, index) in owner {
-            rows[index].delay = delays[line]
+        for (_, chosen) in owner {
+            rows[chosen.row].delay = chosen.delay
         }
+    }
+
+    /// A line and the end of a run, which together name one way of travelling it.
+    private struct Direction: Hashable {
+        let lineNumber: String
+        /// The run's last stop, already comparable.
+        let destination: String
     }
 
     /// Whether a run is on the road, near enough for a vehicle's delay to be its own.
