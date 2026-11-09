@@ -84,6 +84,9 @@ final class VehicleMapViewModel {
     /// not change the language of the app they run inside.
     private let languageDefaults: UserDefaults
     private let detailFetcher: VehicleDetailFetching
+    /// Reads which run a vehicle is on, which is what a board needs to say how late
+    /// a departure is rather than how late its line is.
+    private let runFetcher: VehicleRunFetching
     /// Official timetables, shared with the settings screen that downloads them.
     let timetables: LineTimetableStore
     /// How long a marker takes to travel to its new position.
@@ -131,6 +134,7 @@ final class VehicleMapViewModel {
         positionStore: LastKnownPositionStore = LastKnownPositionStore(),
         languageDefaults: UserDefaults = .standard,
         detailFetcher: VehicleDetailFetching = VehicleDetailClient(),
+        runFetcher: VehicleRunFetching = VehicleDetailClient(),
         timetables: LineTimetableStore? = nil,
         markerMotionDuration: TimeInterval = 2,
         markerMotionFrameRate: Double = 30,
@@ -145,6 +149,7 @@ final class VehicleMapViewModel {
         self.positionStore = positionStore
         self.languageDefaults = languageDefaults
         self.detailFetcher = detailFetcher
+        self.runFetcher = runFetcher
         self.timetables = timetables ?? LineTimetableStore()
         self.markerMotionDuration = markerMotionDuration
         self.markerMotionFrameRate = markerMotionFrameRate
@@ -930,20 +935,167 @@ final class VehicleMapViewModel {
         return isStarred
     }
 
-    /// The delay each vehicle is reporting, by line code.
+    /// Minutes late by run, keyed the way a board looks a delay up.
     ///
-    /// The positions feed names the line but not the run, so a board cannot tell which
-    /// vehicle belongs to which row. A line's worst reported delay is the honest answer:
-    /// a rider is better warned than reassured.
-    var liveDelays: [String: Int] {
-        vehicles.reduce(into: [:]) { delays, vehicle in
-            guard let minutes = vehicle.delay.minutes else { return }
-            delays[vehicle.line] = max(minutes, delays[vehicle.line] ?? minutes)
+    /// The positions feed names the line but not the run, so a board cannot tell
+    /// which row a delay belongs to from the payload alone - and taking a line's
+    /// worst number put a bus going the other way, or one that finished hours ago,
+    /// on the row a reader was looking at, where it stayed for as long as that
+    /// vehicle did. Asking the map's own popup which run each vehicle is working
+    /// replaces that guess with the number the timetable files it under, and a
+    /// vehicle that has reached the end of its run is left out: it is standing
+    /// there, so what it reports is a memory rather than a forecast.
+    var liveRunDelays: [String: Int] {
+        var delays: [String: Int] = [:]
+        for vehicle in vehicles {
+            guard let minutes = vehicle.delay.minutes,
+                  let resolved = vehicleRuns[vehicle.id],
+                  !resolved.run.hasArrived(at: vehicle.destination ?? "") else { continue }
+            delays[StopBoard.delayKey(line: resolved.run.lineNumber,
+                                      service: resolved.run.serviceNumber)] = minutes
+        }
+        return delays
+    }
+
+    /// What the feed is reporting for the vehicles whose run is not known.
+    ///
+    /// Only a fallback for rows the run book above cannot answer - a widget cannot
+    /// ask the popup for every vehicle of a stop - and it carries the destination,
+    /// which is the one thing the payload says about which way a vehicle is going.
+    var liveLineDelays: [LineDelay] {
+        vehicles.compactMap { vehicle in
+            guard vehicleRuns[vehicle.id] == nil,
+                  let minutes = vehicle.delay.minutes,
+                  let destination = vehicle.destination,
+                  !hasArrived(vehicle, at: destination) else { return nil }
+            return LineDelay(lineNumber: vehicle.line,
+                             minutes: minutes,
+                             destination: destination)
         }
     }
 
-    /// Read once, the first time the stops are drawn.
-    private var loadedStopPositions: StopPositions?
+    /// How close to the end of its run a vehicle has to be to count as arrived, for
+    /// the fallback above.
+    ///
+    /// A stop is a place a bus stands, and the shipped stop table is itself accurate
+    /// to tens of metres; a terminus is usually a bay or a yard within a few hundred.
+    static let arrivalRadiusMetres: Double = 500
+
+    /// Whether the feed's last position for a vehicle is the stop its run ends at.
+    ///
+    /// A vehicle that has got there reports the delay it arrived with for as long as
+    /// it stands, which is how a board came to show the same number for an hour. This
+    /// is the guess, made from the stop table; ``VehicleRun/hasArrived(at:)`` is the
+    /// answer, made from where the vehicle actually is.
+    private func hasArrived(_ vehicle: Vehicle, at destination: String) -> Bool {
+        guard let end = stopPositions.position(forStopNamed: destination) else {
+            // The table cannot place the stop, which is not the same as the vehicle
+            // not being there: the report is kept rather than invented away.
+            return false
+        }
+        let metres = CLLocation(latitude: end.latitude, longitude: end.longitude)
+            .distance(from: CLLocation(latitude: vehicle.latitude, longitude: vehicle.longitude))
+        return metres <= Self.arrivalRadiusMetres
+    }
+
+    // MARK: - Which run a vehicle is on
+
+    /// A run as the popup described it, with the destination the vehicle reported
+    /// when it was asked. A vehicle whose destination has changed has started
+    /// another run, so the answer is stale.
+    private struct ResolvedRun {
+        let run: VehicleRun
+        let destination: String?
+    }
+
+    /// Runs already read, by vehicle id.
+    @ObservationIgnored private var vehicleRuns: [Int: ResolvedRun] = [:]
+    /// When each vehicle was last asked about its run, so a popup that cannot be
+    /// read is not asked for again on every tick of a board's clock.
+    @ObservationIgnored private var runLookupAttempts: [Int: Date] = [:]
+    @ObservationIgnored private var isResolvingRuns = false
+
+    /// How many popups to ask about at once.
+    static let runResolutionConcurrency = 4
+    /// How long an answer that could not be read is left alone.
+    static let runLookupRetryInterval: TimeInterval = 600
+
+    /// Reads which run each vehicle of `lines` is working.
+    ///
+    /// One request per vehicle that has not been asked about yet, four at a time; a
+    /// vehicle that has stopped reporting is forgotten, and one that has changed
+    /// destination is asked about again. This is what turns "a bus of line 420 is
+    /// ten minutes late" into "the 09:09 to Třebíč is seven minutes late", and the
+    /// request is the same small popup the map's own marker shows.
+    func resolveRuns(ofLines lines: Set<String>) async {
+        guard !lines.isEmpty, !isResolvingRuns else { return }
+
+        let reporting = vehicles.filter { lines.contains($0.line) }
+        let reportingIDs = Set(reporting.map(\.id))
+        let destinations = Dictionary(uniqueKeysWithValues: reporting.map { ($0.id, $0.destination) })
+        // Forget vehicles that have gone quiet, and answers that belong to a run
+        // the vehicle has since finished - which is what a changed destination means,
+        // and is reason enough to ask again without waiting out the retry interval.
+        let restarted = vehicleRuns.filter { id, resolved in
+            reportingIDs.contains(id) && destinations[id] != resolved.destination
+        }
+        vehicleRuns = vehicleRuns.filter { id, resolved in
+            reportingIDs.contains(id) && destinations[id] == resolved.destination
+        }
+        runLookupAttempts = runLookupAttempts.filter { id, _ in
+            reportingIDs.contains(id) && !restarted.keys.contains(id)
+        }
+
+        let askedAt = now()
+        let unresolved = reporting.filter { vehicle in
+            guard vehicleRuns[vehicle.id] == nil else { return false }
+            guard let attempt = runLookupAttempts[vehicle.id] else { return true }
+            return askedAt.timeIntervalSince(attempt) >= Self.runLookupRetryInterval
+        }
+        guard !unresolved.isEmpty else { return }
+
+        isResolvingRuns = true
+        defer { isResolvingRuns = false }
+
+        let fetcher = runFetcher
+        var index = 0
+        while index < unresolved.count {
+            let end = min(index + Self.runResolutionConcurrency, unresolved.count)
+            let chunk = Array(unresolved[index..<end])
+            index = end
+
+            await withTaskGroup(of: (Vehicle, VehicleRun?).self) { group in
+                for vehicle in chunk {
+                    group.addTask {
+                        (vehicle, try? await fetcher.fetchRun(for: vehicle))
+                    }
+                }
+                for await (vehicle, run) in group {
+                    runLookupAttempts[vehicle.id] = askedAt
+                    guard let run else { continue }
+                    vehicleRuns[vehicle.id] = ResolvedRun(run: run, destination: vehicle.destination)
+                }
+            }
+        }
+    }
+
+    /// Asks for a payload when the one on screen is older than a refresh.
+    ///
+    /// For a screen with no room to grey what it shows, or to say when it was read:
+    /// opening a board asks for what is current rather than trusting a payload the
+    /// app fetched before it was suspended. Nothing happens while the automatic
+    /// refresh is already keeping the map current.
+    func refreshIfStale() async {
+        guard let lastUpdatedAt else { return }
+        let age = now().timeIntervalSince(lastUpdatedAt)
+        guard age >= settings.autoRefreshInterval else { return }
+        await load()
+    }
+
+    /// Read once, the first time the stops are drawn. A cache rather than state a
+    /// view reads, so filling it while a body is being evaluated is not a change
+    /// anything has to be redrawn for.
+    @ObservationIgnored private var loadedStopPositions: StopPositions?
 
     func setAutoRefresh(enabled: Bool) {
         guard settings.autoRefreshEnabled != enabled else { return }

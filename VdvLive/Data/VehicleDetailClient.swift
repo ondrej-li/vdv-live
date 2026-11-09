@@ -9,8 +9,17 @@ protocol VehicleDetailFetching: Sendable {
     func fetchDetail(for vehicle: Vehicle) async throws -> VehicleDetail
 }
 
+/// Source of just the run a vehicle is on: one request, no stop list.
+///
+/// Separate from ``VehicleDetailFetching`` because a board needs the run of every
+/// vehicle on the lines it shows, and the stop list of each of them is two requests
+/// for something a board does not draw.
+protocol VehicleRunFetching: Sendable {
+    func fetchRun(for vehicle: Vehicle) async throws -> VehicleRun
+}
+
 /// Reads the detail popup and the run's timetable from the map's AJAX endpoints.
-struct VehicleDetailClient: VehicleDetailFetching {
+struct VehicleDetailClient: VehicleDetailFetching, VehicleRunFetching {
     private static let logger = Logger(subsystem: "cz.ondralinek.VdvLive", category: "vehicle-detail")
 
     private let configuration: VehicleRequestConfiguration
@@ -57,6 +66,25 @@ struct VehicleDetailClient: VehicleDetailFetching {
             stopName: info.stopName,
             reportedDelayMinutes: info.reportedDelayMinutes,
             runStops: stops
+        )
+    }
+
+    /// Which run the vehicle is working, from the popup alone.
+    func fetchRun(for vehicle: Vehicle) async throws -> VehicleRun {
+        let infoHTML = try await loadHTML(
+            VehicleRequestFactory.makeInfoWindowRequest(
+                vehicleID: vehicle.id,
+                configuration: configuration
+            )
+        )
+        let info = try VehicleDetailHTMLParser.parseInfoWindow(infoHTML)
+        guard let serviceNumber = info.serviceNumber, !serviceNumber.isEmpty else {
+            throw VehicleAPIError.malformedPayload("The popup did not name the run.")
+        }
+        return VehicleRun(
+            lineNumber: LineCode(raw: info.line ?? vehicle.line).raw,
+            serviceNumber: serviceNumber,
+            stopName: info.stopName.flatMap { $0.isEmpty ? nil : $0 }
         )
     }
 

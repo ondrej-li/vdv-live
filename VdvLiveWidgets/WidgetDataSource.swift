@@ -8,12 +8,12 @@ import Foundation
 struct DepartureBoardMaterial {
     let stopName: String?
     let timetables: [LineTimetable]?
-    let delays: [String: Int]
+    let delays: [LineDelay]
 
     func state(at date: Date, limit: Int) -> WidgetBoardState {
         WidgetContent.board(stopName: stopName,
                             timetables: timetables,
-                            delays: delays,
+                            lineDelays: delays,
                             now: TimeOfDay(date),
                             limit: limit)
     }
@@ -30,12 +30,12 @@ enum WidgetDataSource {
     /// The stop's board, or the reason there is none.
     static func boardMaterial(stopName: String?) async -> DepartureBoardMaterial {
         guard let stopName, !stopName.isEmpty else {
-            return DepartureBoardMaterial(stopName: nil, timetables: nil, delays: [:])
+            return DepartureBoardMaterial(stopName: nil, timetables: nil, delays: [])
         }
 
         let store = LineTimetableStore()
         guard store.isReady else {
-            return DepartureBoardMaterial(stopName: stopName, timetables: nil, delays: [:])
+            return DepartureBoardMaterial(stopName: stopName, timetables: nil, delays: [])
         }
 
         var timetables: [LineTimetable] = []
@@ -66,12 +66,16 @@ enum WidgetDataSource {
         (try? await VehicleAPIClient().fetchVehicles())?.vehicles ?? []
     }
 
-    /// Minutes late by line, the way the app reads them: the feed names the line
-    /// but not the run, so the worst vehicle of a line speaks for it.
-    private static func delays(of vehicles: [Vehicle]) -> [String: Int] {
-        vehicles.reduce(into: [:]) { delays, vehicle in
-            guard let minutes = vehicle.delay.minutes else { return }
-            delays[vehicle.line] = max(minutes, delays[vehicle.line] ?? minutes)
+    /// What the feed reports for each vehicle, with where it is going: the same
+    /// reports the app's board uses, so a delay lands on the run it belongs to
+    /// rather than on whichever row of the line happens to be nearest.
+    private static func delays(of vehicles: [Vehicle]) -> [LineDelay] {
+        vehicles.compactMap { vehicle in
+            guard let minutes = vehicle.delay.minutes,
+                  let destination = vehicle.destination else { return nil }
+            return LineDelay(lineNumber: vehicle.line,
+                             minutes: minutes,
+                             destination: destination)
         }
     }
 }

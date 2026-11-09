@@ -109,7 +109,9 @@ final class WidgetContentTests: XCTestCase {
 
         guard case .board(_, let rows) = WidgetContent.board(stopName: stop,
                                                              timetables: [timetable],
-                                                             delays: ["764410": 8],
+                                                             lineDelays: [LineDelay(lineNumber: "764410",
+                                                                                    minutes: 8,
+                                                                                    destination: stop)],
                                                              now: TimeOfDay(minutes: 15 * 60)) else {
             return XCTFail("Expected a board")
         }

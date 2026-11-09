@@ -26,6 +26,7 @@ final class VehicleMapViewModelTests: XCTestCase {
         vehicles: [Vehicle],
         error: Error? = nil,
         detailFetcher: VehicleDetailFetching = StubVehicleDetailFetcher(),
+        runFetcher: VehicleRunFetching = StubVehicleRunFetcher(),
         clusterRadiusMetres: Double = 0
     ) -> (viewModel: VehicleMapViewModel, fetcher: StubVehicleFetcher) {
         let fetcher = StubVehicleFetcher(vehicles: vehicles, error: error)
@@ -44,6 +45,7 @@ final class VehicleMapViewModelTests: XCTestCase {
             ),
             languageDefaults: TestDefaults.make(),
             detailFetcher: detailFetcher,
+            runFetcher: runFetcher,
             now: { referenceDate }
         )
         return (viewModel, fetcher)
@@ -820,6 +822,228 @@ final class VehicleMapViewModelTests: XCTestCase {
 
         XCTAssertNil(viewModel.selectedClusterID)
         XCTAssertNil(viewModel.selectedCluster)
+    }
+
+    // MARK: - What a board reads
+
+    /// One report per vehicle, carrying where it is going, rather than the worst
+    /// number of the line: a board places each one by destination, and a line's
+    /// worst delay does not say which bus it belongs to.
+    func testEveryVehicleReportsItsOwnDelayAndDestination() async {
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "766420", destination: "Jihlava,aut.nádr.",
+                            delay: .minutes(10)),
+            Fixture.vehicle(id: 2, line: "766420", destination: "Třebíč,aut.nádr.",
+                            delay: .minutes(2)),
+            Fixture.vehicle(id: 3, line: "766420", destination: "Jihlava,aut.nádr.",
+                            delay: .unknown)
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles)
+
+        await viewModel.load()
+
+        XCTAssertEqual(
+            viewModel.liveLineDelays.sorted { $0.minutes < $1.minutes },
+            [
+                LineDelay(lineNumber: "766420", minutes: 2, destination: "Třebíč,aut.nádr."),
+                LineDelay(lineNumber: "766420", minutes: 10, destination: "Jihlava,aut.nádr.")
+            ]
+        )
+    }
+
+    /// A bus standing at the end of its run still reports the delay it arrived with,
+    /// for as long as it stands there. That is the number a board showed for an hour.
+    func testAVehicleStandingAtItsLastStopReportsNoDelay() async {
+        // Třebíč's bus station, from the shipped stop table.
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "766420", latitude: 49.21428, longitude: 15.87539,
+                            destination: "Třebíč,aut.nádr.", delay: .minutes(80))
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles)
+
+        await viewModel.load()
+
+        XCTAssertTrue(viewModel.liveLineDelays.isEmpty)
+    }
+
+    /// The same vehicle a few kilometres short of the stop is still on its way, so its
+    /// delay is what a reader plans by.
+    func testAVehicleShortOfItsLastStopStillReportsItsDelay() async {
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "766420", latitude: 49.2500, longitude: 15.87539,
+                            destination: "Třebíč,aut.nádr.", delay: .minutes(4))
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles)
+
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.liveLineDelays.first?.minutes, 4)
+    }
+
+    /// A vehicle that does not say where it is going cannot be placed on a direction,
+    /// so it is not offered to the board at all.
+    func testAVehicleWithoutADestinationReportsNoDelay() async {
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "766420", destination: nil, delay: .minutes(7))
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles)
+
+        await viewModel.load()
+
+        XCTAssertTrue(viewModel.liveLineDelays.isEmpty)
+    }
+
+    /// The reports are what the payload says now, not what it said when the board was
+    /// opened: this is the refresh a reader saw not happening.
+    func testTheReportedDelaysFollowTheFeed() async {
+        let fetcher = StubVehicleFetcher(payloads: [
+            VehiclePayload(vehicles: [Fixture.vehicle(id: 1, line: "766420", delay: .minutes(10))],
+                           skippedRecordCount: 0, unlocatableRecordCount: 0),
+            VehiclePayload(vehicles: [Fixture.vehicle(id: 1, line: "766420", delay: .minutes(3))],
+                           skippedRecordCount: 0, unlocatableRecordCount: 0)
+        ])
+        let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
+            fetcher: fetcher,
+            favouriteLinesStore: InMemoryFavouriteLinesStore(),
+            settingsStore: InMemoryAppSettingsStore(),
+            languageDefaults: TestDefaults.make(),
+            detailFetcher: StubVehicleDetailFetcher(),
+            now: { self.referenceDate }
+        )
+
+        await viewModel.load()
+        XCTAssertEqual(viewModel.liveLineDelays.first?.minutes, 10)
+
+        await viewModel.load()
+        XCTAssertEqual(viewModel.liveLineDelays.first?.minutes, 3)
+    }
+
+    /// The popup names the run, so the delay goes on that row instead of on whichever
+    /// row of the line happens to be nearest.
+    func testAResolvedRunCarriesTheDelaysOfItsOwnVehicle() async {
+        let runFetcher = StubVehicleRunFetcher(
+            run: VehicleRun(lineNumber: "766420", serviceNumber: "20", stopName: "Kněžice")
+        )
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "766420", destination: "Jihlava,aut.nádr.",
+                            delay: .minutes(5))
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles, runFetcher: runFetcher)
+
+        await viewModel.load()
+        await viewModel.resolveRuns(ofLines: ["766420"])
+
+        XCTAssertEqual(viewModel.liveRunDelays, ["766420/20": 5])
+        XCTAssertTrue(viewModel.liveLineDelays.isEmpty, "a resolved run needs no guessing")
+    }
+
+    /// A bus that has arrived at the end of its run stands there still reporting the
+    /// delay it arrived with. That is the number a board showed all morning.
+    func testAVehicleThatHasArrivedAtItsLastStopLendsNoDelay() async {
+        let runFetcher = StubVehicleRunFetcher(
+            run: VehicleRun(lineNumber: "766420", serviceNumber: "38",
+                            stopName: "Jihlava,aut.nádr.")
+        )
+        let vehicles = [
+            Fixture.vehicle(id: 1, line: "766420", destination: "Jihlava,aut.nádr.",
+                            delay: .minutes(85))
+        ]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles, runFetcher: runFetcher)
+
+        await viewModel.load()
+        await viewModel.resolveRuns(ofLines: ["766420"])
+
+        XCTAssertTrue(viewModel.liveRunDelays.isEmpty)
+        XCTAssertTrue(viewModel.liveLineDelays.isEmpty)
+    }
+
+    /// A board ticks every thirty seconds; the popup is asked about a vehicle once.
+    func testARunIsAskedForOnce() async {
+        let runFetcher = StubVehicleRunFetcher(
+            run: VehicleRun(lineNumber: "766420", serviceNumber: "20", stopName: nil)
+        )
+        let vehicles = [Fixture.vehicle(id: 1, line: "766420")]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles, runFetcher: runFetcher)
+
+        await viewModel.load()
+        await viewModel.resolveRuns(ofLines: ["766420"])
+        await viewModel.resolveRuns(ofLines: ["766420"])
+
+        XCTAssertEqual(runFetcher.requestedVehicleIDs, [1])
+    }
+
+    /// A popup that cannot be read is not asked for again on every tick.
+    func testAFailedLookupIsNotRepeatedOnEveryTick() async {
+        let runFetcher = StubVehicleRunFetcher(error: VehicleAPIError.httpStatus(500))
+        let vehicles = [Fixture.vehicle(id: 1, line: "766420")]
+        let (viewModel, _) = makeViewModel(vehicles: vehicles, runFetcher: runFetcher)
+
+        await viewModel.load()
+        await viewModel.resolveRuns(ofLines: ["766420"])
+        await viewModel.resolveRuns(ofLines: ["766420"])
+
+        XCTAssertEqual(runFetcher.requestedVehicleIDs, [1])
+        XCTAssertTrue(viewModel.liveRunDelays.isEmpty)
+    }
+
+    /// The same bus takes the next run back: its destination changes, so the answer
+    /// from before is not the answer now.
+    func testANewDestinationAsksAboutTheRunAgain() async {
+        let runFetcher = StubVehicleRunFetcher(
+            run: VehicleRun(lineNumber: "766420", serviceNumber: "20", stopName: "Kněžice")
+        )
+        let fetcher = StubVehicleFetcher(payloads: [
+            VehiclePayload(vehicles: [Fixture.vehicle(id: 1, line: "766420",
+                                                      destination: "Jihlava,aut.nádr.")],
+                           skippedRecordCount: 0, unlocatableRecordCount: 0),
+            VehiclePayload(vehicles: [Fixture.vehicle(id: 1, line: "766420",
+                                                      destination: "Třebíč,aut.nádr.")],
+                           skippedRecordCount: 0, unlocatableRecordCount: 0)
+        ])
+        let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
+            fetcher: fetcher,
+            favouriteLinesStore: InMemoryFavouriteLinesStore(),
+            settingsStore: InMemoryAppSettingsStore(),
+            languageDefaults: TestDefaults.make(),
+            detailFetcher: StubVehicleDetailFetcher(),
+            runFetcher: runFetcher,
+            now: { self.referenceDate }
+        )
+
+        await viewModel.load()
+        await viewModel.resolveRuns(ofLines: ["766420"])
+        await viewModel.load()
+        await viewModel.resolveRuns(ofLines: ["766420"])
+
+        XCTAssertEqual(runFetcher.requestedVehicleIDs, [1, 1])
+    }
+
+    func testRefreshIfStaleAsksForAPayloadOnlyWhenTheOneOnScreenIsOld() async {
+        let fetcher = StubVehicleFetcher(vehicles: sampleVehicles)
+        var clock = referenceDate
+        let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
+            fetcher: fetcher,
+            favouriteLinesStore: InMemoryFavouriteLinesStore(),
+            settingsStore: InMemoryAppSettingsStore(),
+            languageDefaults: TestDefaults.make(),
+            detailFetcher: StubVehicleDetailFetcher(),
+            now: { clock }
+        )
+
+        await viewModel.load()
+        XCTAssertEqual(fetcher.callCount, 1)
+
+        // Fresh: a board opening on it asks for nothing.
+        await viewModel.refreshIfStale()
+        XCTAssertEqual(fetcher.callCount, 1)
+
+        // A minute later it is four refreshes old, so opening a board asks.
+        clock = referenceDate.addingTimeInterval(60)
+        await viewModel.refreshIfStale()
+        XCTAssertEqual(fetcher.callCount, 2)
     }
 
     // MARK: - Automatic refresh

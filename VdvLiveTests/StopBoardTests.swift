@@ -39,6 +39,34 @@ final class StopBoardTests: XCTestCase {
         )
     }
 
+    /// One line calling at the stop twice: a run going one way, ending at
+    /// "Třešť,nám.", and a run going the other, ending at the stop itself. Both leave
+    /// at 15:00, so the only thing that tells their vehicles apart is where each ends.
+    private func twoDirections() -> LineTimetable {
+        LineTimetable(
+            lineNumber: "764410",
+            displayNumber: "410",
+            routeName: "Třešť-Brtnice-Okříšky-Radonín",
+            operatorName: nil,
+            runs: [
+                ScheduledRun(serviceNumber: "1", calls: [
+                    call(1, at: "Okříšky,aut.nádr.", departing: 14 * 60 + 40),
+                    call(2, departing: 15 * 60)
+                ]),
+                ScheduledRun(serviceNumber: "2", calls: [
+                    call(1, at: stop, departing: 15 * 60),
+                    call(2, at: "Třešť,nám.", departing: 15 * 60 + 20)
+                ])
+            ]
+        )
+    }
+
+    /// A vehicle of `code` reporting `minutes` late, ending where the helper's runs
+    /// end unless another destination is given.
+    private func report(_ code: String, late minutes: Int, to destination: String? = nil) -> LineDelay {
+        LineDelay(lineNumber: code, minutes: minutes, destination: destination ?? stop)
+    }
+
     /// The board the request describes, read at 15:00.
     func testBuildsTheBoardTheRequestDescribes() {
         let board = StopBoard.entries(
@@ -141,13 +169,13 @@ final class StopBoardTests: XCTestCase {
         XCTAssertEqual(StopBoard.delayKey(line: "764410", service: "1"), "764410/1")
     }
 
-    /// The feed reports vehicles by line, not by run, so a board falls back to the
-    /// line's delay - but a run's own delay wins when there is one.
-    func testALineWideDelayIsUsedWhenTheRunItselfIsNotNamed() {
+    /// The feed reports vehicles by line, not by run, so a board places the report on
+    /// the row its destination names - but a run's own delay wins when there is one.
+    func testAReportedVehiclesDelayIsUsedWhenTheRunItselfIsNotNamed() {
         let board = StopBoard.entries(
             at: stop,
             in: [line("764410", runs: [("7", 15 * 60)])],
-            delays: ["764410": 12],
+            lineDelays: [report("764410", late: 12)],
             now: TimeOfDay(minutes: 15 * 60)
         )
 
@@ -159,11 +187,79 @@ final class StopBoardTests: XCTestCase {
         let board = StopBoard.entries(
             at: stop,
             in: [line("764410", runs: [("7", 15 * 60)])],
-            delays: ["764410": 12, "764410/7": 3],
+            delays: ["764410/7": 3],
+            lineDelays: [report("764410", late: 12)],
             now: TimeOfDay(minutes: 15 * 60)
         )
 
         XCTAssertEqual(board.first?.expected?.text, "15:03")
+    }
+
+    /// The bug a reader reported: a bus of the same line going the other way was given
+    /// to this row, so the board showed a delay for a departure nothing was late for -
+    /// and kept showing it for as long as that bus stayed late. The vehicle bound for
+    /// Třešť is not the one leaving for Telč, and only its own row may say it is late.
+    func testTheBusGoingTheOtherWayDoesNotMarkThisRow() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [twoDirections()],
+            lineDelays: [report("764410", late: 10, to: "Třešť,nám.")],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.map(\.serviceNumber), ["1", "2"])
+        XCTAssertNil(board[0].delayMinutes, "the run ending here is not the Třešť-bound vehicle")
+        XCTAssertEqual(board[1].delayMinutes, 10)
+        XCTAssertEqual(board[1].expected?.text, "15:10")
+    }
+
+    /// One vehicle in each direction: each row wears the delay of its own way of travel,
+    /// which is what makes the number mean something and what lets it change as the
+    /// vehicles do.
+    func testEachDirectionTakesItsOwnVehiclesDelay() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [twoDirections()],
+            lineDelays: [
+                report("764410", late: 10, to: "Třešť,nám."),
+                report("764410", late: 2, to: stop)
+            ],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.map(\.delayMinutes), [2, 10])
+        XCTAssertEqual(board.map { $0.expected?.text ?? "—" }, ["15:02", "15:10"])
+    }
+
+    /// The feed names the stop it is heading for in more detail than the archive does,
+    /// which is still the same direction of travel.
+    func testAFeedDestinationNamingTheStopInMoreDetailStillMatches() {
+        let board = StopBoard.entries(
+            at: stop,
+            in: [line("764410", runs: [("7", 15 * 60)])],
+            lineDelays: [report("764410", late: 4, to: stop + ",stanoviště 2")],
+            now: TimeOfDay(minutes: 15 * 60)
+        )
+
+        XCTAssertEqual(board.first?.delayMinutes, 4)
+    }
+
+    /// The feed's `delay` is not always minutes late: some records carry a countdown or
+    /// a value of the same size negated. Four hours in either direction is not a delay
+    /// a board can repeat.
+    func testAnImplausibleDelayIsNotPutOnTheBoard() {
+        for minutes in [337, -257] {
+            let board = StopBoard.entries(
+                at: stop,
+                in: [line("764410", runs: [("7", 15 * 60)])],
+                lineDelays: [report("764410", late: minutes)],
+                now: TimeOfDay(minutes: 15 * 60)
+            )
+
+            XCTAssertNil(board.first?.delayMinutes, "\(minutes) is not a delay the feed can mean")
+            XCTAssertNil(board.first?.expected, "the row keeps the timetable's time")
+            XCTAssertEqual(board.first?.departureTime.text, "15:00")
+        }
     }
 
     /// The bug in #107: the vehicle out there now is ten minutes late, and every later
@@ -172,7 +268,7 @@ final class StopBoardTests: XCTestCase {
         let board = StopBoard.entries(
             at: stop,
             in: [line("764410", runs: [("1", 14 * 60), ("2", 18 * 60)], startMinutesBefore: 60)],
-            delays: ["764410": 10],
+            lineDelays: [report("764410", late: 10)],
             now: TimeOfDay(minutes: 15 * 60)
         )
 
@@ -186,7 +282,7 @@ final class StopBoardTests: XCTestCase {
             at: stop,
             in: [line("764410", runs: [("1", 15 * 60 + 20), ("2", 16 * 60 + 40)],
                       startMinutesBefore: 120)],
-            delays: ["764410": 5],
+            lineDelays: [report("764410", late: 5)],
             now: TimeOfDay(minutes: 15 * 60)
         )
 
@@ -199,7 +295,7 @@ final class StopBoardTests: XCTestCase {
         let board = StopBoard.entries(
             at: stop,
             in: [line("764410", runs: [("1", 12 * 60)])],
-            delays: ["764410": 240],
+            lineDelays: [report("764410", late: 60)],
             now: TimeOfDay(minutes: 15 * 60)
         )
 
