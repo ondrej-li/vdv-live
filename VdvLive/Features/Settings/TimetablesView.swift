@@ -3,6 +3,8 @@ import SwiftUI
 /// The official timetable index: whether it is here, whether it is still the
 /// published one, and how to get it - or get rid of it.
 struct TimetablesView: View {
+    /// The archive itself, which the browse screen reads.
+    let timetables: LineTimetableStore
     let isReady: Bool
     let isDownloading: Bool
     let isCheckingForUpdates: Bool
@@ -60,7 +62,14 @@ struct TimetablesView: View {
                     Button("Remove", role: .destructive, action: onForget)
 
                     NavigationLink {
-                        TimetableDiagnosticsView(makeDiagnostics: makeDiagnostics,
+                        DownloadedLinesView(store: timetables)
+                    } label: {
+                        Label("Downloaded lines", systemImage: "tray.full")
+                    }
+
+                    NavigationLink {
+                        TimetableDiagnosticsView(timetables: timetables,
+                                                 makeDiagnostics: makeDiagnostics,
                                                  isRefreshingMapping: isRefreshingMapping,
                                                  mappingErrorMessage: mappingErrorMessage,
                                                  onRefreshMapping: onRefreshMapping)

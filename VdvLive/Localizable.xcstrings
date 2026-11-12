@@ -3249,6 +3249,494 @@
           }
         }
       }
+    },
+    "No line is on this phone yet" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "V telefonu zatím není žádná linka"
+          }
+        }
+      }
+    },
+    "A line is downloaded the first time something needs it: a vehicle's card, a stop's board, or the setting that fills in lines the feed leaves out." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka se stáhne, jakmile ji něco potřebuje: karta vozidla, tabule zastávky nebo volba, která doplňuje linky, o kterých mlčí poloha."
+          }
+        }
+      }
+    },
+    "One row per line whose timetable can be read without the network." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Řádek pro každou linku, jejíž jízdní řád jde přečíst i bez sítě."
+          }
+        }
+      }
+    },
+    "Files on disk" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soubory na disku"
+          }
+        }
+      }
+    },
+    "The archive entry each line was read out of. The ministry renumbers these names every time it republishes, so a file can declare a different line than the one it was downloaded for." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Položka archivu, ze které se linka četla. Ministerstvo při každém zveřejnění tato jména přečísluje, takže soubor může hlásit jinou linku, než pro kterou se stáhl."
+          }
+        }
+      }
+    },
+    "Line or route" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linka nebo trasa"
+          }
+        }
+      }
+    },
+    "%lld runs" : {
+      "localizations" : {
+        "cs" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spoj"
+                }
+              },
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spoje"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spojů"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "declares %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hlásí %@"
+          }
+        }
+      }
+    },
+    "reads %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "čte %@"
+          }
+        }
+      }
+    },
+    "no line reads it" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nečte ji žádná linka"
+          }
+        }
+      }
+    },
+    "not readable" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "nelze přečíst"
+          }
+        }
+      }
+    },
+    "not in the index" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "není v indexu"
+          }
+        }
+      }
+    },
+    "Route" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trasa"
+          }
+        }
+      }
+    },
+    "Operator" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopravce"
+          }
+        }
+      }
+    },
+    "Valid" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Platnost"
+          }
+        }
+      }
+    },
+    "Archive entry" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Položka archivu"
+          }
+        }
+      }
+    },
+    "Source files" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdrojové soubory"
+          }
+        }
+      }
+    },
+    "This copy came from an earlier publication of the archive: the entry it lives in has since been renumbered, so it is read from the file cached on this phone. It is still a timetable, but it may have been replaced." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato kopie pochází z dřívějšího zveřejnění archivu: položka, ve které bydlí, byla od té doby přečíslována, takže se čte ze souboru uloženého v telefonu. Pořád je to jízdní řád, ale mohl být nahrazen."
+          }
+        }
+      }
+    },
+    "The JDF tables inside the archive entry, exactly as the ministry published them." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabulky JDF uvnitř položky archivu, přesně jak je ministerstvo zveřejnilo."
+          }
+        }
+      }
+    },
+    "One row per service of the line, in the order they leave the first stop." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Řádek pro každý spoj linky, v pořadí, v jakém vyjíždějí z první zastávky."
+          }
+        }
+      }
+    },
+    "Run %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spoj %@"
+          }
+        }
+      }
+    },
+    "This run does not serve this stop" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento spoj zde nezastavuje"
+          }
+        }
+      }
+    },
+    "A stop with no time is a request stop, which the timetable marks with a symbol rather than a time." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávka bez času je zastávka na znamení, kterou jízdní řád značí symbolem místo času."
+          }
+        }
+      }
+    },
+    "(empty)" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "(prázdné)"
+          }
+        }
+      }
+    },
+    "Copy" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopírovat"
+          }
+        }
+      }
+    },
+    "from %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "od %@"
+          }
+        }
+      }
+    },
+    "until %@" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "do %@"
+          }
+        }
+      }
+    },
+    "Stops of each run" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávky spojů"
+          }
+        }
+      }
+    },
+    "Stop to line" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastávka a linka"
+          }
+        }
+      }
+    },
+    "Calendar exceptions" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Výjimky v kalendáři"
+          }
+        }
+      }
+    },
+    "Operators" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopravci"
+          }
+        }
+      }
+    },
+    "Fixed codes" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pevné kódy"
+          }
+        }
+      }
+    },
+    "Format version" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verze formátu"
+          }
+        }
+      }
+    },
+    "Header" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hlavička"
+          }
+        }
+      }
+    },
+    "Connections" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Návaznosti"
+          }
+        }
+      }
+    },
+    "Table" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabulka"
+          }
+        }
+      }
+    },
+    "Built for" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Postaveno pro"
+          }
+        }
+      }
+    },
+    "Matches the index" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odpovídá indexu"
+          }
+        }
+      }
+    },
+    "Not recorded" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuvedeno"
+          }
+        }
+      }
+    },
+    "Cannot be told" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nelze určit"
+          }
+        }
+      }
+    },
+    "No - stale" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne – zastaralé"
+          }
+        }
+      }
+    },
+    "The mapping names entries of an older archive than the index on this phone, so every line will look \"not in the published timetable\" until it is refreshed." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapování ukazuje na položky staršího archivu, než jaký je v telefonu, takže každá linka bude do obnovení vypadat jako „není ve zveřejněném jízdním řádu“."
+          }
+        }
+      }
+    },
+    "Browse what was downloaded" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procházet stažené"
+          }
+        }
+      }
+    },
+    "Readable lines" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Čitelné linky"
+          }
+        }
+      }
+    },
+    "Every archive entry file the app keeps, the line it declares in its own tables, and the line that reads it today. A file whose declared line has no reader was cached for an archive the mapping no longer describes." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Každý soubor položky archivu, který aplikace drží, linka, kterou hlásí ve svých tabulkách, a linka, která ho dnes čte. Soubor, jehož linku nikdo nečte, se uložil pro archiv, který mapování už nepopisuje."
+          }
+        }
+      }
+    },
+    "Timetable" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řád"
+          }
+        }
+      }
+    },
+    "Yes" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ano"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

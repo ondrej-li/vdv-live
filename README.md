@@ -207,7 +207,14 @@ make devices                   # list simulators, then: make run SIMULATOR="iPho
 make watches                   # list watch simulators, then: make watchrun WATCH_SIMULATOR="..."
 make iphones                   # list the iPhones plugged into this Mac
 make mapping                   # refresh the shipped line to entry mapping
+make mapping-deploy            # keep the published mapping current on the server
 ```
+
+`make mapping-deploy` installs a systemd timer on the host that serves
+`vdv.ondralinek.cz`. It asks the ministry's portal for the archive's ETag hourly
+and rebuilds the published mapping only when that answer changed - the mapping is
+only true for the archive it was built from, and the portal republishes about
+three times a week and renumbers every entry when it does.
 
 `make run` installs and launches the app whether or not a Simulator window is
 available. Some Xcode installations (including trimmed ones that lack

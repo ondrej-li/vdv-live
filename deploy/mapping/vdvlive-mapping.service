@@ -1,0 +1,16 @@
+[Unit]
+Description=Keep the published VDV Live line mapping in step with the JDF archive
+Documentation=https://github.com/ondrej-li/vdv-live
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vdvlive-mapping/refresh-mapping.sh
+# Runs as root because the one thing it touches is /var/www/vdvlive/jdf-lines.json,
+# which belongs to www-data and is replaced by rename. It writes no other file, and
+# the script is owned by root and not writable by the deploy account that rsyncs it.
+# One archive is 106 MB, and the rebuild happens only when it has changed.
+TimeoutStartSec=1800
+Nice=10
+IOSchedulingClass=idle

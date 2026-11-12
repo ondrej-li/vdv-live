@@ -217,6 +217,11 @@ final class VehicleMapViewModel {
         // user having to touch anything, and the entries are already on disk, so
         // this reads them rather than downloading them again.
         startTimetableCoverage()
+        // The mapping names the archive entries lines live in, and the ministry
+        // renumbers them whenever it republishes. Checking once at launch is what
+        // keeps the first board or card of the morning from saying "not in the
+        // published timetable" for every line at once.
+        await timetables.refreshMappingIfStale()
         guard !hasLoadedOnce, !isRefreshing else { return }
         await load()
     }
