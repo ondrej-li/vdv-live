@@ -86,11 +86,19 @@ struct StubTimetableMapping: TimetableMappingFetching, @unchecked Sendable {
 
     /// A mapping document for a line, padded so it looks like the region's own:
     /// a refresh that carried three lines would be rejected as a bad download.
-    static func document(_ lines: [String: [String]], padding: Int = 120) -> Data {
+    ///
+    /// - Parameter archive: the publication the mapping was built from, written the
+    ///   way the site writes it. Left out, the document says nothing about which
+    ///   archive it belongs to, which is what the app reads as "cannot be told".
+    static func document(_ lines: [String: [String]],
+                         padding: Int = 120,
+                         archive: [String: Any]? = nil) -> Data {
         var all = lines
         for index in 0..<padding {
             all["9\(index)"] = ["1.zip"]
         }
-        return (try? JSONEncoder().encode(["lines": all])) ?? Data()
+        var document: [String: Any] = ["lines": all]
+        if let archive { document["archive"] = archive }
+        return (try? JSONSerialization.data(withJSONObject: document)) ?? Data()
     }
 }

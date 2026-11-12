@@ -7,6 +7,10 @@ struct VehicleMapView: View {
     @State private var camera: MapCameraPosition
     @Environment(\.scenePhase) private var scenePhase
     @State private var isShowingSettings = false
+    /// DEBUG-only: the timetable screens, opened straight from a launch argument so
+    /// the App Store artwork can be captured without a finger on the glass.
+    @State private var isShowingDownloadedLines = false
+    @State private var isShowingTimetableDiagnostics = false
     /// The stop whose board is open, if any.
     @State private var boardStop: StopPosition?
     /// Whether the pinned lines sheet is open, which the bar reaches.
@@ -61,6 +65,28 @@ struct VehicleMapView: View {
         .overlay(alignment: .bottom) { bottomOverlay }
         .animation(.easeOut(duration: 0.2), value: viewModel.selectedClusterID)
         .sheet(isPresented: $isShowingSettings) { settingsSheet }
+        .sheet(isPresented: $isShowingDownloadedLines) {
+            NavigationStack {
+                DownloadedLinesView(store: viewModel.timetables)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Done") { isShowingDownloadedLines = false }
+                        }
+                    }
+            }
+        }
+        .sheet(isPresented: $isShowingTimetableDiagnostics) {
+            let timetables = viewModel.timetables
+            NavigationStack {
+                TimetableDiagnosticsView(timetables: timetables,
+                                         makeDiagnostics: { timetables.diagnostics() },
+                                         isRefreshingMapping: timetables.isRefreshingMapping,
+                                         mappingErrorMessage: timetables.mappingErrorMessage,
+                                         onRefreshMapping: {
+                                             Task { await timetables.refreshMapping() }
+                                         })
+            }
+        }
         .sheet(item: $boardStop) { stop in
             StopBoardSheet(stop: stop, viewModel: viewModel)
         }
@@ -384,6 +410,7 @@ struct VehicleMapView: View {
                 isShowingSettings = false
                 focus(onLine: line)
             },
+            timetables: viewModel.timetables,
             isTimetableReady: viewModel.timetables.isReady,
             isDownloadingTimetables: viewModel.timetables.isDownloading,
             isCheckingTimetables: viewModel.timetables.isCheckingForUpdates,
@@ -653,6 +680,16 @@ struct VehicleMapView: View {
         if let stopName = ScreenshotRoute.boardStopName,
            let stop = viewModel.position(forStopNamed: stopName) {
             boardStop = stop
+        }
+        if ScreenshotRoute.opensDownloadedLines {
+            // The board above downloads the lines it shows, so give it a moment to
+            // land before the browse screen is opened over it.
+            try? await Task.sleep(for: .seconds(6))
+            isShowingDownloadedLines = true
+        }
+        if ScreenshotRoute.opensTimetableDiagnostics {
+            try? await Task.sleep(for: .seconds(6))
+            isShowingTimetableDiagnostics = true
         }
         if let line = ScreenshotRoute.serviceLine {
             await showService(onLine: line)

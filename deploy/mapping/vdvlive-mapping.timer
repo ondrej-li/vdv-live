@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the JDF archive for a republication, hourly
+
+[Timer]
+# A little after the hour, and not at the same minute on every host.
+OnCalendar=hourly
+RandomizedDelaySec=300
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -13,6 +13,20 @@ enum JDFTimetableParser {
         case noLine
     }
 
+    /// The line number a package's `Linky.txt` declares, without parsing the rest.
+    ///
+    /// The archive renumbers its entries when it is republished, so this is how the
+    /// app says which line a file on disk actually holds - the answer to "is this
+    /// cached entry still the line I think it is".
+    static func lineNumber(inLinky data: Data) -> String? {
+        guard let rows = try? rows(in: data, name: "Linky.txt"), let first = rows.first else {
+            return nil
+        }
+        let line = first[safe: Column.lineNumber]?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (line?.isEmpty == false) ? line : nil
+    }
+
     /// Column layout of the tables this parser needs.
     private enum Column {
         static let lineNumber = 0

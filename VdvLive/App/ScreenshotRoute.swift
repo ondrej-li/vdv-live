@@ -21,6 +21,11 @@ enum ScreenshotRoute {
 
     /// The stop whose departure board to open, as the shipped position table names it.
     static var boardStopName: String? { value(after: "-screenshotBoard") }
+    /// The stop whose board to open *and* whose lines to keep: the browse screen is
+    /// only interesting once something has been downloaded.
+    static var opensDownloadedLines: Bool { isOn("-screenshotDownloadedLines") }
+    /// Opens the timetable diagnostics, which is where a stale mapping is explained.
+    static var opensTimetableDiagnostics: Bool { isOn("-screenshotTimetableDiagnostics") }
     /// The line whose first running vehicle to select, so its detail card opens.
     static var serviceLine: String? { value(after: "-screenshotService") }
 

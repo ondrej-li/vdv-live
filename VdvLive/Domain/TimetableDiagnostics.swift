@@ -15,6 +15,10 @@ struct TimetableLineRecord: Codable, Equatable, Sendable, Identifiable {
     let fetchedAt: Date
     /// Why it failed, in the words the app would show, when it did.
     let failure: String?
+    /// True when the timetable came from a file cached for an earlier publication
+    /// of the archive, rather than from the one the index was read from. Optional,
+    /// so a record written before this was known still reads back.
+    var isFromEarlierArchive: Bool?
 
     var id: String { lineNumber }
     var isDownloaded: Bool { failure == nil && entryName != nil }
@@ -22,12 +26,14 @@ struct TimetableLineRecord: Codable, Equatable, Sendable, Identifiable {
     static func downloaded(line: String,
                            entry: String,
                            declared: String,
+                           fromEarlierArchive: Bool = false,
                            at date: Date) -> TimetableLineRecord {
         TimetableLineRecord(lineNumber: line,
                             entryName: entry,
                             declaredLineNumber: declared,
                             fetchedAt: date,
-                            failure: nil)
+                            failure: nil,
+                            isFromEarlierArchive: fromEarlierArchive)
     }
 
     static func failed(line: String, reason: String, at date: Date) -> TimetableLineRecord {
@@ -35,8 +41,24 @@ struct TimetableLineRecord: Codable, Equatable, Sendable, Identifiable {
                             entryName: nil,
                             declaredLineNumber: nil,
                             fetchedAt: date,
-                            failure: reason)
+                            failure: reason,
+                            isFromEarlierArchive: nil)
     }
+}
+
+/// One entry file the app has downloaded, as the file system holds it.
+///
+/// Reported rather than hidden because the cache is keyed by the archive's own
+/// entry names, and those are renumbered on every republication: a file on disk can
+/// belong to a line the current mapping no longer points at, which is exactly the
+/// kind of thing "it says the line is not published" needs to be answered with.
+struct CachedEntryFile: Equatable, Sendable, Identifiable {
+    /// The entry's name in the archive, `6934.zip`.
+    let name: String
+    let bytes: Int
+    let modifiedAt: Date?
+
+    var id: String { name }
 }
 
 /// What the timetables screen can say about itself.
@@ -84,6 +106,24 @@ struct TimetableDiagnostics: Equatable, Sendable {
         var id: String { lineNumber }
         var isDownloaded: Bool { isInMemory || record?.isDownloaded == true }
         var hasFailed: Bool { record?.failure != nil }
+        /// True when the timetable the app has came from a file cached for an
+        /// earlier publication, rather than from the archive the index describes.
+        var isFromEarlierArchive: Bool { record?.isFromEarlierArchive == true }
+    }
+
+    /// A file in the cache, told apart from the line it belongs to - which is not
+    /// the same thing once the archive has been republished under new names.
+    struct CacheFile: Equatable, Sendable, Identifiable {
+        let name: String
+        let bytes: Int
+        let modifiedAt: Date?
+        /// The line the file's own `Linky.txt` declares.
+        let declaredLine: String?
+        /// The line that would read this file today, if one would.
+        let servedLine: String?
+        let isInIndex: Bool
+
+        var id: String { name }
     }
 
     struct Counts: Equatable, Sendable {
@@ -94,9 +134,16 @@ struct TimetableDiagnostics: Equatable, Sendable {
 
     let archive: Archive
     let mapping: Mapping
+    /// Which archive the mapping was built from, when the document says.
+    let mappingArchive: MappingArchive?
+    /// Whether that mapping could have been built from the archive the index names.
+    let freshness: MappingFreshness
     let cacheEntryCount: Int
     let cacheBytes: Int
+    let cacheFiles: [CacheFile]
     let lines: [Line]
+    /// The lines the app can read right now, parsed - what the browse screen lists.
+    let downloaded: [DownloadedTimetable]
 
     var counts: Counts {
         Counts(downloaded: lines.filter { $0.isDownloaded }.count,
@@ -113,9 +160,17 @@ struct TimetableDiagnostics: Equatable, Sendable {
         case .bundled: rows.append("mapping: bundled, \(mapping.lineCount) lines")
         case .published(let date): rows.append("mapping: published, \(mapping.lineCount) lines, saved \(Self.date(date))")
         }
+        rows.append("mapping archive: \(Self.describe(mappingArchive))")
+        rows.append("mapping freshness: \(Self.describe(freshness))")
         rows.append("cache: \(cacheEntryCount) entry files, \(cacheBytes) bytes")
+        for file in cacheFiles {
+            rows.append("file \(file.name): \(file.bytes) bytes, declares \(file.declaredLine ?? "?"), serves \(file.servedLine ?? "-")\(file.isInIndex ? "" : " (not in index)")")
+        }
         let counts = counts
         rows.append("lines: \(counts.downloaded) downloaded, \(counts.failed) failed, \(counts.untouched) untouched")
+        for line in downloaded {
+            rows.append("readable \(line.lineNumber): \(line.entryName) declares \(line.timetable.lineNumber), \(line.runs.count) runs, \(line.stopCount) stops\(line.isFromEarlierArchive ? ", from an earlier archive" : "")")
+        }
         for line in lines where line.record != nil {
             let record = line.record
             let candidates = line.candidates.map { "\($0.entryName)\($0.isInIndex ? "" : " (gone)")" }.joined(separator: ", ")
@@ -130,5 +185,24 @@ struct TimetableDiagnostics: Equatable, Sendable {
 
     private static func date(_ date: Date) -> String {
         ISO8601DateFormatter().string(from: date)
+    }
+
+    private static func describe(_ archive: MappingArchive?) -> String {
+        guard let archive else { return "unknown" }
+        var parts: [String] = []
+        if let date = archive.date { parts.append("date \(date)") }
+        if let bytes = archive.bytes { parts.append("size \(bytes)") }
+        if let etag = archive.etag { parts.append("etag \(etag)") }
+        if let lastModified = archive.lastModified { parts.append("published \(Self.date(lastModified))") }
+        return parts.isEmpty ? "unknown" : parts.joined(separator: ", ")
+    }
+
+    private static func describe(_ freshness: MappingFreshness) -> String {
+        switch freshness {
+        case .current: return "matches the index"
+        case .unknown: return "cannot be told"
+        case .stale(let mapping, let index):
+            return "STALE - mapping \(Self.describe(mapping)), index \(index.etag ?? "no etag")/\(index.size) bytes"
+        }
     }
 }

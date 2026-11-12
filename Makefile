@@ -153,7 +153,7 @@ PNG_STRIP := python3 tools/strip-png-metadata.py
 # artwork must not have; this draws them opaque before the strip below.
 PNG_FLATTEN := swift tools/flatten-png.swift
 
-.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping devices open clean help archive ipa upload check-release shots shots-watch creative screenshots
+.PHONY: all build test typecheck run deploy launch iphones screenshot live icon mapping mapping-deploy devices open clean help archive ipa upload check-release shots shots-watch creative screenshots
 
 all: build
 
@@ -352,6 +352,30 @@ site-serve: site
 	@echo "http://127.0.0.1:8080/"
 	@cd '$(SITE_DIR)' && python3 -m http.server 8080
 
+## Install the hourly mapping refresh on the server, and run it once now.
+##
+## The mapping is only true for the archive it was built from, and the ministry
+## republishes about three times a week and renumbers every entry. Publishing it once
+## per deploy therefore guarantees it is stale within a couple of days - which is what
+## every line answering "not in the published timetable" at once looks like. A timer
+## on the server checks the archive's ETag hourly and rebuilds the file only when the
+## answer changed.
+mapping-deploy:
+	ssh $(SITE_HOST) 'sudo mkdir -p /opt/vdvlive-mapping/tools /tmp/vdvlive-mapping && sudo chown -R $$(id -un) /opt/vdvlive-mapping /tmp/vdvlive-mapping'
+	rsync -az -e ssh tools/publish-mapping.py tools/jdf_lines_mapping.py \
+		$(SITE_HOST):/opt/vdvlive-mapping/tools/
+	rsync -az -e ssh deploy/mapping/ $(SITE_HOST):/tmp/vdvlive-mapping/
+	ssh $(SITE_HOST) 'set -e; \
+		sudo cp /tmp/vdvlive-mapping/refresh-mapping.sh /opt/vdvlive-mapping/; \
+		sudo chmod 755 /opt/vdvlive-mapping/refresh-mapping.sh; \
+		sudo cp /tmp/vdvlive-mapping/vdvlive-mapping.service /etc/systemd/system/; \
+		sudo cp /tmp/vdvlive-mapping/vdvlive-mapping.timer /etc/systemd/system/; \
+		sudo systemctl daemon-reload; \
+		sudo systemctl enable --now vdvlive-mapping.timer; \
+		sudo systemctl start vdvlive-mapping.service; \
+		sudo systemctl --no-pager --lines=5 status vdvlive-mapping.service || true'
+	@echo "mapping refresh installed and run once"
+
 ## Publish the site. The old tree is kept as /var/www/vdvlive.old until the next deploy.
 ##
 ## The mapping is rebuilt first, because the site serves it: an app whose bundled
@@ -367,6 +391,10 @@ site-deploy: mapping site
 		sudo mv /var/www/vdvlive /var/www/vdvlive.old 2>/dev/null || true; \
 		sudo mv /var/www/vdvlive.new /var/www/vdvlive; \
 		sudo nginx -t; sudo systemctl reload nginx'
+	@# The tree just replaced the mapping the timer wrote, with the copy built here.
+	@# Both are for the same archive when this runs `mapping` first, but asking the
+	@# server to check again costs one range request and removes the doubt.
+	-@ssh $(SITE_HOST) 'sudo systemctl start vdvlive-mapping.service' 2>/dev/null || true
 	@echo "published https://vdv.ondralinek.cz/"
 
 ## Draw the App Store creative assets: the icon as a bare PNG, and the two wide

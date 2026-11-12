@@ -192,6 +192,40 @@ final class LocalizationTests: XCTestCase {
         )
     }
 
+    /// The timetable browser and the mapping's identity, in Czech: a key with no
+    /// translation would fall back to English in an otherwise Czech screen, which is
+    /// how "Yes" sat in the diagnostics until somebody looked at it.
+    func testTranslatesTheTimetableBrowserIntoCzech() throws {
+        XCTAssertEqual(try czechString("Downloaded lines"), "Stažené linky")
+        XCTAssertEqual(try czechString("Timetable"), "Jízdní řád")
+        XCTAssertEqual(try czechString("Source files"), "Zdrojové soubory")
+        XCTAssertEqual(try czechString("Archive entry"), "Položka archivu")
+        XCTAssertEqual(try czechString("declares %@"), "hlásí %@")
+        XCTAssertEqual(try czechString("reads %@"), "čte %@")
+        XCTAssertEqual(try czechString("not in the index"), "není v indexu")
+        XCTAssertEqual(try czechString("Built for"), "Postaveno pro")
+        XCTAssertEqual(try czechString("Matches the index"), "Odpovídá indexu")
+        XCTAssertEqual(try czechString("No - stale"), "Ne – zastaralé")
+        XCTAssertEqual(try czechString("Cannot be told"), "Nelze určit")
+        XCTAssertEqual(try czechString("Yes"), "Ano")
+        XCTAssertEqual(try czechString("Run %@"), "Spoj %@")
+        XCTAssertEqual(try czechString("This run does not serve this stop"),
+                       "Tento spoj zde nezastavuje")
+    }
+
+    /// The browse screen counts runs and stops, so those counts take Czech plurals.
+    func testTheBrowserCountsUseCzechPluralForms() throws {
+        let runs = try pluralForms(for: "%lld runs", in: "cs")
+        XCTAssertEqual(runs["one"], "%lld spoj")
+        XCTAssertEqual(runs["few"], "%lld spoje")
+        XCTAssertEqual(runs["other"], "%lld spojů")
+
+        let stops = try pluralForms(for: "%lld stops", in: "cs")
+        XCTAssertEqual(stops["one"], "%lld zastávka")
+        XCTAssertEqual(stops["few"], "%lld zastávky")
+        XCTAssertEqual(stops["other"], "%lld zastávek")
+    }
+
     func testCountedVehiclesUseCzechPluralForms() throws {
         let forms = try pluralForms(for: "%lld vehicles", in: "cs")
 

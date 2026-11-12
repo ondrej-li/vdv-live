@@ -35,6 +35,7 @@ struct SettingsSheet: View {
     let onShowLine: (String) -> Void
 
     /// State of the official timetable index.
+    let timetables: LineTimetableStore
     let isTimetableReady: Bool
     let isDownloadingTimetables: Bool
     let isCheckingTimetables: Bool
@@ -125,6 +126,7 @@ struct SettingsSheet: View {
 
                     NavigationLink {
                         TimetablesView(
+                            timetables: timetables,
                             isReady: isTimetableReady,
                             isDownloading: isDownloadingTimetables,
                             isCheckingForUpdates: isCheckingTimetables,

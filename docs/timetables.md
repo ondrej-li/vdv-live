@@ -157,16 +157,45 @@ was wrong with the app's reasoning - it refused to show another line's times -
 but the answer was useless on its own. Three things now follow from it:
 
 - **The mapping is also published on the project's site** (`jdf-lines.json` at the
-  site root, copied there by `tools/build-site.py`). An app whose mapping cannot
-  resolve a line fetches that file once per session and tries again, so a
-  republication can be answered without a new App Store build. `make site-deploy`
-  rebuilds the mapping first, which is what makes the published copy current.
-- **The timetables screen keeps a record.** Every attempt - which entry it read,
-  which line number that entry declared, or why it failed - is written to
-  `lines.json` next to the cached entries, and the new **Diagnostics** screen
-  shows the archive's publication date and entry count, which mapping is in force
-  and where it came from, the number of cached entries and their size, and a row
-  per line. The whole snapshot can be copied as text.
+  site root). An app whose mapping cannot resolve a line fetches that file once
+  per session and tries again, so a republication can be answered without a new
+  App Store build.
+- **The published copy keeps itself current.** Publishing is not a step in a
+  deploy any more: on 12 November 2026 the archive was republished on the 11th and
+  the site still served the 6th's mapping, so a phone that had just read the new
+  index answered "not in the published timetable" for every line - exactly the
+  failure the file exists to prevent. `tools/publish-mapping.py` asks the portal
+  for the archive's ETag (one range request), rebuilds the file only when that
+  answer changed, and writes it with a rename so a reader sees one mapping or the
+  other. `make mapping-deploy` installs it as a systemd timer on the deploy host,
+  hourly; `make site-deploy` still rebuilds the copy in the tree.
+- **The mapping records which archive it was built from** - its ETag, its size and
+  the JDF publication date. The app keeps the same three things for the index it
+  read, so it can tell a mapping that is older than the index from one that
+  matches, and refetches at launch instead of waiting for a line to fail first.
+  A mapping written before this was recorded says nothing, which is reported as
+  "cannot be told" rather than guessed at either way.
+- **A cached entry is still a timetable.** The cache is keyed by the archive's own
+  entry names, and those are renumbered on republication - but the file on disk
+  still holds the line it was downloaded for. Resolution therefore reads a cached
+  entry when the current archive no longer has the line under that name, and
+  refetches once when a cached file turns out to declare another line. A
+  timetable a few days old beats "not in the published timetable".
+- **A line is several entries, and the current one wins.** The archive publishes a
+  line once per validity period, with its own calendar exceptions (line 420 has
+  three today: from 14 December 2025, 25 January 2026 and 1 October 2026). The
+  entry whose period started most recently and covers today answers, and when a
+  `Spoj` is known the entry that actually contains that run answers instead.
+- **The timetables screen keeps a record, and can be browsed.** Every attempt -
+  which entry it read, which line number that entry declared, or why it failed -
+  is written to `lines.json` next to the cached entries. **Diagnostics** reports
+  the archive's publication date and entry count, which mapping is in force, what
+  it was built for, whether that matches the index, and every entry file on disk
+  with the line it declares and the line that reads it. **Downloaded lines** goes
+  further: the parsed timetable of each line the phone can read - route, operator,
+  validity, runs, stops and the span it covers - then the runs with their calls,
+  and the JDF tables themselves as the ministry published them. The whole
+  diagnostics snapshot can be copied as text.
 - **A refresh is tried once per session, and only after a failure** - a mapping
   that already works is never asked for again on every tap.
 
