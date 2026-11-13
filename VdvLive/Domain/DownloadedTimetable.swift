@@ -85,3 +85,31 @@ struct DownloadedTimetable: Identifiable, Equatable, Sendable {
         return date.formatted(date: .numeric, time: .omitted)
     }
 }
+
+/// What a finished download of the timetable index did, in the numbers a reader
+/// asks about straight afterwards: how many lines it brought, which publication
+/// they came from, and how many of them are already readable on this phone.
+///
+/// Kept on the store as a one-shot: the screen that started the download shows it,
+/// and dismissing it clears it, so it cannot come back on the next launch.
+struct TimetableDownloadSummary: Identifiable, Equatable, Sendable {
+    /// When it finished, which is also what makes two summaries different.
+    let downloadedAt: Date
+    /// Lines the mapping knows, which is how many the region's timetable has.
+    let lineCount: Int
+    /// Entries the archive index holds - one per line per validity period.
+    let entryCount: Int
+    /// When the portal published the archive that was read.
+    let publishedAt: Date?
+    /// Size of the archive the index was read from, when the server said.
+    let archiveBytes: Int?
+    /// Lines whose timetable is already on the phone, from this or an earlier run.
+    let readableLines: Int
+
+    var id: Date { downloadedAt }
+
+    var sizeText: String? {
+        guard let archiveBytes, archiveBytes > 0 else { return nil }
+        return ByteCountFormatter.string(fromByteCount: Int64(archiveBytes), countStyle: .file)
+    }
+}

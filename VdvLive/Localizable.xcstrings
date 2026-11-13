@@ -3737,6 +3737,86 @@
           }
         }
       }
+    },
+    "Timetables downloaded" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jízdní řády staženy"
+          }
+        }
+      }
+    },
+    "Entries in the archive" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Položek v archivu"
+          }
+        }
+      }
+    },
+    "Archive size" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velikost archivu"
+          }
+        }
+      }
+    },
+    "Lines on this phone" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linek v telefonu"
+          }
+        }
+      }
+    },
+    "More info" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Více informací"
+          }
+        }
+      }
+    },
+    "The index says where every line's timetable lives in the ministry's archive. Each line is then fetched on its own, the first time something needs it, and kept on the phone." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Index říká, kde v archivu ministerstva leží jízdní řád každé linky. Jednotlivé linky se pak stahují zvlášť, když je něco potřebuje, a zůstávají v telefonu."
+          }
+        }
+      }
+    },
+    "Browse the lines whose timetables are on this phone: their runs, their stops, and the tables they were read from." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projděte si linky, jejichž jízdní řády jsou v telefonu: jejich spoje, zastávky a tabulky, ze kterých se četly."
+          }
+        }
+      }
+    },
+    "The next line on the list, so the lines can be read one after another." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Další linka v seznamu, takže se linky dají číst jednu po druhé."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -124,6 +124,33 @@ final class LineTimetableStore {
         return .between(mapping: mappingArchive, index: storedVersion)
     }
 
+    /// The last finished download, for the screen that started it to report.
+    ///
+    /// One-shot rather than derived: what a reader wants after a download is what
+    /// *that* download brought, not what the phone holds now, and clearing it on
+    /// dismissal is what keeps it from reappearing at the next launch.
+    private(set) var lastDownloadSummary: TimetableDownloadSummary?
+
+    func dismissDownloadSummary() {
+        lastDownloadSummary = nil
+    }
+
+    private func makeDownloadSummary(at date: Date, entries: Int) -> TimetableDownloadSummary {
+        // Counted from the records rather than by parsing the cache: a phone that
+        // has downloaded the whole region holds 381 entry files, and a summary is
+        // not worth reading all of them for.
+        var readable = Set(timetables.keys)
+        for (line, record) in lineRecords where record.failure == nil && record.entryName != nil {
+            readable.insert(line)
+        }
+        return TimetableDownloadSummary(downloadedAt: date,
+                                        lineCount: mapping.count,
+                                        entryCount: entries,
+                                        publishedAt: storedVersion?.lastModified,
+                                        archiveBytes: storedVersion?.size,
+                                        readableLines: readable.count)
+    }
+
     /// Refreshes the mapping when it is provably older than the index.
     ///
     /// Called after the index is read and when the screen opens: a republication
@@ -201,6 +228,7 @@ final class LineTimetableStore {
             // The index has just replaced the one the mapping was built for, so
             // check the two agree before a single line is asked for.
             await refreshMappingIfStale()
+            lastDownloadSummary = makeDownloadSummary(at: now, entries: entries.count)
             // A board widget could not be built before this index existed; it can now.
             SharedContainer.reloadWidgets()
         } catch {

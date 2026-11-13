@@ -35,6 +35,9 @@ final class TimetableDiagnosticsTests: XCTestCase {
         )
     }
 
+    /// What the stub archive says it is, which is what the receipt reports.
+    private var firstPublication: ArchiveVersion { StubTimetableArchive(archive: Data()).serverVersion }
+
     private func offlineMapping() -> StubTimetableMapping {
         StubTimetableMapping(data: Data(), failure: TimetableError.transport("offline"))
     }
@@ -150,9 +153,10 @@ final class TimetableDiagnosticsTests: XCTestCase {
     }
 
     /// A store that reads whatever mapping is on disk, as a launch does.
-    private func makeStore(published: StubTimetableMapping? = nil) throws -> LineTimetableStore {
+    private func makeStore(failures: Set<String> = [],
+                           published: StubTimetableMapping? = nil) throws -> LineTimetableStore {
         LineTimetableStore(
-            client: StubTimetableArchive(archive: try archiveBytes()),
+            client: StubTimetableArchive(archive: try archiveBytes(), failures: failures),
             files: TimetableFiles(directory: directory),
             mappingFetcher: published ?? offlineMapping(),
             mappingFiles: TimetableMappingFiles(directory: directory)
@@ -235,6 +239,57 @@ final class TimetableDiagnosticsTests: XCTestCase {
         XCTAssertTrue(text.contains("mapping archive:"), text)
         XCTAssertTrue(text.contains("12112026"), text)
         XCTAssertTrue(text.contains("mapping freshness: STALE"), text)
+    }
+
+    // MARK: - What a finished download reports
+
+    /// The numbers a reader is owed straight after downloading: what arrived, from
+    /// which publication, and how much of it is already readable.
+    func testAFinishedDownloadLeavesAReceipt() async throws {
+        try savePublishedMapping(StubTimetableArchive.fixtureMapping, archive: [:])
+        let store = try makeStore()
+        await store.downloadIndex()
+
+        let summary = try XCTUnwrap(store.lastDownloadSummary)
+        XCTAssertEqual(summary.lineCount, store.knownLineCount)
+        XCTAssertEqual(summary.entryCount, 1)
+        XCTAssertEqual(summary.publishedAt, firstPublication.lastModified)
+        XCTAssertEqual(summary.archiveBytes, firstPublication.size)
+        XCTAssertEqual(summary.readableLines, 0)
+        XCTAssertEqual(summary.sizeText, ByteCountFormatter.string(fromByteCount: Int64(firstPublication.size),
+                                                                   countStyle: .file))
+    }
+
+    /// Lines already on the phone are counted as readable, because they are.
+    func testTheReceiptCountsTheLinesAlreadyOnThePhone() async throws {
+        try savePublishedMapping(StubTimetableArchive.fixtureMapping, archive: [:])
+        let store = try makeStore()
+        await store.downloadIndex()
+        _ = try await store.timetable(forLine: "764337")
+
+        await store.downloadIndex()
+
+        XCTAssertEqual(store.lastDownloadSummary?.readableLines, 1)
+    }
+
+    func testDismissingTheReceiptClearsIt() async throws {
+        try savePublishedMapping(StubTimetableArchive.fixtureMapping, archive: [:])
+        let store = try makeStore()
+        await store.downloadIndex()
+        XCTAssertNotNil(store.lastDownloadSummary)
+
+        store.dismissDownloadSummary()
+
+        XCTAssertNil(store.lastDownloadSummary)
+    }
+
+    /// A download that failed has nothing to report, and must not claim otherwise.
+    func testAFailedDownloadLeavesNoReceipt() async throws {
+        let store = try makeStore(failures: ["*"])
+
+        await store.downloadIndex()
+
+        XCTAssertNil(store.lastDownloadSummary)
     }
 
     // MARK: - What is on the phone

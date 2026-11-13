@@ -31,6 +31,9 @@ struct TimetablesView: View {
     let mappingErrorMessage: String?
     let onRefreshMapping: () -> Void
 
+    /// The receipt of the download this screen started, once it has finished.
+    @State private var downloadSummary: TimetableDownloadSummary?
+
     var body: some View {
         Form {
             Section {
@@ -117,6 +120,15 @@ struct TimetablesView: View {
         }
         .navigationTitle("Timetables")
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: timetables.lastDownloadSummary) { _, summary in
+            downloadSummary = summary
+        }
+        .sheet(item: $downloadSummary) { summary in
+            TimetableDownloadSummaryView(summary: summary, store: timetables) {
+                downloadSummary = nil
+                timetables.dismissDownloadSummary()
+            }
+        }
     }
 
     private var calculatedServicesBinding: Binding<Bool> {

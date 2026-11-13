@@ -28,6 +28,8 @@ struct StopBoardSheet: View {
     /// Cleared once extending the window reveals nothing further, which is how the
     /// board knows the timetable has run out.
     @State private var canLoadMore = true
+    /// The receipt of a download started from the board's empty state.
+    @State private var downloadSummary: TimetableDownloadSummary?
 
     private var entries: [StopBoardEntry] {
         // The run a vehicle is on when it is known - which puts the delay on the row
@@ -108,6 +110,15 @@ struct StopBoardSheet: View {
                 }
         }
         .task { await loadTimetables() }
+        .onChange(of: viewModel.timetables.lastDownloadSummary) { _, summary in
+            downloadSummary = summary
+        }
+        .sheet(item: $downloadSummary) { summary in
+            TimetableDownloadSummaryView(summary: summary, store: viewModel.timetables) {
+                downloadSummary = nil
+                viewModel.timetables.dismissDownloadSummary()
+            }
+        }
         .task {
             // A board is read as a live thing, and it has no room to grey what it
             // shows: asking once when it opens is what keeps last night's payload from

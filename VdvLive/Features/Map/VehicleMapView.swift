@@ -11,6 +11,9 @@ struct VehicleMapView: View {
     /// the App Store artwork can be captured without a finger on the glass.
     @State private var isShowingDownloadedLines = false
     @State private var isShowingTimetableDiagnostics = false
+    /// The receipt of a download started from a vehicle's card, which has no sheet
+    /// of its own to show it in.
+    @State private var downloadSummary: TimetableDownloadSummary?
     /// The stop whose board is open, if any.
     @State private var boardStop: StopPosition?
     /// Whether the pinned lines sheet is open, which the bar reaches.
@@ -65,6 +68,20 @@ struct VehicleMapView: View {
         .overlay(alignment: .bottom) { bottomOverlay }
         .animation(.easeOut(duration: 0.2), value: viewModel.selectedClusterID)
         .sheet(isPresented: $isShowingSettings) { settingsSheet }
+        .onChange(of: viewModel.timetables.lastDownloadSummary) { _, summary in
+            // Only when nothing else is up: a download started from the settings or
+            // a board is reported by the sheet that started it, and a second sheet
+            // from behind one produces nothing but a warning.
+            guard !isSheetPresented else { return }
+            downloadSummary = summary
+        }
+        .sheet(item: $downloadSummary) { summary in
+            TimetableDownloadSummaryView(summary: summary,
+                                         store: viewModel.timetables) {
+                downloadSummary = nil
+                viewModel.timetables.dismissDownloadSummary()
+            }
+        }
         .sheet(isPresented: $isShowingDownloadedLines) {
             NavigationStack {
                 DownloadedLinesView(store: viewModel.timetables)
@@ -189,6 +206,13 @@ struct VehicleMapView: View {
             }
         }
         .onDisappear { viewModel.stopAutoRefresh() }
+    }
+
+    /// Whether any of the map's own sheets is up, which is what decides who reports
+    /// a finished download.
+    private var isSheetPresented: Bool {
+        isShowingSettings || boardStop != nil || isShowingLines || isShowingStations
+            || isShowingSearch || isShowingDownloadedLines || isShowingTimetableDiagnostics
     }
 
     private var map: some View {
@@ -670,6 +694,8 @@ struct VehicleMapView: View {
     private func applyScreenshotRoute() async {
         if ScreenshotRoute.downloadsTimetables, !viewModel.timetables.isReady {
             await viewModel.timetables.downloadIndex()
+            // A picture does not want a dialog over it.
+            viewModel.timetables.dismissDownloadSummary()
         }
         if ScreenshotRoute.showsAllVehicles {
             viewModel.select(filter: .all)
