@@ -43,7 +43,7 @@ struct DownloadedLinesView: View {
                 Section {
                     ForEach(matches) { line in
                         NavigationLink {
-                            TimetableLineView(line: line, store: store)
+                            TimetableLineView(line: line, store: store, siblings: matches)
                         } label: {
                             row(line)
                         }
@@ -153,6 +153,16 @@ struct DownloadedLinesView: View {
 struct TimetableLineView: View {
     let line: DownloadedTimetable
     let store: LineTimetableStore
+    /// The other lines on the list this one was opened from, so the next can be
+    /// reached without going back - which is how a reader compares two lines.
+    var siblings: [DownloadedTimetable] = []
+
+    /// The line after this one on the list it came from.
+    private var nextLine: DownloadedTimetable? {
+        guard let index = siblings.firstIndex(where: { $0.id == line.id }),
+              siblings.indices.contains(index + 1) else { return nil }
+        return siblings[index + 1]
+    }
 
     var body: some View {
         List {
@@ -237,6 +247,22 @@ struct TimetableLineView: View {
                 Text("Runs")
             } footer: {
                 Text("One row per service of the line, in the order they leave the first stop.")
+            }
+
+            if let nextLine {
+                Section {
+                    NavigationLink {
+                        TimetableLineView(line: nextLine, store: store, siblings: siblings)
+                    } label: {
+                        Label {
+                            Text(String(format: String(localized: "Line %@"), nextLine.displayNumber))
+                        } icon: {
+                            Image(systemName: "chevron.forward.circle")
+                        }
+                    }
+                } footer: {
+                    Text("The next line on the list, so the lines can be read one after another.")
+                }
             }
         }
         .navigationTitle(Text("Line \(line.displayNumber)"))

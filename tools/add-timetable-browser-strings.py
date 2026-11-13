@@ -74,6 +74,22 @@ TRANSLATIONS = {
     "Connections": "Návaznosti",
     "Table": "Tabulka",
 
+    "Line %@": "Linka %@",
+    "The next line on the list, so the lines can be read one after another.":
+        "Další linka v seznamu, takže se linky dají číst jednu po druhé.",
+
+    # The receipt of a download
+    "Timetables downloaded": "Jízdní řády staženy",
+    "Entries in the archive": "Položek v archivu",
+    "Archive size": "Velikost archivu",
+    "Lines on this phone": "Linek v telefonu",
+    "Lines in the mapping": "Linek v mapování",
+    "More info": "Více informací",
+    "The index says where every line's timetable lives in the ministry's archive. Each line is then fetched on its own, the first time something needs it, and kept on the phone.":
+        "Index říká, kde v archivu ministerstva leží jízdní řád každé linky. Jednotlivé linky se pak stahují zvlášť, když je něco potřebuje, a zůstávají v telefonu.",
+    "Browse the lines whose timetables are on this phone: their runs, their stops, and the tables they were read from.":
+        "Projděte si linky, jejichž jízdní řády jsou v telefonu: jejich spoje, zastávky a tabulky, ze kterých se četly.",
+
     # The mapping's identity
     "Built for": "Postaveno pro",
     "Matches the index": "Odpovídá indexu",
