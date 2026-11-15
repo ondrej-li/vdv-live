@@ -98,6 +98,18 @@ which is `Linka` (line), `Spoj` (which run of the line, e.g. the 11th service of
 the day), `Bezbarierový` (a disabled checkbox, ticked for accessible vehicles),
 `Zastávka` (where the vehicle last was, see below) and `Zpoždění` (delay).
 
+**The popup changed its markup in November 2026** and the app reads both shapes:
+it used to be a Bulma `<th>label</th><td>value</td>` table with the line and the run
+on separate rows, and it is now a `<dl class="facts">` list with `Poslední zastávka`,
+`Linka / spoj` (`766420 / 109` in one row) and `Bezbariérové vozidlo` (`Ano`/`Ne`)
+as `<dt>`/`<dd>` pairs, the delay as a `span.delay-value` badge above them. The
+timetable page changed with it: the heading is `<p class="ride-caption">Linka 766420,
+spoj 109</p>` instead of `Linkospoj: …`, and the stops have one time column
+(`Plán`) with the arrival of a stop inside its own cell. Reading only the old shape
+left the card with no run - and a card with no run draws no stop list at all, which
+is indistinguishable from "the timetables are not downloaded".
+`docs/timetables.md` has the resolution rules.
+
 `GetTimetable` returns the stop list of that run, with an arrival and a
 departure column, which is what makes it possible to name the **next** stop. Its
 heading repeats which run it describes:

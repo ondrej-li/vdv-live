@@ -13,6 +13,57 @@ final class VehicleDetailHTMLParserTests: XCTestCase {
         XCTAssertEqual(info.isBarrierFree, false)
     }
 
+    /// The popup the site renders today: a description list, with the line and the
+    /// run in one row. Everything the card needs has to come out of it, or the card
+    /// has no run - and with no run it drew no stop list at all, which is what a
+    /// reader saw as "the timetables are not downloaded".
+    func testReadsTheFactsListTheSiteRendersToday() throws {
+        let info = try VehicleDetailHTMLParser.parseInfoWindow(SampleDetailHTML.infoWindowFacts)
+
+        XCTAssertEqual(info.line, "766420")
+        XCTAssertEqual(info.serviceNumber, "109")
+        XCTAssertEqual(info.stopName, "Jihlava,BOSCH Pávov")
+        XCTAssertEqual(info.reportedDelayMinutes, 0, "Včas is on time, not unknown")
+        XCTAssertEqual(info.isBarrierFree, false)
+    }
+
+    func testReadsALateVehicleFromTheFactsList() throws {
+        let info = try VehicleDetailHTMLParser.parseInfoWindow(
+            SampleDetailHTML.infoWindowFactsLate
+        )
+
+        XCTAssertEqual(info.line, "842182")
+        XCTAssertEqual(info.serviceNumber, "7")
+        XCTAssertEqual(info.stopName, "Střítež,JIPOCAR")
+        XCTAssertEqual(info.reportedDelayMinutes, 22)
+    }
+
+    /// The timetable page names the run in a heading now, and lists one time column.
+    func testReadsTheRunThePageNames() throws {
+        let label = try XCTUnwrap(
+            VehicleDetailHTMLParser.parseRunLabel(SampleDetailHTML.timetableRideCaption)
+        )
+
+        XCTAssertEqual(label.line, "766420")
+        XCTAssertEqual(label.serviceNumber, "109")
+    }
+
+    func testReadsTheStopsOfTheRunTableTheSiteRendersToday() throws {
+        let stops = try VehicleDetailHTMLParser.parseRunStops(SampleDetailHTML.timetableRideCaption)
+
+        XCTAssertEqual(stops.map(\.name), [
+            "Jihlava,BOSCH Pávov",
+            "Jihlava,Škola Bedřichov",
+            "Jihlava,aut.nádr.",
+            "Puklice,Studénky",
+            "Brtnice,nám."
+        ])
+        XCTAssertEqual(stops.first?.departure, "22:17")
+        XCTAssertEqual(stops[2].arrival, "22:31", "the arrival the stop cell carries")
+        XCTAssertEqual(stops[2].departure, "22:40")
+        XCTAssertEqual(stops[2].timeText, "22:40")
+    }
+
     func testReadsATickedBarrierFreeCheckboxAndNegativeDelay() throws {
         let info = try VehicleDetailHTMLParser.parseInfoWindow(
             SampleDetailHTML.infoWindowBarrierFreeAndLate
@@ -167,6 +218,43 @@ final class VehicleDetailClientTests: XCTestCase {
         XCTAssertEqual(detail.stop?.name, "Telč,Hradecká škola")
         XCTAssertEqual(detail.nextStop?.name, "Hostětice")
         XCTAssertEqual(detail.runStops.count, 5)
+    }
+
+    /// The same two requests against the pages the site serves today.
+    ///
+    /// The popup stopped being a table and started combining the line with the run;
+    /// the timetable page stopped printing `Linkospoj` and printed one time column.
+    /// Both were read as empty, so the card had no run, no stop list and - because
+    /// the vehicle's delay lives in the popup - no delay either.
+    func testCombinesThePagesTheSiteServesToday() async throws {
+        stub(pages: [
+            "/Ajax/OpenInfoWindow": SampleDetailHTML.infoWindowFacts,
+            "/Ajax/GetTimetable": SampleDetailHTML.timetableRideCaption
+        ])
+
+        let detail = try await makeClient().fetchDetail(for: Fixture.vehicle(id: 173213, line: "766420"))
+
+        XCTAssertEqual(detail.lineNumber, "420")
+        XCTAssertEqual(detail.serviceNumber, "109")
+        XCTAssertEqual(detail.stop?.name, "Jihlava,BOSCH Pávov")
+        XCTAssertEqual(detail.nextStop?.name, "Jihlava,Škola Bedřichov")
+        XCTAssertEqual(detail.runStops.count, 5)
+        XCTAssertEqual(detail.reportedDelayMinutes, 0)
+    }
+
+    /// And the run the popup names is the run the timetable page describes: a page
+    /// for another `Spoj` is refused rather than shown as this vehicle's stops.
+    func testRefusesTheCurrentPagesWhenTheRunDiffers() async throws {
+        stub(pages: [
+            "/Ajax/OpenInfoWindow": SampleDetailHTML.infoWindowFactsLate,
+            "/Ajax/GetTimetable": SampleDetailHTML.timetableRideCaption
+        ])
+
+        let detail = try await makeClient().fetchDetail(for: Fixture.vehicle(id: 173050, line: "842182"))
+
+        XCTAssertEqual(detail.serviceNumber, "7")
+        XCTAssertTrue(detail.runStops.isEmpty, "a timetable for run 109 is not run 7's")
+        XCTAssertNil(detail.nextStop)
     }
 
     func testStillDescribesTheVehicleWhenTheTimetableFails() async throws {

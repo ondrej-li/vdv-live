@@ -3817,6 +3817,16 @@
           }
         }
       }
+    },
+    "This run is not in the timetable on this phone." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tento spoj není v jízdním řádu v tomto telefonu."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

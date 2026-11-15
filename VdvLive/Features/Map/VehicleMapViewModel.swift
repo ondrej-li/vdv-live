@@ -437,6 +437,21 @@ final class VehicleMapViewModel {
         }
     }
 
+    /// The run of the vehicle on screen, as the timetable on this phone knows it.
+    var timetableRun: ScheduledRun? {
+        lineTimetable?.run(serviceNumber: vehicleDetail?.serviceNumber)
+    }
+
+    /// What the card should say when the timetable is there but this run is not in
+    /// it.
+    ///
+    /// The alternative was drawing nothing: a card with no stop list reads as a
+    /// feature that is missing rather than as a run the archive does not publish.
+    var timetableNote: String? {
+        guard lineTimetable != nil, timetableRun == nil else { return nil }
+        return String(localized: "This run is not in the timetable on this phone.")
+    }
+
     /// Looks the run up in the official timetable.
     ///
     /// Only worth doing once the user has downloaded the index; until then the

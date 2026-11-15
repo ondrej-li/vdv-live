@@ -17,6 +17,8 @@ struct VehicleDetailCard: View {
     /// Why the timetable is not on screen, when it is not. Nil while it is on its
     /// way, or when there is one to show.
     var timetableError: String?
+    /// What to say when the timetable is here but the vehicle's run is not in it.
+    var timetableNote: String?
     /// Whether the timetable index has been downloaded, which decides whether
     /// offering the download here makes sense.
     var isTimetableReady = true
@@ -155,6 +157,8 @@ struct VehicleDetailCard: View {
             loadingRow(String(localized: "Looking up the timetable…"))
         } else if let timetableError {
             timetableProblem(timetableError)
+        } else if let timetableNote {
+            timetableProblem(timetableNote)
         }
     }
 

@@ -133,4 +133,121 @@ enum SampleDetailHTML {
         </tbody>
     </table>
     """#
+
+    /// `GET /Ajax/OpenInfoWindow?id=173213`, captured 14 November 2026.
+    ///
+    /// The site renders the popup as a description list now, and it names the line
+    /// and the run together: `Linka / spoj` → `766420 / 109`. Reading only the old
+    /// table left the card with no run, and therefore with no stop list at all.
+    static let infoWindowFacts = #"""
+    <div class="panel-sticky">
+    <div class="delay">
+        <span class="delay-value">V&#x10D;as</span>
+        <span class="delay-label"></span>
+    </div>
+    </div>
+
+    <div id="infoTabContent" role="tabpanel" aria-labelledby="infoTab">
+        <dl class="facts">
+            <div>
+                <dt>Posledn&#xED; zast&#xE1;vka</dt>
+                <dd>Jihlava,BOSCH P&#xE1;vov</dd>
+            </div>
+            <div>
+                <dt>Linka / spoj</dt>
+                <dd>766420 / 109</dd>
+            </div>
+            <div>
+                <dt>Bezbari&#xE9;rov&#xE9; vozidlo</dt>
+                <dd>
+    Ne            </dd>
+            </div>
+            <div>
+                <dt>&#x10C;&#xED;slo vozidla</dt>
+                <dd>4-4471</dd>
+            </div>
+        </dl>
+    </div>
+    """#
+
+    /// The same markup for a vehicle running late, captured with `id=173050`.
+    static let infoWindowFactsLate = #"""
+    <div class="panel-sticky">
+    <div class="delay">
+        <span class="delay-value">&#x2B;22 min</span>
+        <span class="delay-label">zpo&#x17E;d&#x11B;n&#xED;</span>
+    </div>
+    </div>
+
+    <div id="infoTabContent" role="tabpanel" aria-labelledby="infoTab">
+        <dl class="facts">
+            <div>
+                <dt>Posledn&#xED; zast&#xE1;vka</dt>
+                <dd>St&#x159;&#xED;te&#x17E;,JIPOCAR</dd>
+            </div>
+            <div>
+                <dt>Linka / spoj</dt>
+                <dd>842182 / 7</dd>
+            </div>
+            <div>
+                <dt>Bezbari&#xE9;rov&#xE9; vozidlo</dt>
+                <dd>
+    Ne            </dd>
+            </div>
+        </dl>
+    </div>
+    """#
+
+    /// `GET /Ajax/GetTimetable?vehicleNumber=173213&currentStopId=68243`, captured the
+    /// same day and cut to five stops.
+    ///
+    /// One time column - "Plán" - rather than an arrival and a departure column, the
+    /// stop the vehicle is at marked with `is-current`, and its arrival inside the
+    /// name cell.
+    static let timetableRideCaption = #"""
+    <div id="timetableCurrentContainer">
+            <p class="ride-caption">Linka 766420, spoj 109</p>
+            <table class="timetable">
+                <thead>
+                    <tr>
+                        <th>Zast&#xE1;vka</th>
+                        <th class="time">Pl&#xE1;n</th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr class="is-current" aria-current="location">
+                            <td>
+                                Jihlava,BOSCH P&#xE1;vov
+                            </td>
+                            <td class="time">22:17</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Jihlava,&#x160;kola Bed&#x159;ichov
+                            </td>
+                            <td class="time">22:20</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Jihlava,aut.n&#xE1;dr.
+                                    <span class="stop-arrival">p&#x159;&#xED;jezd 22:31</span>
+                            </td>
+                            <td class="time">22:40</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Puklice,Stud&#xE9;nky
+                            </td>
+                            <td class="time">22:51</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Brtnice,n&#xE1;m.
+                            </td>
+                            <td class="time">23:07</td>
+                        </tr>
+                </tbody>
+            </table>
+    </div>
+    """#
 }

@@ -530,6 +530,7 @@ struct VehicleMapView: View {
                 timetable: viewModel.lineTimetable,
                 isLoadingTimetable: viewModel.isLoadingTimetable,
                 timetableError: viewModel.timetableError,
+                timetableNote: viewModel.timetableNote,
                 isTimetableReady: viewModel.timetables.isReady,
                 isFollowing: viewModel.followsSelectedVehicle,
                 onDownloadTimetable: {

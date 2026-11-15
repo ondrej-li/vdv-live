@@ -373,7 +373,12 @@ final class LineTimetableStore {
     /// - Returns: `nil` when the line is not in the mapping at all, which is the
     ///   answer for anything outside the region this app covers.
     func timetable(forLine lineNumber: String, serviceNumber: String? = nil) async throws -> LineTimetable? {
-        if let cached = timetables[lineNumber] {
+        // The cache is keyed by line, but a line is published once per validity
+        // period and the periods do not hold the same runs. A cached period that
+        // does not have the run asked for cannot answer for it: the card drew
+        // nothing at all when the line had been read earlier without a run.
+        if let cached = timetables[lineNumber],
+           serviceNumber == nil || cached.run(serviceNumber: serviceNumber) != nil {
             return cached
         }
         guard isReady else { throw TimetableError.notDownloaded }
@@ -421,6 +426,10 @@ final class LineTimetableStore {
     /// is current. Every candidate is therefore read and the entries verified by
     /// their own `Linky.txt`; the newest period that covers today is the one that
     /// answers, and the real `Spoj` when a run was named.
+    ///
+    /// That is the region's whole timetable once - about a thousand entries, ten
+    /// megabytes - because every one of them is kept on disk and reused for as long
+    /// as the archive it came from is the published one.
     private func resolve(lineNumber: String, serviceNumber: String?) async throws -> LineTimetable? {
         guard let candidates = mapping[lineNumber], !candidates.isEmpty else { return nil }
 
@@ -470,16 +479,26 @@ final class LineTimetableStore {
     /// The candidate that answers best: the one holding the run asked for, then the
     /// newest validity period that covers today, then a current copy over a cached
     /// one.
+    ///
+    /// A run that no period has is not a reason to claim the line is missing - the
+    /// timetable is there and the run is not in it, which the card says in its own
+    /// words. Answering with the best period available is what keeps a vehicle whose
+    /// `Spoj` the archive does not know from losing its whole stop list.
     static func choose(_ resolved: [ResolvedEntry],
                        serviceNumber: String?,
                        today: ServiceDay) -> ResolvedEntry? {
-        resolved
-            .filter { serviceNumber == nil || $0.timetable.run(serviceNumber: serviceNumber) != nil }
-            .max { lhs, rhs in
-                let left = rank(lhs, today: today)
-                let right = rank(rhs, today: today)
-                return left.lexicographicallyPrecedes(right)
-            }
+        let withRun = resolved.filter {
+            serviceNumber == nil || $0.timetable.run(serviceNumber: serviceNumber) != nil
+        }
+        return best(withRun, today: today) ?? best(resolved, today: today)
+    }
+
+    private static func best(_ candidates: [ResolvedEntry], today: ServiceDay) -> ResolvedEntry? {
+        candidates.max { lhs, rhs in
+            let left = rank(lhs, today: today)
+            let right = rank(rhs, today: today)
+            return left.lexicographicallyPrecedes(right)
+        }
     }
 
     /// How good a candidate is, compared left to right: whether its newest period has

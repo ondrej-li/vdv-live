@@ -25,26 +25,46 @@ enum VehicleDetailHTMLParser {
         var isBarrierFree: Bool?
 
         for (label, valueMarkup) in labelledRows(in: html) {
+            let text = cleanText(valueMarkup)
             switch field(for: label) {
+            case .lineAndService:
+                // `Linka / spoj` → `766420 / 109`, which is how the popup reads
+                // since November 2026. Splitting it is the difference between a
+                // card with the vehicle's stop list and a card with nothing.
+                let parts = (text ?? "")
+                    .split(separator: "/", maxSplits: 1)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                guard parts.count == 2, !parts[0].isEmpty, !parts[1].isEmpty else { break }
+                line = parts[0]
+                serviceNumber = parts[1]
             case .line:
-                line = cleanText(valueMarkup)
+                line = text
             case .serviceNumber:
-                serviceNumber = cleanText(valueMarkup)
+                serviceNumber = text
             case .stopName:
-                stopName = cleanText(valueMarkup)
+                stopName = text
             case .delay:
                 // The feed writes Int32.min when it has no delay to report.
                 // Carrying that on as minutes shows "-2147483648 min" in the
                 // card and moves every stop of the run to midnight in the list.
-                let minutes = leadingInteger(in: cleanText(valueMarkup))
+                let minutes = leadingInteger(in: text)
                 reportedDelayMinutes = minutes == VehicleDelay.unknownSentinel ? nil : minutes
             case .barrierFree:
-                // The site renders this row as a disabled checkbox that is only
-                // ticked for accessible vehicles.
+                // Once a checkbox that is only ticked for accessible vehicles, now
+                // the word `Ano` or `Ne`: both say the same thing.
                 isBarrierFree = valueMarkup.contains("checked")
+                    || (text.map { fold($0) == fold("Ano") } ?? false)
             case nil:
                 break
             }
+        }
+
+        // The delay is a badge above the facts now, and `Včas` is zero rather than
+        // "no information".
+        if reportedDelayMinutes == nil,
+           let badge = firstMatch(in: html, pattern: "<span class=\"delay-value\">(.*?)</span>"),
+           let text = cleanText(badge) {
+            reportedDelayMinutes = fold(text) == fold("Včas") ? 0 : leadingInteger(in: text)
         }
 
         return InfoWindow(
@@ -65,6 +85,16 @@ enum VehicleDetailHTMLParser {
     }
 
     static func parseRunLabel(_ html: String) throws -> RunLabel? {
+        // `Linka 766420, spoj 109`, the heading the page carries now.
+        if let caption = firstMatch(in: html, pattern: "<p class=\"ride-caption\">(.*?)</p>"),
+           let text = cleanText(caption) {
+            let digits = numbers(in: text)
+            if digits.count >= 2 {
+                return RunLabel(line: digits[0], serviceNumber: digits[1])
+            }
+        }
+
+        // `Linkospoj: 420 / 11`, the heading it carried before.
         guard
             let markup = firstMatch(in: html, pattern: "Linkospoj:.*?<span[^>]*>(.*?)</span>"),
             let value = cleanText(markup)
@@ -79,22 +109,49 @@ enum VehicleDetailHTMLParser {
         return RunLabel(line: parts[0], serviceNumber: parts[1])
     }
 
+    /// The runs of digits in a piece of text, in order: `Linka 766420, spoj 109`
+    /// gives `766420` and `109` without depending on the words around them.
+    private static func numbers(in text: String) -> [String] {
+        guard let regex = try? NSRegularExpression(pattern: "[0-9]+") else { return [] }
+        let input = text as NSString
+        return regex
+            .matches(in: text, range: NSRange(location: 0, length: input.length))
+            .map { input.substring(with: $0.range) }
+    }
+
     /// Stops of the run, in the order the timetable lists them.
     static func parseRunStops(_ html: String) throws -> [RunStop] {
         let body = firstMatch(in: html, pattern: "<tbody>(.*?)</tbody>") ?? html
         var stops: [RunStop] = []
 
-        for row in allMatches(in: body, pattern: "<tr>(.*?)</tr>") {
+        for row in allMatches(in: body, pattern: "<tr[^>]*>(.*?)</tr>") {
             let cells = allMatches(in: row, pattern: "<td[^>]*>(.*?)</td>")
             guard let nameMarkup = cells.first else { continue }
-            let name = cleanText(nameMarkup) ?? ""
+
+            // The page prints one time column now ("Plán"), and an arrival inside the
+            // stop's own cell where it is worth showing. It used to print an arrival
+            // column and a departure column; both shapes are read, because a card
+            // with no stops is worse than one reading an older page.
+            let arrival = firstMatch(in: nameMarkup, pattern: "<span class=\"stop-arrival\">(.*?)</span>")
+                .flatMap { cleanText($0) }
+                .flatMap { firstMatch(in: $0, pattern: "[0-9]{1,2}:[0-9]{2}") }
+            let name = cleanText(
+                nameMarkup.replacingOccurrences(of: "<span class=\"stop-arrival\">.*?</span>",
+                                                with: "",
+                                                options: [.regularExpression])
+            ) ?? ""
             guard !name.isEmpty else { continue }
+
+            let planned = cells.indices.contains(1) ? timeText(cells[1]) : nil
+            let departureTime = cells.indices.contains(2) ? timeText(cells[2]) : nil
 
             stops.append(
                 RunStop(
                     name: name,
-                    arrival: cells.indices.contains(1) ? timeText(cells[1]) : nil,
-                    departure: cells.indices.contains(2) ? timeText(cells[2]) : nil
+                    // Two cells: the stop and when the run leaves it.
+                    // Three cells: an arrival column and a departure column.
+                    arrival: departureTime == nil ? arrival : (arrival ?? planned),
+                    departure: departureTime ?? planned
                 )
             )
         }
@@ -107,6 +164,8 @@ enum VehicleDetailHTMLParser {
     private enum Field {
         case line
         case serviceNumber
+        /// `Linka / spoj`, naming both in one row.
+        case lineAndService
         case stopName
         case delay
         case barrierFree
@@ -121,9 +180,11 @@ enum VehicleDetailHTMLParser {
         let key = fold(label)
         if key == fold("Linka") { return .line }
         if key == fold("Spoj") { return .serviceNumber }
-        if key == fold("Zastávka") { return .stopName }
+        if key == fold("Linka / spoj") { return .lineAndService }
+        if key == fold("Zastávka") || key == fold("Poslední zastávka") { return .stopName }
         if key == fold("Zpoždění") { return .delay }
-        if key == fold("Bezbariérový") || key == fold("Bezbarierový") { return .barrierFree }
+        if key == fold("Bezbariérový") || key == fold("Bezbarierový")
+            || key == fold("Bezbariérové vozidlo") { return .barrierFree }
         return nil
     }
 
@@ -132,9 +193,18 @@ enum VehicleDetailHTMLParser {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// Every `<th>label</th><td>value</td>` pair of a table.
+    /// Every label/value pair the popup is made of, in either shape it has had.
+    ///
+    /// It was a `<th>label</th><td>value</td>` table until November 2026; since then
+    /// it is a `<dt>label</dt><dd>value</dd>` description list. Reading both costs
+    /// one pattern, and is why a redesign of a page the app only reads is not a
+    /// redesign of the app.
     private static func labelledRows(in html: String) -> [(String, String)] {
-        let pattern = "<th[^>]*>(.*?)</th>\\s*<td[^>]*>(.*?)</td>"
+        pairs(in: html, label: "th", value: "td") + pairs(in: html, label: "dt", value: "dd")
+    }
+
+    private static func pairs(in html: String, label: String, value: String) -> [(String, String)] {
+        let pattern = "<\(label)[^>]*>(.*?)</\(label)>\\s*<\(value)[^>]*>(.*?)</\(value)>"
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else {
             return []
         }
