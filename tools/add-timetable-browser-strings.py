@@ -75,6 +75,8 @@ TRANSLATIONS = {
     "Table": "Tabulka",
 
     "Line %@": "Linka %@",
+    "This run is not in the timetable on this phone.":
+        "Tento spoj není v jízdním řádu v tomto telefonu.",
     "The next line on the list, so the lines can be read one after another.":
         "Další linka v seznamu, takže se linky dají číst jednu po druhé.",
 

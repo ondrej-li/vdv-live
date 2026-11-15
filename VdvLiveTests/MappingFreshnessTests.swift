@@ -143,6 +143,23 @@ final class MappingFreshnessTests: XCTestCase {
         XCTAssertEqual(chosen?.entryName, "12965.zip")
     }
 
+    /// A run no period of the line has is still answerable: the line's timetable is
+    /// there, the run is not in it. Throwing "not in the published timetable" for
+    /// that claimed the whole line was missing, which is what left the card blank.
+    func testARunNoPeriodHasStillFindsTheLine() {
+        let only = LineTimetableStore.ResolvedEntry(
+            timetable: timetable(from: 2026, month: 10, day: 1, service: "1"),
+            entryName: "11648.zip",
+            isFromEarlierArchive: false
+        )
+
+        let chosen = LineTimetableStore.choose([only],
+                                               serviceNumber: "38",
+                                               today: ServiceDay(year: 2026, month: 11, day: 14))
+
+        XCTAssertEqual(chosen?.entryName, "11648.zip")
+    }
+
     /// Everything else equal, the copy the current archive still holds is preferred
     /// to one read out of a file cached for an earlier publication.
     func testACurrentCopyBeatsACachedOlderOne() {

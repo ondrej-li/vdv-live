@@ -42,7 +42,7 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
         )
         return VehicleMapViewModel(
             payloadStore: InMemoryVehiclePayloadStore(),
-            fetcher: StubVehicleFetcher(vehicles: [Fixture.vehicle(id: 1, line: "764337")]),
+            fetcher: StubVehicleFetcher(vehicles: [Fixture.vehicle(id: 1, line: "766420")]),
             favouriteLinesStore: InMemoryFavouriteLinesStore(),
             settingsStore: InMemoryAppSettingsStore(),
             languageDefaults: TestDefaults.make(),
@@ -50,6 +50,52 @@ final class VehicleMapViewModelTimetableTests: XCTestCase {
             timetables: store,
             now: { Date(timeIntervalSince1970: 1_700_000_000) }
         )
+    }
+
+    /// The card draws the run the popup names - which is the whole stop list. The
+    /// regression here read as "the timetables are not downloaded": the popup's
+    /// markup had changed, the run came back nil, and a card with no run drew
+    /// nothing at all.
+    func testTheCardHasARunToDrawWhenThePopupNamesOne() async throws {
+        // The line the popup fixture names is 766420, so that is the line the
+        // timetable has to be about.
+        let package = ZipFixture.linePackage(lineNumber: "766420",
+                                             runs: [("109", "0435"), ("110", "1730")])
+        let archive = ZipFixture.archive(entries: [("a.zip", package)])
+        let store = LineTimetableStore(
+            client: StubTimetableArchive(archive: archive),
+            mapping: ["766420": ["a.zip"]],
+            files: TimetableFiles(directory: directory),
+            mappingFetcher: StubTimetableMapping(data: Data(),
+                                                 failure: TimetableError.transport("offline")),
+            mappingFiles: TimetableMappingFiles(directory: directory)
+        )
+        await store.downloadIndex()
+
+        // The popup the site renders today: `Linka / spoj` → `764337 / 109`.
+        let info = try VehicleDetailHTMLParser.parseInfoWindow(SampleDetailHTML.infoWindowFacts)
+        let detail = VehicleDetail(lineCode: LineCode(raw: try XCTUnwrap(info.line)),
+                                   serviceNumber: info.serviceNumber,
+                                   isBarrierFree: info.isBarrierFree,
+                                   stopName: info.stopName,
+                                   reportedDelayMinutes: info.reportedDelayMinutes,
+                                   runStops: [])
+        let viewModel = VehicleMapViewModel(
+            payloadStore: InMemoryVehiclePayloadStore(),
+            fetcher: StubVehicleFetcher(vehicles: [Fixture.vehicle(id: 1, line: "766420")]),
+            favouriteLinesStore: InMemoryFavouriteLinesStore(),
+            settingsStore: InMemoryAppSettingsStore(),
+            languageDefaults: TestDefaults.make(),
+            detailFetcher: StubVehicleDetailFetcher(detail: detail),
+            timetables: store,
+            now: { Date(timeIntervalSince1970: 1_700_000_000) }
+        )
+        await viewModel.load()
+        await viewModel.loadDetail(for: Fixture.vehicle(id: 1, line: "766420"))
+
+        XCTAssertEqual(viewModel.timetableRun?.serviceNumber, "109")
+        XCTAssertNil(viewModel.timetableNote, "there is a run, so there is nothing to explain")
+        XCTAssertNil(viewModel.timetableError)
     }
 
     func testLoadsTheTimetableOfTheSelectedRun() async throws {
