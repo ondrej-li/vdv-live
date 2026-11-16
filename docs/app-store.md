@@ -1,13 +1,16 @@
-# App Store listing, version 1.4
+# App Store listing, version 1.4.2
 
 Everything the product page needs, written to be pasted into App Store Connect.
 Character counts are measured against Apple's limits, and the Czech copy is the
 primary language - English is the second localization, if one is enabled.
 
-The build this describes is **1.4** - 1.3 was the widgets and the timetable
-repair; 1.4 adds sharing. The newest build number is on `make check-release`. `docs/ship.md` covers the upload
-itself; the privacy and support URLs are the ones hosted from `docs/privacy.md` and
-`docs/support.md`.
+The build this describes is **1.4.2** - 1.3 was the widgets and the timetable
+repair, 1.4 added sharing, and 1.4.2 is the timetable release: delays that belong
+to the service they were measured for, a mapping that repairs itself after every
+republication of the archive, and screens that let the downloaded timetables be
+read. The newest build number is on `make check-release`. `docs/ship.md` covers the
+upload itself; the privacy and support URLs are the ones hosted from
+`docs/privacy.md` and `docs/support.md`.
 
 ## Czech (primary)
 
@@ -28,7 +31,7 @@ VDV Live
 Dá se změnit kdykoli bez nového review.
 
 ```
-Novinka ve verzi 1.4: sdílení. Pošlete odkaz na spoj s jeho polohou a zpožděním, nebo na tabuli zastávky – příjemci se otevře přímo v aplikaci.
+Novinka ve verzi 1.4.2: zpoždění u správného spoje, jízdní řády, které se samy opraví po každém zveřejnění archivu, a procházení stažených linek.
 ```
 
 ### Klíčová slova (100 znaků, bez mezer za čárkami)
@@ -79,13 +82,23 @@ Polohy vozidel pocházejí z veřejné mapy Kraje Vysočina, jízdní řády z a
 ### Co je nového (4000 znaků)
 
 ```
-SDÍLENÍ
+ZPOŽDĚNÍ U SPRÁVNÉHO SPOJE
 
-• Spoj – na kartě vozidla klepněte na sdílení. Zpráva nese linku, cíl, zpoždění, čas načtení a zastávky, kde spoj byl a kam míří.
-• Zastávka – na tabuli zastávky klepněte na sdílení. Zpráva nese příštích pět odjezdů s časem a stavem: včas, +3 min, nebo zatím jen podle řádu.
-• Odkaz se otevře přímo v aplikaci – na stejném spoji nebo zastávce. Kdo aplikaci nemá, uvidí stránku s možností ji stáhnout. Spoj, který už dojel, otevře linku na mapě.
+• Odjezdová tabule bere zpoždění z konkrétního spoje, ne z celé linky. Neukáže tak zpoždění autobusu, který jede opačným směrem nebo už dojel na konec.
+• Hodnoty se obnovují při každém načtení, takže tabule nezůstane viset na čísle z rána.
 
-Také v této verzi: widgety na plochu a rychlejší obnova jízdních řádů, když je ministerstvo zveřejní znovu.
+JÍZDNÍ ŘÁDY, KTERÉ SE OPRAVÍ SAMY
+
+• Archiv ministerstva se zveřejňuje několikrát týdne a pokaždé přečísluje položky. Aplikace to pozná, stáhne si nové mapování linek a místo „linka není ve zveřejněném jízdním řádu“ u všeho načte řády dál.
+• Když ministerstvo vydá linku v několika obdobích platnosti, použije se to, které platí dnes.
+
+CO JE STAŽENÉ
+
+• Po stažení indexu se ukáže přehled: kolik linek, z jakého zveřejnění a kolik jich už je v telefonu – s odkazem na procházení.
+• Stažené linky se dají číst: trasa, dopravce, platnost, spoje se zastávkami a zdrojové tabulky tak, jak je ministerstvo zveřejnilo.
+• Diagnostika ukáže i každý soubor na disku, linku, kterou hlásí, a linku, která ho čte.
+
+Také v této verzi: sdílení spojů a tabulí, widgety na plochu a hodinky vydrží bez telefonu.
 ```
 
 ## English
@@ -105,7 +118,7 @@ Live bus and train map
 ### Promotional text (170 characters)
 
 ```
-New in 1.4: sharing. Send a link to a vehicle with its position and delay, or a stop's departure board - it opens in the app for whoever receives it.
+New in 1.4.2: delays that belong to your own service, timetables that repair themselves after every archive publication, and a browser for what was downloaded.
 ```
 
 ### Keywords (100 characters, no spaces after commas)
@@ -156,13 +169,23 @@ Vehicle positions come from the region's public map, timetables from the Ministr
 ### What's New (4000 characters)
 
 ```
-SHARING
+DELAYS THAT BELONG TO YOUR SERVICE
 
-• A vehicle - tap share on its card. The message carries the line, where it is going, its delay, when the app read the feed, and the stops it was last seen at and is heading for.
-• A stop - tap share on its departure board. The message carries the next five departures with their time and status: on time, +3 min, or still just the timetable's time.
-• The link opens in the app, on that vehicle or that board. People without the app see a page that offers it. A vehicle that has finished its run opens the line's traffic instead.
+• A stop's board takes each delay from the run it was measured for, not from the line as a whole. It no longer shows the lateness of a bus going the other way, or of one that has finished and is standing at the terminus.
+• The numbers follow the feed, so a board does not stay stuck on the value it had this morning.
 
-Also in this release: home screen widgets, and timetables that keep working after the ministry republishes the archive.
+TIMETABLES THAT REPAIR THEMSELVES
+
+• The ministry's archive is republished several times a week and renumbers every entry when it is. The app notices, fetches a fresh line mapping, and carries on instead of answering "not in the published timetable" for every line at once.
+• Where a line is published for several validity periods, the one in force today is the one used.
+
+WHAT WAS DOWNLOADED
+
+• After the index downloads, a summary says how many lines arrived, which publication they are from, and how many are already on the phone - with a way into them.
+• The downloaded lines can be read: route, operator, validity, the runs with their stops, and the source tables exactly as the ministry published them.
+• Diagnostics names every file on disk, the line it declares and the line that reads it.
+
+Also in this release: sharing vehicles and boards, home screen widgets, and the watch app working without the phone.
 ```
 
 ## Screenshots
@@ -215,7 +238,7 @@ The amber exclamation badge on the map marks a line the live feed has stopped re
 
 ## Checklist before submitting
 
-- [ ] Version 1.4, with the newest build selected on the version page
+- [ ] Version 1.4.2, with the newest build selected on the version page
 - [ ] Promotional text, description, keywords and What's New pasted for Czech
 - [ ] English localization filled in, if enabled
 - [ ] iPhone 6.3" and iPad 13" screenshot tabs filled (four each, in the order above)

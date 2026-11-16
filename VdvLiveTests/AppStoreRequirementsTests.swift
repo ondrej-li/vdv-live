@@ -41,6 +41,41 @@ final class AppStoreRequirementsTests: XCTestCase {
         XCTAssertEqual((root["NSPrivacyCollectedDataTypes"] as? [Any])?.count, 0)
     }
 
+    /// The app, the watch app and the widget extension have to carry the same
+    /// version and the same build number.
+    ///
+    /// A release means editing `MARKETING_VERSION` in five places, and forgetting
+    /// one is invisible until App Store Connect refuses the upload or TestFlight
+    /// offers a build whose number disagrees with itself. This is the check that a
+    /// version bump is complete rather than partial.
+    func testEveryBundleInTheAppCarriesTheSameVersion() throws {
+        let app = Bundle.main
+        let short = try XCTUnwrap(app.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
+        let build = try XCTUnwrap(app.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
+
+        let embedded = embeddedBundles()
+        XCTAssertEqual(embedded.count, 2, "the watch app and the widget extension ship inside the app")
+
+        for bundle in embedded {
+            let name = bundle.bundleURL.lastPathComponent
+            XCTAssertEqual(bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String,
+                           short,
+                           "\(name) carries a different marketing version")
+            XCTAssertEqual(bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+                           build,
+                           "\(name) carries a different build number")
+        }
+    }
+
+    /// The two bundles the app embeds: the watch app and the widget extension.
+    private func embeddedBundles() -> [Bundle] {
+        let root = Bundle.main.bundleURL
+        return [
+            root.appendingPathComponent("PlugIns/VdvLiveWidgets.appex"),
+            root.appendingPathComponent("Watch/VdvLive Watch.app")
+        ].compactMap { Bundle(url: $0) }
+    }
+
     /// The export compliance question comes up on every upload unless the bundle
     /// answers it, and the app uses only the system's own HTTPS.
     func testTheBundleAnswersTheExportComplianceQuestion() throws {
