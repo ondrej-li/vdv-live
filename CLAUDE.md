@@ -57,13 +57,18 @@ Nothing here builds on Linux. Do not try to compile it on the VPS.
 
 ## Shipping
 
-`.github/workflows/testflight.yml` archives, exports and uploads to TestFlight. A
-`v*` tag uploads; a manual run uploads unless you untick the box. Six repository
-secrets are needed — [`docs/TESTFLIGHT.md`](docs/TESTFLIGHT.md).
+**Publishing is manual; CI does not upload anything** and no Apple credential is
+stored in this repository. On a machine with Xcode and a `.team` file (the Team ID,
+not committed):
 
-`make archive` / `make upload` / `make ipa` still work on a machine with a signed-in
-Xcode and a `.team` file (the Team ID, not committed). CI passes the team from
-`APPLE_TEAM_ID` instead, so the two paths do not need each other.
+```sh
+make check-release      # team, version, bundle ids, the identities on this Mac
+make archive            # build/VdvLive.xcarchive
+make upload             # …to App Store Connect, into TestFlight first
+```
+
+[`docs/TESTFLIGHT.md`](docs/TESTFLIGHT.md) has the steps and
+[`docs/ship.md`](docs/ship.md) the full runbook.
 
 The docs site (privacy, support, share links) is GitHub Pages from `main` / `docs`.
 
