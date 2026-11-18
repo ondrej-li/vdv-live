@@ -39,14 +39,9 @@ struct SettingsSheet: View {
     let timetableUpdate: TimetableUpdate
     let timetableErrorMessage: String?
     let knownLineCount: Int
-    /// Whether the map fills in the lines the feed has gone quiet about.
-    let showsCalculatedServices: Bool
-    let coveredLineCount: Int
-    let isReadingTimetableLines: Bool
     let onDownloadTimetables: () -> Void
     let onCheckTimetables: () -> Void
     let onForgetTimetables: () -> Void
-    let onSetShowsCalculatedServices: (Bool) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
@@ -107,13 +102,9 @@ struct SettingsSheet: View {
                             update: timetableUpdate,
                             errorMessage: timetableErrorMessage,
                             knownLineCount: knownLineCount,
-                            showsCalculatedServices: showsCalculatedServices,
-                            coveredLineCount: coveredLineCount,
-                            isReadingLines: isReadingTimetableLines,
                             onDownload: onDownloadTimetables,
                             onCheckForUpdates: onCheckTimetables,
-                            onForget: onForgetTimetables,
-                            onSetShowsCalculatedServices: onSetShowsCalculatedServices
+                            onForget: onForgetTimetables
                         )
                     } label: {
                         SettingsRow(
