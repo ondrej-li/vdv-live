@@ -6,7 +6,8 @@ name: TestFlight
 # can also just prove that signing works. The watch app and the widget extension
 # ride inside the phone app, so one archive covers all three.
 #
-# The six repository secrets are documented in docs/TESTFLIGHT.md.
+# Four repository secrets are documented in docs/TESTFLIGHT.md; no certificate is
+# stored anywhere, the runner signs from the API key.
 
 on:
   workflow_dispatch:
@@ -45,20 +46,18 @@ jobs:
       - name: Check the signing secrets exist
         env:
           APP_CONNECT_KEY_P8: ${{ secrets.APP_CONNECT_KEY_P8 }}
-          BUILD_CERTIFICATE_P12: ${{ secrets.BUILD_CERTIFICATE_P12 }}
-          BUILD_CERTIFICATE_PASSWORD: ${{ secrets.BUILD_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
           missing=""
           for name in APPLE_TEAM_ID APP_CONNECT_KEY_ID APP_CONNECT_ISSUER_ID \
-                      APP_CONNECT_KEY_P8 BUILD_CERTIFICATE_P12 BUILD_CERTIFICATE_PASSWORD; do
+                      APP_CONNECT_KEY_P8; do
             [ -n "${!name:-}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then
             echo "::error::missing repository secrets:$missing - see docs/TESTFLIGHT.md"
             exit 1
           fi
-          echo "all six signing secrets are present"
+          echo "the four API-key secrets are present"
 
       - name: Write the App Store Connect key
         env:
@@ -68,24 +67,6 @@ jobs:
           mkdir -p private_keys
           printf '%s' "$APP_CONNECT_KEY_P8" | base64 --decode > "private_keys/AuthKey_${APP_CONNECT_KEY_ID}.p8"
           chmod 600 "private_keys/AuthKey_${APP_CONNECT_KEY_ID}.p8"
-
-      - name: Install the distribution certificate
-        env:
-          BUILD_CERTIFICATE_P12: ${{ secrets.BUILD_CERTIFICATE_P12 }}
-          BUILD_CERTIFICATE_PASSWORD: ${{ secrets.BUILD_CERTIFICATE_PASSWORD }}
-        run: |
-          set -euo pipefail
-          keychain=/tmp/vdvlive-signing.keychain-db
-          password=$(openssl rand -hex 16)
-          security create-keychain -p "$password" "$keychain"
-          security set-keychain-settings -lut 3600 "$keychain"
-          security unlock-keychain -p "$password" "$keychain"
-          printf '%s' "$BUILD_CERTIFICATE_P12" | base64 --decode > /tmp/certificate.p12
-          security import /tmp/certificate.p12 -k "$keychain" -P "$BUILD_CERTIFICATE_PASSWORD" \
-            -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain" >/dev/null
-          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
-          rm -f /tmp/certificate.p12
 
       - name: Archive
         run: |

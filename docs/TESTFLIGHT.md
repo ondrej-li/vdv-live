@@ -25,7 +25,7 @@ the things that are cheap to check in code — privacy manifest, export complian
 icon alpha, purpose strings — this step covers the things that only exist after an
 archive.
 
-## The six repository secrets
+## The four repository secrets
 
 | Secret | Contents |
 | --- | --- |
@@ -33,20 +33,18 @@ archive.
 | `APP_CONNECT_KEY_ID` | the API key's 10-character ID |
 | `APP_CONNECT_ISSUER_ID` | the issuer UUID shown above the key list |
 | `APP_CONNECT_KEY_P8` | the whole `AuthKey_<id>.p8`, base64 encoded |
-| `BUILD_CERTIFICATE_P12` | your *Apple Distribution* certificate, base64 encoded |
-| `BUILD_CERTIFICATE_PASSWORD` | the password you chose when exporting the `.p12` |
 
-The key comes from *App Store Connect → Users and Access → Integrations → App Store
-Connect API*, role **App Manager**; Apple allows one download of the `.p8`. The
-certificate is the **Apple Distribution** one that enrolment mints — *Keychain
-Access → My Certificates → right-click → Export*.
+No certificate is stored anywhere. The runner signs with the API key alone
+(`-allowProvisioningUpdates` plus `-authenticationKeyPath`), which is also why no
+developer machine has to exist: the certificate and the provisioning profile are
+resolved on the runner, per job.
 
 ```sh
 base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy
 base64 -i distribution.p12      | pbcopy
 ```
 
-Until all six exist the workflow fails at *Check the signing secrets exist* and names
+Until all four exist the workflow fails at *Check the signing secrets exist* and names
 the missing ones: a deploy that cannot deploy should be red.
 
 ## Signing
