@@ -191,6 +191,11 @@ Requirements: Xcode 26 or newer and iOS 26 or newer on the device or simulator.
 There are no third party dependencies, so there is nothing to resolve before
 building.
 
+Those are the requirements for *running* the app. Compiling and testing it is
+CI's job: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds the scheme
+and runs the unit tests on a macOS runner for every push, so editing the code
+does not need Xcode on the machine you edit on.
+
 ```sh
 open VdvLive.xcodeproj          # or: make open
 make build                     # build for the simulator
