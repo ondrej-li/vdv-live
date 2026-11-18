@@ -49,7 +49,8 @@ Locally, with a full Xcode:
 make build      # simulator
 make test       # unit tests
 make run        # build, install, launch on a simulator
-make screenshots / make shots   # App Store artwork
+make shots        # App Store screenshots, iPhone 6.9" + iPad 13"
+make shots-watch  # and the watch one
 ```
 
 Nothing here builds on Linux. Do not try to compile it on the VPS.
