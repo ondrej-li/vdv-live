@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy — VDV Live</title>
+<meta name="description" content="A live map of the buses and trains of the Vysočina Region: where they are, how late they run, and when they leave your stop.">
+<meta name="theme-color" content="#07100f">
+<link rel="canonical" href="https://vdv.ondralinek.cz/en/privacy.html">
+<link rel="alternate" hreflang="cs" href="https://vdv.ondralinek.cz/privacy.html">
+<link rel="alternate" hreflang="en" href="https://vdv.ondralinek.cz/en/privacy.html">
+<link rel="alternate" hreflang="x-default" href="https://vdv.ondralinek.cz/privacy.html">
+<link rel="icon" href="../assets/icon-300.png?v=12bce17f8c" type="image/png">
+<link rel="apple-touch-icon" href="../assets/icon-300.png?v=12bce17f8c">
+<link rel="stylesheet" href="../assets/style.css?v=aa82e27d7a">
+</head>
+<body class="doc">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="../assets/icon-300.png?v=12bce17f8c" alt="" width="34" height="34">
+      <span>VDV Live</span>
+    </a>
+    <nav><a href="privacy.html" class="on">Privacy</a><a href="support.html">Support</a><a class="lang" href="/privacy.html" hreflang="cs">Čeština</a></nav>
+  </div>
+</header>
+<main class="wrap narrow">
+  <h1>Privacy policy</h1>
+  <p class="updated">Effective 21 October 2026</p>
+  <p>VDV Live shows the live positions of buses and trains in the Vysočina Region, and its published timetables. It is an unofficial app: it is not operated by the region, by the Ministry of Transport, or by any transport operator.</p>
+<h2>What the app does not do</h2>
+<ul><li>No account, no sign-in, no profile.</li><li>No analytics, no advertising, no tracking, no crash reporting.</li><li>No personal data is collected, stored on a server, sold, or shared with anyone.</li><li>The app contains no third-party SDKs.</li></ul>
+<h2>What leaves your device</h2>
+<p>Two public servers are asked for data, the same way a web browser would ask, and the base map is drawn by Apple's MapKit:</p>
+<div class="table"><table><thead><tr><th>Server</th><th>What is requested</th><th>Why</th></tr></thead><tbody><tr><td>mapavdv.kr-vysocina.cz</td><td>the current vehicle positions</td><td>the map</td></tr><tr><td>vdv.ondralinek.cz</td><td>the file that says which archive entry holds each line</td><td>so a republished timetable archive does not break the app</td></tr><tr><td>portal.cisjr.cz</td><td>the timetable archive's index and individual lines, when you download timetables</td><td>stop times, and filling in lines the live feed has dropped</td></tr><tr><td>Apple (MapKit)</td><td>the map tiles, and what MapKit needs to draw them</td><td>the base map</td></tr></tbody></table></div>
+<p>Those servers necessarily see your IP address, the time, and the standard HTTP request, as any website does. This app adds no identifiers to those requests and keeps no history of them. The base map is Apple Maps, so Apple sees its own requests under Apple's privacy policy; the app sends Apple nothing else.</p>
+<h2>Your location</h2>
+<p>The map can open on your position and follow it. That is optional and off unless you ask for it. The position is read on the device and used only to decide where the map points, and to tell the app's widget which of your pinned vehicles are near you. It is never sent anywhere and never written to a log, and it is not kept anywhere but on this device: the last position it used is remembered so that the map can open in the right place next time, and it goes when the app does.</p>
+<h2>What is kept on your device</h2>
+<p>Settings, pinned lines, the last positions received (so the map is not empty when the network is down), downloaded timetables and the reminders you set are stored inside the app's own storage, which it shares with its own widgets. They are not readable by other apps and they go away when you delete the app.</p>
+<h2>Children</h2>
+<p>The app collects nothing, from anyone.</p>
+<h2>Changes</h2>
+<p>If this policy changes, the new version appears at this address with a new effective date, and the change is noted in the app's release notes.</p>
+<h2>Contact</h2>
+<p>ondrej.linek@gmail.com</p>
+  <p class="back"><a href="index.html">← Back to the start</a></p>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="muted">VDV Live is an unofficial app. It is not affiliated with the Vysočina Region, the Ministry of Transport or any transport operator.</p>
+    <p class="muted links">
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a href="../docs/api.html">Technical notes</a>
+      <a href="mailto:ondrej.linek@gmail.com">Write to the author</a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>

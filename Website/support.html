@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podpora — VDV Live</title>
+<meta name="description" content="Živá mapa autobusů a vlaků Kraje Vysočina: kde právě jsou, jak jsou zpožděné a kdy odjíždějí z vaší zastávky.">
+<meta name="theme-color" content="#07100f">
+<link rel="canonical" href="https://vdv.ondralinek.cz/support.html">
+<link rel="alternate" hreflang="cs" href="https://vdv.ondralinek.cz/support.html">
+<link rel="alternate" hreflang="en" href="https://vdv.ondralinek.cz/en/support.html">
+<link rel="alternate" hreflang="x-default" href="https://vdv.ondralinek.cz/support.html">
+<link rel="icon" href="assets/icon-300.png?v=12bce17f8c" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-300.png?v=12bce17f8c">
+<link rel="stylesheet" href="assets/style.css?v=aa82e27d7a">
+</head>
+<body class="doc">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/icon-300.png?v=12bce17f8c" alt="" width="34" height="34">
+      <span>VDV Live</span>
+    </a>
+    <nav><a href="privacy.html">Soukromí</a><a href="support.html" class="on">Podpora</a><a class="lang" href="/en/support.html" hreflang="en">English</a></nav>
+  </div>
+</header>
+<main class="wrap narrow">
+  <h1>Podpora</h1>
+  <p class="updated"></p>
+  <p>Napište na <a href="mailto:ondrej.linek@gmail.com">ondrej.linek@gmail.com</a> — chyby, dotazy i nápady. Chyby a nápady můžete zadat i jako <a href="https://github.com/ondrej-li/vdv-live/issues">issue na GitHubu</a>.</p>
+<h2>Linka chybí na mapě</h2>
+<p>Aplikace ukazuje to, co kraj zveřejňuje. Zdroj na část dne o některých linkách mlčí a taková linka na mapě není.</p>
+<p>Pokud máte stažené jízdní řády (Nastavení → Jízdní řády) a zapnuté <em>Doplnit linky, které zdroj vynechává</em>, aplikace dokreslí linky, které podle řádu jet mají, i když zdroj nehlásí nic. Takový bod je <strong>přerušovaný oranžový s vykřičníkem</strong>, u zastávky, kam spoj podle řádu míří. Je to zveřejněná zastávka, ne měření, takže se nehýbe a nedá se vybrat.</p>
+<h2>Co znamená vykřičník</h2>
+<p>Přesně to: poloha je spočítaná z jízdního řádu a z dodaných poloh zastávek, ne přijatá z vozidla. Je to místo, kde by autobus měl být, ne kde byl viděn.</p>
+<h2>Jízdní řád není k dispozici</h2>
+<p>Nastavení → Jízdní řády stáhne index (pár megabajtů) a pak jednotlivé linky podle potřeby, po kilobajtech; všechno zůstává v telefonu, takže to funguje i offline. Pokud linka i potom hlásí, že řád není k dispozici, archiv byl přegenerován a seznam linek v aplikaci je zastaralý: klepněte na <strong>Zkontrolovat aktualizace</strong>. Pokud to nepomůže, oprava přijde s další verzí aplikace.</p>
+<h2>Připomínka nepřijde</h2>
+<p>Připomínku nastavíte na odjezdové tabuli zastávky: u odjezdu klepněte na zvonek, zvolte, jak dlouho předem chcete vědět, a vypněte dny, kdy necestujete. Přehled a smazání jsou v Nastavení → Připomínky.</p>
+<ul><li>Zkontrolujte, že iOS aplikaci povoluje oznámení (pokud ne, aplikace to napíše v přehledu připomínek).</li><li>Zkontrolujte, že je stažený jízdní řád dané linky v Nastavení → Jízdní řády: připomínka se počítá z řádu, takže bez něj naplánovat nelze.</li><li>Připomínka se řídí <strong>časem v jízdním řádu</strong>. Na zpožděný spoj se nečeká; živé zpoždění ukáže aplikace při příštím otevření.</li></ul>
+<p>Na rozdíl od zbytku aplikace se připomínka počítá v telefonu ze staženého řádu, takže dorazí i při zavřené aplikaci.</p>
+<h2>Mapa zešedne</h2>
+<p>Šedé body znamenají, že o vozidlech aplikace od poslední aktualizace neslyšela — obvykle ztráta spojení. Když se zdroj nedá načíst, horní řádek místo počtu vozidel ukazuje <code>Offline · last 12:34</code>. Poloha z před hodiny není mapa, proto je šedá.</p>
+<h2>Nahlášení chyby</h2>
+<p>V hlášení pomůže: verze aplikace a iOS, co jste dělali, co jste čekali a co se stalo, a pokud to jde, snímek obrazovky.</p>
+  <p class="back"><a href="index.html">← Zpět na úvod</a></p>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="muted">VDV Live je neoficiální aplikace. Není spojená s Krajem Vysočina, Ministerstvem dopravy ani s žádným dopravcem.</p>
+    <p class="muted links">
+      <a href="privacy.html">Soukromí</a>
+      <a href="support.html">Podpora</a>
+      <a href="docs/api.html">Technické poznámky</a>
+      <a href="mailto:ondrej.linek@gmail.com">Napsat autorovi</a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>
