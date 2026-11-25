@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VDV Live</title>
+<meta name="theme-color" content="#07100f">
+<link rel="icon" href="/assets/icon-300.png" type="image/png">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap narrow">
+  <img src="/assets/icon-300.png" alt="" width="88" height="88">
+  <h1 id="heading">Sdílený odkaz z VDV Live</h1>
+  <p id="detail" class="lede">Aplikace VDV Live otevře odkaz přímo na zastávce nebo spoji.</p>
+  <p class="lede">This link opens in the VDV Live app. Download it to see the board,
+  the vehicle and its delay.</p>
+  <p><a class="button" href="https://apps.apple.com/app/id6824945928">App Store</a></p>
+  <p><a href="/">VDV Live</a> · <a href="/privacy.html">Zásady ochrany osobních údajů</a></p>
+</div>
+<script>
+  // The link carries either a stop or a line; say which, so the page is not
+  // useless to somebody who does have the app but opened the link in a browser.
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var stop = params.get("stop");
+    var line = params.get("line");
+    var heading = document.getElementById("heading");
+    var detail = document.getElementById("detail");
+    if (stop) {
+      heading.textContent = "Odjezdy ze zastávky " + stop.replace(/,/g, ", ");
+      detail.textContent = "Otevřete odkaz v aplikaci VDV Live a uvidíte tabuli zastávky.";
+    } else if (line) {
+      heading.textContent = "Linka " + line;
+      detail.textContent = "Otevřete odkaz v aplikaci VDV Live a uvidíte spoj na mapě.";
+    }
+  })();
+</script>
+</body>
+</html>

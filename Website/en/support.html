@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — VDV Live</title>
+<meta name="description" content="A live map of the buses and trains of the Vysočina Region: where they are, how late they run, and when they leave your stop.">
+<meta name="theme-color" content="#07100f">
+<link rel="canonical" href="https://vdv.ondralinek.cz/en/support.html">
+<link rel="alternate" hreflang="cs" href="https://vdv.ondralinek.cz/support.html">
+<link rel="alternate" hreflang="en" href="https://vdv.ondralinek.cz/en/support.html">
+<link rel="alternate" hreflang="x-default" href="https://vdv.ondralinek.cz/support.html">
+<link rel="icon" href="../assets/icon-300.png?v=12bce17f8c" type="image/png">
+<link rel="apple-touch-icon" href="../assets/icon-300.png?v=12bce17f8c">
+<link rel="stylesheet" href="../assets/style.css?v=aa82e27d7a">
+</head>
+<body class="doc">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="../assets/icon-300.png?v=12bce17f8c" alt="" width="34" height="34">
+      <span>VDV Live</span>
+    </a>
+    <nav><a href="privacy.html">Privacy</a><a href="support.html" class="on">Support</a><a class="lang" href="/support.html" hreflang="cs">Čeština</a></nav>
+  </div>
+</header>
+<main class="wrap narrow">
+  <h1>Support</h1>
+  <p class="updated"></p>
+  <p>Write to <a href="mailto:ondrej.linek@gmail.com">ondrej.linek@gmail.com</a> — bug reports, questions, and feature requests. Bugs and ideas are welcome as an <a href="https://github.com/ondrej-li/vdv-live/issues">issue on GitHub</a> as well.</p>
+<h2>A line is missing from the map</h2>
+<p>The app shows what the regional feed publishes. The feed goes quiet about whole lines for stretches of the day, and when it does, the line is not on the map.</p>
+<p>If you have downloaded the timetables (Settings → Timetables) and switched on <em>Fill in lines the feed leaves out</em>, the app draws lines the timetable says should be running even when the feed reports nothing. Those markers are drawn as a <strong>dashed amber capsule with an exclamation triangle</strong>, at the stop the service is due at. That position is the published stop, not a measurement, so it does not move and cannot be selected.</p>
+<h2>What the exclamation triangle means</h2>
+<p>Exactly that: the position was calculated from the timetable and the shipped stop positions, not received from the vehicle. It is a place the bus should be, not a place it was seen.</p>
+<h2>Timetables are not available</h2>
+<p>Settings → Timetables downloads an index (a couple of megabytes) and then each line's timetable on demand, a few kilobytes at a time; everything is kept on the phone afterwards, so it works offline. If a line still says its timetable is not available, the published archive has been rebuilt and the app's line list is out of date: tap <strong>Check for updates</strong>, and if that does not help, the fix comes with the next release of the app.</p>
+<h2>A reminder does not arrive</h2>
+<p>A reminder is set on a stop's departure board: tap the bell next to a departure, choose how early you want to know, and turn off the days you do not travel. Settings → Reminders lists them and deletes them.</p>
+<ul><li>Check that iOS is allowed to notify you - the reminders screen says so if it is not.</li><li>Check that the line's timetable has been downloaded, under Settings → Timetables: a reminder is worked out from the timetable, so a line with no timetable on the phone cannot be scheduled.</li><li>Remember the warning follows the <strong>timetable's</strong> time. A late bus is not waited for; the app shows the live delay the next time you open it.</li></ul>
+<p>Unlike the rest of the app, a reminder is worked out on the phone from the downloaded timetable, so it arrives even when the app is closed.</p>
+<h2>The map goes grey</h2>
+<p>Grey markers mean the app has not heard from those vehicles since it last refreshed - usually a lost connection. When the feed cannot be reached, the status line says <code>Offline · last 12:34</code> in place of the vehicle count. A position from an hour ago is not the map, so it is drawn grey rather than passed off as current.</p>
+<h2>Reporting a bug</h2>
+<p>Useful in a report: the app version and the iOS version, what you did, what you expected and what happened, and a screenshot if you have one.</p>
+  <p class="back"><a href="index.html">← Back to the start</a></p>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="muted">VDV Live is an unofficial app. It is not affiliated with the Vysočina Region, the Ministry of Transport or any transport operator.</p>
+    <p class="muted links">
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a href="../docs/api.html">Technical notes</a>
+      <a href="mailto:ondrej.linek@gmail.com">Write to the author</a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>
