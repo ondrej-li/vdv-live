@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "B592D69P29.cz.ondralinek.VdvLive"
+        ],
+        "components": [
+          {
+            "/": "/s/*",
+            "comment": "Shared stop boards and vehicles"
+          }
+        ]
+      }
+    ]
+  }
+}

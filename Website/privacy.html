@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zásady ochrany osobních údajů — VDV Live</title>
+<meta name="description" content="Živá mapa autobusů a vlaků Kraje Vysočina: kde právě jsou, jak jsou zpožděné a kdy odjíždějí z vaší zastávky.">
+<meta name="theme-color" content="#07100f">
+<link rel="canonical" href="https://vdv.ondralinek.cz/privacy.html">
+<link rel="alternate" hreflang="cs" href="https://vdv.ondralinek.cz/privacy.html">
+<link rel="alternate" hreflang="en" href="https://vdv.ondralinek.cz/en/privacy.html">
+<link rel="alternate" hreflang="x-default" href="https://vdv.ondralinek.cz/privacy.html">
+<link rel="icon" href="assets/icon-300.png?v=12bce17f8c" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-300.png?v=12bce17f8c">
+<link rel="stylesheet" href="assets/style.css?v=aa82e27d7a">
+</head>
+<body class="doc">
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <img src="assets/icon-300.png?v=12bce17f8c" alt="" width="34" height="34">
+      <span>VDV Live</span>
+    </a>
+    <nav><a href="privacy.html" class="on">Soukromí</a><a href="support.html">Podpora</a><a class="lang" href="/en/privacy.html" hreflang="en">English</a></nav>
+  </div>
+</header>
+<main class="wrap narrow">
+  <h1>Zásady ochrany osobních údajů</h1>
+  <p class="updated">Účinné od 21. října 2026</p>
+  <p>VDV Live zobrazuje polohy autobusů a vlaků v Kraji Vysočina a jejich zveřejněné jízdní řády. Je to neoficiální aplikace: neprovozuje ji kraj, Ministerstvo dopravy ani žádný dopravce.</p>
+<h2>Co aplikace nedělá</h2>
+<ul><li>Žádný účet, žádné přihlašování, žádný profil.</li><li>Žádná analytika, reklama, sledování ani hlášení pádů.</li><li>Žádné osobní údaje se neshromažďují, neukládají na server, neprodávají ani nepředávají třetím stranám.</li><li>Aplikace neobsahuje žádná SDK třetích stran.</li></ul>
+<h2>Co opouští zařízení</h2>
+<p>Aplikace si vyžádá data ze dvou veřejných serverů, stejně jako by to udělal webový prohlížeč, a podkladovou mapu kreslí MapKit od Apple:</p>
+<div class="table"><table><thead><tr><th>Server</th><th>Co se požaduje</th><th>Proč</th></tr></thead><tbody><tr><td>mapavdv.kr-vysocina.cz</td><td>aktuální polohy vozidel</td><td>mapa</td></tr><tr><td>vdv.ondralinek.cz</td><td>soubor, který říká, ve které položce archivu je která linka</td><td>aby přečíslovaný archiv jízdních řádů aplikaci nerozbil</td></tr><tr><td>portal.cisjr.cz</td><td>index archivu jízdních řádů a jednotlivé linky, pokud si jízdní řády stáhnete</td><td>časy zastávek a doplnění linek, které živý zdroj vynechal</td></tr><tr><td>Apple (MapKit)</td><td>dlaždice mapy a to, co MapKit ke kreslení potřebuje</td><td>podkladová mapa</td></tr></tbody></table></div>
+<p>Tyto servery nutně vidí vaši IP adresu, čas a standardní HTTP požadavek, jako každý jiný web. Aplikace k požadavkům nepřidává žádné identifikátory a historii požadavků neuchovává. Podkladovou mapou jsou Apple Maps, takže Apple vidí své vlastní požadavky podle zásad ochrany osobních údajů Applu; nic dalšího mu aplikace neposílá.</p>
+<h2>Vaše poloha</h2>
+<p>Mapa se může otevřít na vaší poloze a sledovat ji. Je to volitelné a vypnuté, dokud o to nepožádáte. Poloha se čte v zařízení a slouží jen k určení středu mapy a k tomu, aby widget poznal, která z vašich oblíbených vozidel jsou poblíž. Nikam se neposílá a nezapisuje se do logu, a neukládá se nikde jinde než v tomto zařízení: poslední použitá poloha se pamatuje, aby se mapa příště otevřela na správném místě, a zmizí spolu s aplikací.</p>
+<h2>Co zůstává v zařízení</h2>
+<p>Nastavení, oblíbené linky, poslední přijaté polohy (aby mapa nezůstala prázdná, když není síť), stažené jízdní řády a nastavené připomínky jsou uložené v úložišti aplikace, které sdílí se svými widgety. Jiné aplikace je nepřečtou a smažou se společně s aplikací.</p>
+<h2>Děti</h2>
+<p>Aplikace neshromažďuje údaje o nikom.</p>
+<h2>Změny</h2>
+<p>Pokud se tyto zásady změní, na této adrese se objeví nová verze s novým datem účinnosti a změna bude uvedena v poznámkách k vydání.</p>
+<h2>Kontakt</h2>
+<p>ondrej.linek@gmail.com</p>
+  <p class="back"><a href="index.html">← Zpět na úvod</a></p>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="muted">VDV Live je neoficiální aplikace. Není spojená s Krajem Vysočina, Ministerstvem dopravy ani s žádným dopravcem.</p>
+    <p class="muted links">
+      <a href="privacy.html">Soukromí</a>
+      <a href="support.html">Podpora</a>
+      <a href="docs/api.html">Technické poznámky</a>
+      <a href="mailto:ondrej.linek@gmail.com">Napsat autorovi</a>
+    </p>
+  </div>
+</footer>
+</body>
+</html>
