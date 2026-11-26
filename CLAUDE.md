@@ -123,3 +123,17 @@ The three commits must match. If it has not moved after two timer cycles, read
 `journalctl -u site-deploy -n 50`, report the commit that should be live and the
 one that is, and do not rsync into `/var/www` or edit a live file to compensate.
 The `static-site-deploy` skill has the full procedure.
+
+## Writing HTML and CSS
+
+Before writing or changing HTML, CSS or client-side JavaScript here, use the
+`modern-web-guidance` skill (installed for this account): search for the
+capability, retrieve the guides it names, apply them. The platform usually has
+the answer the library was added for — `<dialog>` and the popover API instead of
+div overlays, container queries instead of media-query rewrites, View
+Transitions and `@starting-style` instead of JS entrance animations, native
+validation and `:user-invalid` instead of a validation library.
+
+Browser support policy: Baseline Widely available as-is; Newly available only
+with feature detection and a fallback of 20 lines or fewer, no dependencies, no
+polyfills.
