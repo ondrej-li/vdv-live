@@ -221,6 +221,21 @@ and rebuilds the published mapping only when that answer changed - the mapping i
 only true for the archive it was built from, and the portal republishes about
 three times a week and renumbers every entry when it does.
 
+The portal is a ministry IIS server and does answer 500, or nothing at all, for
+hours around a republication. A poll that could not read it exits `EX_TEMPFAIL`
+(75), which the unit counts as a completed run, so an outage upstream is not
+reported as a broken unit; the timer just tries again next hour. The wrapper
+counts the deferrals and mails the owner once the mapping has been unverified for
+twelve of them, then at most once a day, and once more when the portal answers
+again. Failures that are ours - a mapping with too few lines, an unwritable file -
+still exit non-zero, so the host report says so.
+
+```sh
+journalctl -u vdvlive-mapping -n 30     # what the last polls said
+cat /var/lib/vdvlive-mapping/state      # deferred=<hours> mailed=<0|1> last_mail=<epoch>
+make mapping-deploy                     # re-install the timer and run it once
+```
+
 `make run` installs and launches the app whether or not a Simulator window is
 available. Some Xcode installations (including trimmed ones that lack
 `Contents/Developer/Applications/Simulator.app`) can only run devices headlessly,

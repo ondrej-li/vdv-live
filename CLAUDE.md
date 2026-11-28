@@ -124,6 +124,26 @@ The three commits must match. If it has not moved after two timer cycles, read
 one that is, and do not rsync into `/var/www` or edit a live file to compensate.
 The `static-site-deploy` skill has the full procedure.
 
+### The published line mapping
+
+`/var/www/vdvlive/jdf-lines.json` is not published by `site-deploy` and not part
+of the tree: `vdvlive-mapping.timer` rebuilds it hourly on the box from the
+ministry's archive, because a mapping of yesterday's names points at entries that
+now hold other lines. Its sources are `tools/publish-mapping.py` and
+`deploy/mapping/`, installed by `make mapping-deploy` from a Mac — it is not
+deployed by merging.
+
+- A poll that cannot read the portal exits `EX_TEMPFAIL` (75) and the unit counts
+  that as a completed run: the ministry's IIS server answers 500 for hours around
+  a republication. Do not "fix" that by making the unit fail, and do not treat the
+  resulting `deactivated` state as a fault.
+- `journalctl -u vdvlive-mapping -n 30` says what the last polls saw;
+  `cat /var/lib/vdvlive-mapping/state` shows how many deferrals are counted and
+  whether the owner has been mailed. Past twelve deferred hours the wrapper mails
+  `admin@`, once a day, and once more on recovery.
+- A run that fails for a reason of ours still exits non-zero and leaves the unit
+  failed. That is the one to report.
+
 ## Writing HTML and CSS
 
 Before writing or changing HTML, CSS or client-side JavaScript here, use the
