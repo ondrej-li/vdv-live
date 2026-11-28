@@ -49,7 +49,10 @@ mail() {
         printf 'Subject: %s\n' "$1"
         printf 'Auto-Submitted: auto-generated\n\n'
         printf '%s\n' "$2"
-    } | "$SENDMAIL" -i -t
+        # -f so the envelope matches the From header: the box submits from root,
+        # and a Return-Path of root@ for a message signed as alerts@ is the kind
+        # of mismatch that shows up in someone's DMARC report later.
+    } | "$SENDMAIL" -i -f "$MAIL_FROM" -t
 }
 
 describe_mapping() {
