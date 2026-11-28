@@ -168,7 +168,9 @@ but the answer was useless on its own. Three things now follow from it:
   for the archive's ETag (one range request), rebuilds the file only when that
   answer changed, and writes it with a rename so a reader sees one mapping or the
   other. `make mapping-deploy` installs it as a systemd timer on the deploy host,
-  hourly; `make site-deploy` still rebuilds the copy in the tree.
+  hourly; `make site-deploy` still rebuilds the copy in the tree. A poll that
+  cannot read the portal (it answers 500 for hours around a republication) is a
+  deferral, not a failure - see the mapping section of the README.
 - **The mapping records which archive it was built from** - its ETag, its size and
   the JDF publication date. The app keeps the same three things for the index it
   read, so it can tell a mapping that is older than the index from one that

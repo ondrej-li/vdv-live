@@ -18,23 +18,75 @@ the file already names, nothing else happens. Otherwise the archive is downloade
 in one rename - so a reader of the site sees either the old mapping or the new one,
 never half of either.
 
-Exit status is 0 both when the file was rebuilt and when it was already current.
+Exit status is 0 both when the file was rebuilt and when it was already current,
+and 75 (EX_TEMPFAIL) when the portal could not be read at all - see `defer`.
 """
 
 import argparse
 import email.utils
+import http.client
 import json
 import os
-import subprocess
+import socket
 import sys
 import tempfile
+import time
+import urllib.error
 import urllib.request
+import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import jdf_lines_mapping  # noqa: E402
 
 ARCHIVE_URL = "https://portal.cisjr.cz/pub/JDF/JDF.zip"
 USER_AGENT = "VdvLive-mapping/1.0 (+https://github.com/ondrej-li/vdv-live)"
+
+# EX_TEMPFAIL: the portal did not answer usefully, so there is nothing to decide
+# and nothing that needs a human. The unit treats it as success and tries again on
+# the next timer run; refresh-mapping.sh counts the hours and escalates on its own.
+DEFERRED = 75
+
+# Answers that mean "ask again later" rather than "this request or this archive is
+# wrong". 5xx is the portal itself: it is a ministry IIS box and answers 500 for
+# hours at a time around a republication.
+TRANSIENT_STATUS = {408, 425, 429, 500, 502, 503, 504}
+
+# Enough attempts to ride out a blip, few enough to stay inside the unit's
+# TimeoutStartSec even when every attempt has to time out.
+ATTEMPTS = 3
+BACKOFF = (5, 30)
+
+
+class Defer(Exception):
+    """The portal could not be read; the next timer run tries again."""
+
+
+def transient(error):
+    """True for a failure that is worth retrying, false for one that is not."""
+    if isinstance(error, urllib.error.HTTPError):
+        return error.code in TRANSIENT_STATUS
+    return isinstance(error, (urllib.error.URLError, http.client.HTTPException,
+                              ConnectionError, socket.timeout, TimeoutError))
+
+
+def attempt(what, operation):
+    """Run `operation`, retrying while the failure looks transient.
+
+    Raises Defer once the attempts are spent, so a poll that never reached the
+    portal is reported as a deferral instead of as a broken unit.
+    """
+    for number in range(1, ATTEMPTS + 1):
+        try:
+            return operation()
+        except Exception as error:              # noqa: BLE001 - classified below
+            if not transient(error):
+                raise
+            if number == ATTEMPTS:
+                raise Defer(f"{what} failed {ATTEMPTS} times, last: {error}") from error
+            wait = BACKOFF[min(number - 1, len(BACKOFF) - 1)]
+            print(f"{what} failed ({error}); retrying in {wait}s", flush=True)
+            time.sleep(wait)
+    raise AssertionError("unreachable")
 
 
 def iso_date(http_date):
@@ -61,15 +113,19 @@ def identity(url=ARCHIVE_URL):
         url,
         headers={"Range": "bytes=0-0", "User-Agent": USER_AGENT},
     )
-    with urllib.request.urlopen(request, timeout=60) as response:
-        headers = response.headers
-        content_range = headers.get("Content-Range", "")
-        size = int(content_range.rsplit("/", 1)[-1]) if "/" in content_range else -1
-        return {
-            "etag": headers.get("ETag"),
-            "lastModified": iso_date(headers.get("Last-Modified")),
-            "bytes": size,
-        }
+
+    def once():
+        with urllib.request.urlopen(request, timeout=60) as response:
+            headers = response.headers
+            content_range = headers.get("Content-Range", "")
+            size = int(content_range.rsplit("/", 1)[-1]) if "/" in content_range else -1
+            return {
+                "etag": headers.get("ETag"),
+                "lastModified": iso_date(headers.get("Last-Modified")),
+                "bytes": size,
+            }
+
+    return attempt("asking the portal for the archive identity", once)
 
 
 def recorded(path):
@@ -89,14 +145,29 @@ def describes_same_publication(mapping, archive):
     return False
 
 
-def download(url, path):
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=600) as response, open(path, "wb") as handle:
-        while True:
-            chunk = response.read(1 << 20)
-            if not chunk:
-                break
-            handle.write(chunk)
+def download(url, path, expected_bytes=-1):
+    """Fetch the archive, retrying a transient failure or a truncated body.
+
+    A republication can be served half-written, and a short file would otherwise
+    be unpacked into a mapping that is missing entries rather than one that is
+    merely old.
+    """
+
+    def once():
+        request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(request, timeout=600) as response, \
+                open(path, "wb") as handle:
+            while True:
+                chunk = response.read(1 << 20)
+                if not chunk:
+                    break
+                handle.write(chunk)
+        written = os.path.getsize(path)
+        if expected_bytes > 0 and written != expected_bytes:
+            raise ConnectionError(
+                f"archive is {written} bytes, the portal announced {expected_bytes}")
+
+    attempt("downloading the archive", once)
 
 
 def write_atomically(document, path):
@@ -123,6 +194,14 @@ def main():
                         help="chown the written file to this user, e.g. www-data")
     arguments = parser.parse_args()
 
+    try:
+        return publish(arguments)
+    except Defer as error:
+        print(f"deferred: {error}", flush=True)
+        return DEFERRED
+
+
+def publish(arguments):
     archive = identity(arguments.url)
     current = recorded(arguments.output)
 
@@ -135,8 +214,13 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="vdvlive-mapping-") as scratch:
         archive_path = os.path.join(scratch, "JDF.zip")
-        download(arguments.url, archive_path)
-        built = jdf_lines_mapping.build(archive_path)
+        download(arguments.url, archive_path, archive.get("bytes", -1))
+        try:
+            built = jdf_lines_mapping.build(archive_path)
+        except (zipfile.BadZipFile, KeyError) as error:
+            # A body of the right length that is not the archive we expect is the
+            # portal's problem, not a decision someone has to make at 3am.
+            raise Defer(f"the archive is not readable: {error}") from error
         document = jdf_lines_mapping.document_of(built, identity=archive)
 
     if len(built["lines"]) < 100:

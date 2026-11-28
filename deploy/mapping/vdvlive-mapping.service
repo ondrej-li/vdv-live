@@ -14,3 +14,11 @@ ExecStart=/opt/vdvlive-mapping/refresh-mapping.sh
 TimeoutStartSec=1800
 Nice=10
 IOSchedulingClass=idle
+# 75 is EX_TEMPFAIL: the portal did not answer, so the poll was deferred and the
+# next timer run tries again. Report that as a completed run - a unit that is
+# "failed" for hours because a ministry server is down is the kind of alarm that
+# teaches everyone to ignore alarms. The wrapper counts the hours and mails the
+# owner if the deferral lasts; a failure that is ours still exits 1.
+SuccessExitStatus=75
+# Where the wrapper counts deferrals and remembers that it has mailed.
+StateDirectory=vdvlive-mapping

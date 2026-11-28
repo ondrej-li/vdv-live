@@ -33,6 +33,13 @@ jobs:
           for tool in tools/*.py; do python3 -m py_compile "$tool"; done
           echo "tools compile"
 
+      # The publisher on the deploy host decides what counts as a deferred poll
+      # and what counts as a failure someone has to look at.
+      - name: Test the mapping publisher and its timer wrapper
+        run: |
+          python3 -m unittest discover -s tools/tests -v
+          sh deploy/mapping/tests/test-refresh-mapping.sh
+
       # The configuration that gets archived, built where the debug-only sample
       # feed, fixtures and previews are not there. A preview referring to one of
       # them is enough to make an archive impossible, and the rest of this
